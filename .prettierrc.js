@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   // Do not add semicolons at the end of statements
   semi: false,
 
