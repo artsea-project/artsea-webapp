@@ -163,7 +163,7 @@ export default async function DatabaseSandboxPage({ searchParams }: PageProps) {
               </pre>
             </div>
 
-            {/* RIGHT WINDOW: FRONTEND UI (No profile pic) */}
+            {/* RIGHT WINDOW: FRONTEND UI*/}
             <div className="p-5 flex flex-col justify-center bg-slate-900/20">
               <div className="flex items-center gap-2 text-[10px] text-slate-500 font-mono uppercase tracking-wider mb-4">
                 <Eye className="w-3.5 h-3.5" /> Frontend UI Component
