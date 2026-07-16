@@ -1,7 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { db } from '../db';
-import { users, profiles, categories, artPieces } from '../db/schema';
+import { users, profiles, categories, artPieces, siteSettings } from '../db/schema';
 import { eq } from 'drizzle-orm';
+import { SiteTheme } from '../types/theme';
 
 test.describe('Database Config & Relations Integration Test', () => {
   let createdUserId: string;
@@ -86,6 +87,43 @@ test.describe('Database Config & Relations Integration Test', () => {
     expect(queriedUser!.categories[0].namePln).toBe('Malarstwo PW');
     expect(queriedUser!.categories[0].artPieces.length).toBe(1);
     expect(queriedUser!.categories[0].artPieces[0].titlePln).toBe('Dzieło Playwright');
+  });
+
+  test('should successfully save and retrieve site theme JSON settings', async () => {
+    const mockTheme: SiteTheme = {
+      fonts: {
+        primaryFont: 'Playfair Display',
+        secondaryFont: 'Inter',
+        additionalFont: 'Inter',
+      },
+      colors: {
+        primaryColor: '#292524',
+        secondaryColor: '#A8A29E',
+        additionalColor: '#1C1917',
+        accentColor: '#A8A29E',
+        backgroundColor: '#FFFFFF',
+      },
+      presetTheme: 'domyslny',
+      darkModeExperimental: false,
+    };
+
+    // 1. Insert Site Settings with the theme JSON
+    const [settings] = await db.insert(siteSettings).values({
+      userId: createdUserId,
+      theme: mockTheme,
+    }).returning();
+
+    // 2. Query it back
+    const retrieved = await db.query.siteSettings.findFirst({
+      where: eq(siteSettings.siteSettingsId, settings.siteSettingsId),
+    });
+
+    // 3. Verify properties
+    expect(retrieved).toBeDefined();
+    const theme = retrieved!.theme as SiteTheme;
+    expect(theme.presetTheme).toBe('domyslny');
+    expect(theme.colors.backgroundColor).toBe('#FFFFFF');
+    expect(theme.fonts.primaryFont).toBe('Playfair Display');
   });
 
   test('should verify cascading delete integrity on user removal', async () => {

@@ -172,7 +172,7 @@ export const siteSettings = pgTable(
     {
         siteSettingsId: uuid('site_settings_id').primaryKey().defaultRandom(),
         userId: uuid('user_id').notNull().unique(),
-        theme: jsonb('theme'),
+        theme: jsonb('theme'), // Typed as SiteTheme from '@/types/theme'
         layoutBentoBox: jsonb('layout_bento_box'),
         layoutCategoryView: jsonb('layout_category_view'),
     },
