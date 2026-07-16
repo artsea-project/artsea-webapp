@@ -8,6 +8,20 @@
       "when": 1779238379059,
       "tag": "0000_regular_wolfsbane",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1784229908868,
+      "tag": "0001_dizzy_photon",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784230714719,
+      "tag": "0002_rare_warbound",
+      "breakpoints": true
     }
   ]
 }
