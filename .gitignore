@@ -47,3 +47,7 @@ next-env.d.ts
 /blob-report/
 playwright-report/
 trace.zip
+
+# Local development sandboxes
+/app/sandbox-db/
+/app/sandbox-theme/
