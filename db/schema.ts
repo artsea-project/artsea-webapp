@@ -17,8 +17,10 @@ export const profiles = pgTable(
         profileId: uuid('profile_id').primaryKey().defaultRandom(),
         userId: uuid('user_id').notNull().unique(),
         fullName: text('full_name').notNull(),
-        bioPln: jsonb('bio_pln'),
-        bioEng: jsonb('bio_eng'),
+        bioPln: jsonb('bio_pln'), // Typed as BioContent from '@/types/profile'
+        bioEng: jsonb('bio_eng'), // Typed as BioContent from '@/types/profile'
+        contactPln: jsonb('contact_pln'), // Typed as ContactContent from '@/types/profile'
+        contactEng: jsonb('contact_eng'), // Typed as ContactContent from '@/types/profile'
         profileImageUrl: text('profile_image_url'),
     },
     (table) => [
