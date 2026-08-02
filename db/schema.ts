@@ -1,5 +1,7 @@
 import { pgTable, text, jsonb, boolean, integer, timestamp, uuid, primaryKey, foreignKey, unique } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
+import type { BioContent, ContactContent } from '../types/profile';
+import type { SiteTheme } from '../types/theme';
 
 // User Table
 export const users = pgTable('users', {
@@ -17,10 +19,10 @@ export const profiles = pgTable(
         profileId: uuid('profile_id').primaryKey().defaultRandom(),
         userId: uuid('user_id').notNull().unique(),
         fullName: text('full_name').notNull(),
-        bioPln: jsonb('bio_pln'), // Typed as BioContent from '@/types/profile'
-        bioEng: jsonb('bio_eng'), // Typed as BioContent from '@/types/profile'
-        contactPln: jsonb('contact_pln'), // Typed as ContactContent from '@/types/profile'
-        contactEng: jsonb('contact_eng'), // Typed as ContactContent from '@/types/profile'
+        bioPln: jsonb('bio_pln').$type<BioContent>(),
+        bioEng: jsonb('bio_eng').$type<BioContent>(),
+        contactPln: jsonb('contact_pln').$type<ContactContent>(),
+        contactEng: jsonb('contact_eng').$type<ContactContent>(),
         profileImageUrl: text('profile_image_url'),
     },
     (table) => [
@@ -174,9 +176,9 @@ export const siteSettings = pgTable(
     {
         siteSettingsId: uuid('site_settings_id').primaryKey().defaultRandom(),
         userId: uuid('user_id').notNull().unique(),
-        theme: jsonb('theme'), // Typed as SiteTheme from '@/types/theme'
-        layoutBentoBox: jsonb('layout_bento_box'),
-        layoutCategoryView: jsonb('layout_category_view'),
+        theme: jsonb('theme').$type<SiteTheme>(),
+        layoutBentoBox: jsonb('layout_bento_box'), // Left untyped (unknown) for now since the bento layout JSON structure is not yet finalized
+        layoutCategoryView: jsonb('layout_category_view'), // Left untyped (unknown) for now since the category view layout JSON structure is not yet finalized
     },
     (table) => [
         foreignKey({
