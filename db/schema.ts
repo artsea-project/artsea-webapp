@@ -99,7 +99,6 @@ export const artPieces = pgTable(
         artPieceId: uuid('art_piece_id').primaryKey().defaultRandom(),
         userId: uuid('user_id').notNull(),
         categoryId: uuid('category_id').notNull(),
-        isFeatured: boolean('is_featured').notNull().default(false),
         isVisible: boolean('is_visible').notNull().default(true),
         titlePln: text('title_pln'),
         titleEng: text('title_eng'),
@@ -110,8 +109,6 @@ export const artPieces = pgTable(
         descriptionPln: jsonb('description_pln'),
         descriptionEng: jsonb('description_eng'),
         uploadedAt: timestamp('uploaded_at', { withTimezone: true }).notNull().defaultNow(),
-        gridWidth: integer('grid_width').default(1),
-        gridHeight: integer('grid_height').default(1),
     },
     (table) => [
         foreignKey({

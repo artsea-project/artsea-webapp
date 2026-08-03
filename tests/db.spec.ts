@@ -50,7 +50,6 @@ test.describe('Database Config & Relations Integration Test', () => {
       categoryId: category.categoryId,
       titlePln: 'Dzieło Playwright',
       titleEng: 'Playwright Artwork',
-      isFeatured: true,
       isVisible: true,
       yearOfExecution: 2026,
     }).returning();
