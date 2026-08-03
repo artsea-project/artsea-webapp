@@ -26,7 +26,7 @@ export default function NavLinks({ primaryColor, secondaryColor, bodyFont }: Nav
     if (href === "/") {
       return pathname === "/" || pathname === "";
     }
-    return pathname.startsWith(href);
+    return pathname === href || pathname.startsWith(`${href}/`);
   };
 
   return (
@@ -83,6 +83,8 @@ export default function NavLinks({ primaryColor, secondaryColor, bodyFont }: Nav
           className="p-2 transition-colors focus:outline-none"
           style={{ color: primaryColor }}
           aria-label="Toggle navigation menu"
+          aria-expanded={mobileMenuOpen}
+          aria-controls="mobile-menu"
         >
           {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
@@ -90,6 +92,7 @@ export default function NavLinks({ primaryColor, secondaryColor, bodyFont }: Nav
 
       {mobileMenuOpen && (
         <div 
+          id="mobile-menu"
           className="md:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-md border-b border-stone-200 py-6 px-6 flex flex-col gap-4 text-xs font-normal uppercase tracking-widest shadow-lg z-50"
           style={{ fontFamily: bodyFont }}
         >
