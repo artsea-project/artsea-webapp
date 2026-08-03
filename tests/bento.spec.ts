@@ -11,10 +11,14 @@ test("normalizes only valid layout entries within their column contract", () => 
       { artPieceId, mediaId, columnStart: 1, rowStart: 1, columnSpan: 4, rowSpan: 10 },
       { artPieceId, mediaId, columnStart: 11, rowStart: 1, columnSpan: 2, rowSpan: 1 },
       { artPieceId, mediaId, columnStart: 1, rowStart: 0, columnSpan: 1, rowSpan: 1 },
+      { artPieceId, mediaId, columnStart: 1, rowStart: 32, columnSpan: 1, rowSpan: 2 },
+      { artPieceId, mediaId, columnStart: 1, rowStart: 33, columnSpan: 1, rowSpan: 1 },
+      { artPieceId, mediaId, columnStart: 1, rowStart: 32, columnSpan: 1, rowSpan: 1 },
       { artPieceId: "invalid", mediaId, columnStart: 1, rowStart: 1, columnSpan: 1, rowSpan: 1 },
     ],
   }, 11)).toEqual([
     { artPieceId, mediaId, columnStart: 1, rowStart: 1, columnSpan: 4, rowSpan: 10 },
+    { artPieceId, mediaId, columnStart: 1, rowStart: 32, columnSpan: 1, rowSpan: 1 },
   ]);
   expect(normalizeBentoLayout({ items: [] }, 2)).toEqual([]);
   expect(normalizeBentoLayout(undefined, 2)).toEqual([]);

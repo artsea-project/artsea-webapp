@@ -13,7 +13,8 @@ function isLayoutItem(value: unknown, columnCount: number): value is BentoLayout
     && typeof item.mediaId === "string"
     && UUID_PATTERN.test(item.mediaId)
     && numericFields.every((field) => Number.isInteger(item[field]) && Number(item[field]) > 0)
-    && Number(item.columnStart) + Number(item.columnSpan) - 1 <= columnCount;
+    && Number(item.columnStart) + Number(item.columnSpan) - 1 <= columnCount
+    && Number(item.rowStart) + Number(item.rowSpan) - 1 <= 32;
 }
 
 export function normalizeBentoLayout(layout: unknown, columnCount: number): BentoLayoutItem[] {
