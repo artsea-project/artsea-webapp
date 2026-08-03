@@ -32,26 +32,28 @@ export default function NavLinks({ primaryColor, secondaryColor, bodyFont }: Nav
   return (
     <>
       <nav 
-        className="hidden md:flex items-center gap-8 text-xs font-normal uppercase tracking-widest"
+        className="hidden md:flex items-center gap-12 lg:gap-16 text-xs font-normal uppercase tracking-widest"
         style={{ fontFamily: bodyFont }}
       >
-        {NAV_ITEMS.map((item) => {
-          const active = isLinkActive(item.href);
-          const color = active ? primaryColor : secondaryColor;
+        <div className="flex items-center gap-12 lg:gap-16">
+          {NAV_ITEMS.map((item) => {
+            const active = isLinkActive(item.href);
+            const color = active ? primaryColor : secondaryColor;
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="transition-colors duration-200 hover:opacity-80"
-              style={{ color }}
-            >
-              {item.name}
-            </Link>
-          );
-        })}
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="transition-colors duration-200 hover:opacity-80"
+                style={{ color }}
+              >
+                {item.name}
+              </Link>
+            );
+          })}
+        </div>
 
-        <div className="flex items-center gap-1.5 ml-4 text-xs font-normal">
+        <div className="flex items-center gap-1.5 ml-16 lg:ml-28 text-xs font-normal">
           <button
             type="button"
             onClick={() => setCurrentLang("PL")}
