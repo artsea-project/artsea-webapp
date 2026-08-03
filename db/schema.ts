@@ -1,5 +1,5 @@
-import { pgTable, text, jsonb, boolean, integer, timestamp, uuid, primaryKey, foreignKey, unique, customType } from 'drizzle-orm/pg-core';
-import { relations } from 'drizzle-orm';
+import { pgTable, text, jsonb, boolean, integer, timestamp, uuid, primaryKey, foreignKey, unique, customType, check } from 'drizzle-orm/pg-core';
+import { relations, sql } from 'drizzle-orm';
 import type { BioContent, ContactContent } from '../types/profile';
 import type { SiteTheme } from '../types/theme';
 import type { BentoBoxLayout } from '../types/bento';
@@ -147,6 +147,7 @@ export const media = pgTable(
             foreignColumns: [artPieces.artPieceId],
             name: 'media_art_piece_fk',
         }).onDelete('cascade').onUpdate('cascade'),
+        check('media_content_hash_format_chk', sql`${table.contentHash} ~ '^[0-9a-f]{64}$'`),
     ]
 );
 

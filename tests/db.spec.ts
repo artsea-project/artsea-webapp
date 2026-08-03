@@ -151,6 +151,16 @@ test.describe('Database Config & Relations Integration Test', () => {
     expect(retrieved.contentHash).toBe(contentHash);
   });
 
+  test('should reject a media content hash that is not 64 lowercase hexadecimal characters', async () => {
+    await expect(db.insert(media).values({
+      artPieceId: createdArtPieceId,
+      content: Buffer.from([0x01]),
+      contentHash: 'NOT-A-SHA-256-HASH',
+      fileType: 'png',
+      orderIndex: 1,
+    })).rejects.toThrow();
+  });
+
   test('should successfully save and retrieve typed bento layout settings', async () => {
     const layout: BentoBoxLayout = {
       desktop: {
