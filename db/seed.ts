@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { config } from 'dotenv';
+import { assertSeedCompatible, seedArtist } from './seed-guard';
 
 config({ path: path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../.env.local') });
 
@@ -10,7 +11,7 @@ async function main() {
 const { db } = await import('./index');
 const { artPieces, artPieceTags, categories, media, profiles, siteSettings, tags, users } = await import('./schema');
 
-const userId = 'a7f3bc01-0000-4000-8000-000000000001';
+const { userId } = seedArtist;
 const categoryId = 'a7f3bc01-0000-4000-8000-000000000002';
 const profileId = 'a7f3bc01-0000-4000-8000-000000000003';
 const siteSettingsId = 'a7f3bc01-0000-4000-8000-000000000004';
@@ -35,13 +36,15 @@ const layout = {
   mobile: { items: artworks.map(([artPieceId, mediaId], index) => ({ artPieceId, mediaId, columnStart: mobile[index][0], rowStart: mobile[index][1], columnSpan: mobile[index][2], rowSpan: mobile[index][3] })) },
 };
 
-const existingUsers = await db.select({ userId: users.userId }).from(users);
-if (existingUsers.some((user) => user.userId !== userId)) {
-  throw new Error('Refusing to seed an incompatible non-empty database. Use an empty local development database.');
-}
+const existingUsers = await db.select({
+  userId: users.userId,
+  username: users.username,
+  email: users.email,
+}).from(users);
+assertSeedCompatible(existingUsers);
 
 await db.transaction(async (tx) => {
-  await tx.insert(users).values({ userId, username: 'artsea-artist', email: 'artist@artsea.local', passwordHash: 'development-only-not-for-login' }).onConflictDoNothing();
+  await tx.insert(users).values({ ...seedArtist, passwordHash: 'development-only-not-for-login' }).onConflictDoNothing();
   await tx.insert(profiles).values({ profileId, userId, fullName: 'ArtSea Artist' }).onConflictDoNothing();
   await tx.insert(categories).values({ categoryId, userId, namePln: 'Sztuka', nameEng: 'Art' }).onConflictDoNothing();
   await tx.insert(tags).values(tagNames.map((name) => ({ tagId: tagIdByName[name], userId, nameEng: name }))).onConflictDoNothing();

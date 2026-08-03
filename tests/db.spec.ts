@@ -6,6 +6,7 @@ import { eq } from 'drizzle-orm';
 import { SiteTheme } from '../types/theme';
 import { BioContent, ContactContent } from '../types/profile';
 import type { BentoBoxLayout } from '../types/bento';
+import { assertSeedCompatible, seedArtist } from '../db/seed-guard';
 
 test.describe('Database Config & Relations Integration Test', () => {
   let createdUserId: string;
@@ -69,6 +70,16 @@ test.describe('Database Config & Relations Integration Test', () => {
     expect(createdProfileId).toBeDefined();
     expect(createdCategoryId).toBeDefined();
     expect(createdArtPieceId).toBeDefined();
+  });
+
+  test('should reject deterministic seed users with mismatched identity fields', () => {
+    expect(() => assertSeedCompatible([{ ...seedArtist, username: 'unexpected-artist' }])).toThrow(
+      'Refusing to seed an incompatible non-empty database.'
+    );
+    expect(() => assertSeedCompatible([{ ...seedArtist, email: 'unexpected@artsea.local' }])).toThrow(
+      'Refusing to seed an incompatible non-empty database.'
+    );
+    expect(() => assertSeedCompatible([seedArtist])).not.toThrow();
   });
 
   test('should retrieve related records through relational query API', async () => {
