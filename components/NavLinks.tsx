@@ -91,7 +91,7 @@ export default function NavLinks({ primaryColor, secondaryColor, bodyFont }: Nav
       </div>
 
       {mobileMenuOpen && (
-        <div 
+        <nav 
           id="mobile-menu"
           className="md:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-md border-b border-stone-200 py-6 px-6 flex flex-col gap-4 text-xs font-normal uppercase tracking-widest shadow-lg z-50"
           style={{ fontFamily: bodyFont }}
@@ -136,7 +136,7 @@ export default function NavLinks({ primaryColor, secondaryColor, bodyFont }: Nav
               EN
             </button>
           </div>
-        </div>
+        </nav>
       )}
     </>
   );
