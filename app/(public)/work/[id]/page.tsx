@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import { db } from "@/db"
@@ -129,7 +130,15 @@ function NextArtworkNavigation({ nextArtwork }: NextArtworkNavigationProps) {
     )
 }
 
-export default async function WorkPage({ params }: PageProps) {
+export default function WorkPage({ params }: PageProps) {
+    return (
+        <Suspense fallback={null}>
+            <WorkDetails params={params} />
+        </Suspense>
+    )
+}
+
+async function WorkDetails({ params }: PageProps) {
     const { id } = await params
 
     let artPiece = null

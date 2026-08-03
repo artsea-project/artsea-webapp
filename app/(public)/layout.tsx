@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import type { ReactNode } from "react"
+import { Suspense, type ReactNode } from "react"
 
 import Footer from "@/components/Footer"
 import Header from "@/components/Header"
@@ -12,9 +12,13 @@ export const metadata: Metadata = {
 export default function PublicLayout({ children }: Readonly<{ children: ReactNode }>) {
     return (
         <div className="flex min-h-screen flex-col justify-between">
-            <Header />
+            <Suspense fallback={null}>
+                <Header />
+            </Suspense>
             <main className="flex-grow">{children}</main>
-            <Footer />
+            <Suspense fallback={null}>
+                <Footer />
+            </Suspense>
         </div>
     )
 }
