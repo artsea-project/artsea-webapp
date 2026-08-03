@@ -119,9 +119,19 @@ function cardClasses(card: BentoCardData, kind: LayoutKind) {
 }
 
 function Layout({ cards, kind }: { cards: BentoCardData[]; kind: LayoutKind }) {
+    if (cards.length === 0) {
+        const emptyStateClasses = kind === "desktop" ? "hidden py-16 md:block" : "py-16 md:hidden"
+
+        return (
+            <p className={`${emptyStateClasses} text-base text-stone-600`}>
+                Selected works will appear here soon.
+            </p>
+        )
+    }
+
     const classes =
         kind === "desktop"
-            ? "hidden grid-cols-11 auto-rows-[25px] gap-4 md:grid"
+            ? "hidden grid-cols-11 auto-rows-[21px] gap-x-[21px] gap-y-8 md:grid"
             : "grid grid-cols-2 auto-rows-[28px] gap-3 md:hidden"
 
     return (
