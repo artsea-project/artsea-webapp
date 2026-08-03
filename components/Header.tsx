@@ -28,8 +28,11 @@ export default async function Header() {
 
   const primaryColor = theme?.colors.primaryColor || "#292524";
   const secondaryColor = theme?.colors.secondaryColor || "#a8a29e";
-  const headingFont = theme?.fonts.primaryFont || "Playfair Display";
-  const bodyFont = theme?.fonts.secondaryFont || theme?.fonts.additionalFont || "Inter";
+  const primaryFontName = theme?.fonts.primaryFont;
+  const headingFont = primaryFontName ? `"${primaryFontName}", var(--font-playfair), serif` : "var(--font-playfair), serif";
+
+  const secondaryFontName = theme?.fonts.secondaryFont || theme?.fonts.additionalFont;
+  const bodyFont = secondaryFontName ? `"${secondaryFontName}", var(--font-inter), sans-serif` : "var(--font-inter), sans-serif";
 
   return (
     <header className="w-full">
