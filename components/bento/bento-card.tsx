@@ -26,6 +26,14 @@ export function BentoCard({ card, className, sizes }: BentoCardProps) {
             />
             <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
             <div className="absolute inset-x-0 bottom-0 flex flex-col gap-3 p-4 text-white sm:p-5">
+                <div>
+                    <h2 className="font-primary text-base font-medium leading-tight sm:text-lg">
+                        {card.title}
+                    </h2>
+                    {card.year && (
+                        <p className="mt-1 text-sm leading-none text-white/80">{card.year}</p>
+                    )}
+                </div>
                 {visibleTags.length > 0 && (
                     <div className="flex flex-wrap gap-1.5">
                         {visibleTags.map((tag) => (
@@ -43,12 +51,6 @@ export function BentoCard({ card, className, sizes }: BentoCardProps) {
                         )}
                     </div>
                 )}
-                <div>
-                    <h2 className="text-base font-medium leading-tight sm:text-lg">{card.title}</h2>
-                    {card.year && (
-                        <p className="mt-1 text-sm leading-none text-white/80">{card.year}</p>
-                    )}
-                </div>
             </div>
         </article>
     )
