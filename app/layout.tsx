@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import type { CSSProperties } from "react"
+import { Suspense, type CSSProperties } from "react"
 import { getFontVariableClasses } from "@/app/fonts"
 import { getSiteThemeFonts } from "@/lib/theme/get-site-theme"
 import { resolveThemeFonts, type ThemeFontVariables } from "@/lib/theme/fonts"
@@ -25,7 +25,9 @@ export default async function RootLayout({
     return (
         <html lang="pl" className={fontClasses} style={resolvedFonts.variables as ThemeStyle}>
             <body className="font-body antialiased min-h-screen flex flex-col justify-between">
-                <Header />
+                <Suspense fallback={null}>
+                    <Header />
+                </Suspense>
                 <main className="flex-grow">{children}</main>
             </body>
         </html>
