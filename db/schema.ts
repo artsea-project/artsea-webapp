@@ -1,8 +1,14 @@
-import { pgTable, text, jsonb, boolean, integer, timestamp, uuid, primaryKey, foreignKey, unique } from 'drizzle-orm/pg-core';
+import { pgTable, text, jsonb, boolean, integer, timestamp, uuid, primaryKey, foreignKey, unique, customType } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import type { BioContent, ContactContent } from '../types/profile';
 import type { SiteTheme } from '../types/theme';
 import type { BentoBoxLayout } from '../types/bento';
+
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({
+    dataType() {
+        return 'bytea';
+    },
+});
 
 // User Table
 export const users = pgTable('users', {
@@ -130,7 +136,8 @@ export const media = pgTable(
     {
         mediaId: uuid('media_id').primaryKey().defaultRandom(),
         artPieceId: uuid('art_piece_id').notNull(),
-        fileUrl: text('file_url').notNull(),
+        content: bytea('content').notNull(),
+        contentHash: text('content_hash').notNull(),
         fileType: text('file_type', { enum: ['png', 'jpg', 'gif', 'mp4'] }).notNull(),
         orderIndex: integer('order_index').notNull(),
     },

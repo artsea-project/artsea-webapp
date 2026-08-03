@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { db } from '../db';
-import { users, profiles, categories, artPieces, siteSettings } from '../db/schema';
+import { createHash } from 'node:crypto';
+import { users, profiles, categories, artPieces, media, siteSettings } from '../db/schema';
 import { eq } from 'drizzle-orm';
 import { SiteTheme } from '../types/theme';
 import { BioContent, ContactContent } from '../types/profile';
@@ -129,6 +130,25 @@ test.describe('Database Config & Relations Integration Test', () => {
     expect(theme.presetTheme).toBe('domyslny');
     expect(theme.colors.backgroundColor).toBe('#FFFFFF');
     expect(theme.fonts.primaryFont).toBe('Playfair Display');
+  });
+
+  test('should store and retrieve exact binary media content and its SHA-256 hash', async () => {
+    const content = Buffer.from([0x00, 0xff, 0x10, 0x80, 0x42]);
+    const contentHash = createHash('sha256').update(content).digest('hex');
+
+    const [storedMedia] = await db.insert(media).values({
+      artPieceId: createdArtPieceId,
+      content,
+      contentHash,
+      fileType: 'png',
+      orderIndex: 0,
+    }).returning();
+
+    const [retrieved] = await db.select().from(media).where(eq(media.mediaId, storedMedia.mediaId));
+
+    expect(Buffer.isBuffer(retrieved.content)).toBe(true);
+    expect(retrieved.content.equals(content)).toBe(true);
+    expect(retrieved.contentHash).toBe(contentHash);
   });
 
   test('should successfully save and retrieve typed bento layout settings', async () => {
