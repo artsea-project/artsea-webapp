@@ -71,6 +71,18 @@ test.beforeAll(async () => {
     fileType: "mp4",
     orderIndex: 1,
   });
+
+  const hiddenImageId = randomUUID();
+  mediaIdByType.set("hidden-png", hiddenImageId);
+  const hiddenImageContent = contentFor.png;
+  await db.insert(media).values({
+    mediaId: hiddenImageId,
+    artPieceId: hiddenArtworkId,
+    content: hiddenImageContent,
+    contentHash: createHash("sha256").update(hiddenImageContent).digest("hex"),
+    fileType: "png",
+    orderIndex: 1,
+  });
 });
 
 test.afterAll(async () => {
@@ -128,6 +140,7 @@ test("returns a header-only 304 only for a matching quoted ETag", async () => {
 
 test("does not disclose hidden, missing, malformed, or unsupported media", async () => {
   const responses = await Promise.all([
+    requestMedia(mediaIdByType.get("hidden-png")!),
     requestMedia(mediaIdByType.get("mp4")!),
     requestMedia(randomUUID()),
     requestMedia("not-a-uuid"),
