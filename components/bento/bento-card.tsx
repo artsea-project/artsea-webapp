@@ -20,6 +20,7 @@ export function BentoCard({ card, className, sizes }: BentoCardProps) {
         fill
         sizes={sizes}
         src={`/media/${card.mediaId}`}
+        unoptimized
       />
       <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
       <div className="absolute inset-x-0 bottom-0 flex flex-col gap-3 p-4 text-white sm:p-5">
