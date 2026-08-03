@@ -17,13 +17,13 @@ export function isBentoMediaType(fileType: string): fileType is BentoMediaType {
 }
 
 export function mediaHeaders(record: {
-    content: Buffer
+    content?: Buffer
     contentHash: string
     fileType: MediaType
 }) {
     return {
         "Cache-Control": "public, max-age=0, must-revalidate",
-        "Content-Length": String(Buffer.byteLength(record.content)),
+        ...(record.content ? { "Content-Length": String(Buffer.byteLength(record.content)) } : {}),
         "Content-Type": MEDIA_TYPES[record.fileType],
         ETag: `"${record.contentHash}"`,
         "X-Content-Type-Options": "nosniff",
