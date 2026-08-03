@@ -30,11 +30,11 @@ export function BentoCard({ card, className, sizes }: BentoCardProps) {
                 {tag}
               </span>
             ))}
-            {hasTagOverflow && <span aria-label="More tags" className="rounded-full bg-white/20 px-2.5 py-1 text-[11px] font-medium leading-none backdrop-blur-sm">...</span>}
+            {hasTagOverflow && <span className="rounded-full bg-white/20 px-2.5 py-1 text-[11px] font-medium leading-none backdrop-blur-sm">...</span>}
           </div>
         )}
         <div>
-          <h3 className="text-base font-medium leading-tight sm:text-lg">{card.title}</h3>
+          <h2 className="text-base font-medium leading-tight sm:text-lg">{card.title}</h2>
           {card.year && <p className="mt-1 text-sm leading-none text-white/80">{card.year}</p>}
         </div>
       </div>
