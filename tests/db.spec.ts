@@ -1,213 +1,233 @@
-import { test, expect } from '@playwright/test';
-import { db } from '../db';
-import { users, profiles, categories, artPieces, siteSettings } from '../db/schema';
-import { eq } from 'drizzle-orm';
-import { SiteTheme } from '../types/theme';
-import { BioContent, ContactContent } from '../types/profile';
+import { test, expect } from "@playwright/test"
+import { db } from "../db"
+import { users, profiles, categories, artPieces, siteSettings } from "../db/schema"
+import { eq } from "drizzle-orm"
+import { SiteTheme } from "../types/theme"
+import { BioContent, ContactContent } from "../types/profile"
 
-test.describe('Database Config & Relations Integration Test', () => {
-  let createdUserId: string;
-  let createdProfileId: string;
-  let createdCategoryId: string;
-  let createdArtPieceId: string;
+test.describe("Database Config & Relations Integration Test", () => {
+    let createdUserId: string
+    let createdProfileId: string
+    let createdCategoryId: string
+    let createdArtPieceId: string
 
-  const testUsername = `playwright_artist_${Date.now()}`;
-  const testEmail = `playwright_${Date.now()}@eliseroux.com`;
+    const testUsername = `playwright_artist_${Date.now()}`
+    const testEmail = `playwright_${Date.now()}@eliseroux.com`
 
-  // This block runs automatically once before any test executes (even if you play them individually)
-  test.beforeAll(async () => {
-    // 1. Insert User
-    const [user] = await db.insert(users).values({
-      username: testUsername,
-      email: testEmail,
-      passwordHash: 'playwrightpass123',
-    }).returning();
-    createdUserId = user.userId;
+    // This block runs automatically once before any test executes (even if you play them individually)
+    test.beforeAll(async () => {
+        // 1. Insert User
+        const [user] = await db
+            .insert(users)
+            .values({
+                username: testUsername,
+                email: testEmail,
+                passwordHash: "playwrightpass123",
+            })
+            .returning()
+        createdUserId = user.userId
 
-    // 2. Insert Profile
-    const [profile] = await db.insert(profiles).values({
-      userId: user.userId,
-      fullName: 'Playwright Artist Test',
-      bioPln: { paragraphs: ['Polski opis Playwright'] },
-      bioEng: { paragraphs: ['English bio Playwright'] },
-      contactPln: { paragraphs: ['Kontakt Playwright'] },
-      contactEng: { paragraphs: ['Contact Playwright'] },
-    }).returning();
-    createdProfileId = profile.profileId;
+        // 2. Insert Profile
+        const [profile] = await db
+            .insert(profiles)
+            .values({
+                userId: user.userId,
+                fullName: "Playwright Artist Test",
+                bioPln: { paragraphs: ["Polski opis Playwright"] },
+                bioEng: { paragraphs: ["English bio Playwright"] },
+                contactPln: { paragraphs: ["Kontakt Playwright"] },
+                contactEng: { paragraphs: ["Contact Playwright"] },
+            })
+            .returning()
+        createdProfileId = profile.profileId
 
-    // 3. Insert Category
-    const [category] = await db.insert(categories).values({
-      userId: user.userId,
-      namePln: 'Malarstwo PW',
-      nameEng: 'Painting PW',
-    }).returning();
-    createdCategoryId = category.categoryId;
+        // 3. Insert Category
+        const [category] = await db
+            .insert(categories)
+            .values({
+                userId: user.userId,
+                namePln: "Malarstwo PW",
+                nameEng: "Painting PW",
+            })
+            .returning()
+        createdCategoryId = category.categoryId
 
-    // 4. Insert Art Piece
-    const [artPiece] = await db.insert(artPieces).values({
-      userId: user.userId,
-      categoryId: category.categoryId,
-      titlePln: 'Dzieło Playwright',
-      titleEng: 'Playwright Artwork',
-      isFeatured: true,
-      isVisible: true,
-      yearOfExecution: 2026,
-    }).returning();
-    createdArtPieceId = artPiece.artPieceId;
-  });
+        // 4. Insert Art Piece
+        const [artPiece] = await db
+            .insert(artPieces)
+            .values({
+                userId: user.userId,
+                categoryId: category.categoryId,
+                titlePln: "Dzieło Playwright",
+                titleEng: "Playwright Artwork",
+                isFeatured: true,
+                isVisible: true,
+                yearOfExecution: 2026,
+            })
+            .returning()
+        createdArtPieceId = artPiece.artPieceId
+    })
 
-  test.afterAll(async () => {
-    // Clean up if not deleted in the test
-    if (createdUserId) {
-      await db.delete(users).where(eq(users.userId, createdUserId)).catch(() => {});
-    }
-  });
+    test.afterAll(async () => {
+        // Clean up if not deleted in the test
+        if (createdUserId) {
+            await db
+                .delete(users)
+                .where(eq(users.userId, createdUserId))
+                .catch(() => {})
+        }
+    })
 
-  test('should verify database write and linkage success', async () => {
-    expect(createdUserId).toBeDefined();
-    expect(createdProfileId).toBeDefined();
-    expect(createdCategoryId).toBeDefined();
-    expect(createdArtPieceId).toBeDefined();
-  });
+    test("should verify database write and linkage success", async () => {
+        expect(createdUserId).toBeDefined()
+        expect(createdProfileId).toBeDefined()
+        expect(createdCategoryId).toBeDefined()
+        expect(createdArtPieceId).toBeDefined()
+    })
 
-  test('should retrieve related records through relational query API', async () => {
-    const queriedUser = await db.query.users.findFirst({
-      where: eq(users.userId, createdUserId),
-      with: {
-        profile: true,
-        categories: {
-          with: {
-            artPieces: true,
-          },
-        },
-      },
-    });
+    test("should retrieve related records through relational query API", async () => {
+        const queriedUser = await db.query.users.findFirst({
+            where: eq(users.userId, createdUserId),
+            with: {
+                profile: true,
+                categories: {
+                    with: {
+                        artPieces: true,
+                    },
+                },
+            },
+        })
 
-    expect(queriedUser).toBeDefined();
-    expect(queriedUser!.username).toBe(testUsername);
-    expect(queriedUser!.profile?.fullName).toBe('Playwright Artist Test');
-    expect((queriedUser!.profile?.bioPln as BioContent).paragraphs[0]).toBe('Polski opis Playwright');
-    expect((queriedUser!.profile?.contactPln as ContactContent).paragraphs[0]).toBe('Kontakt Playwright');
-    expect(queriedUser!.categories.length).toBe(1);
-    expect(queriedUser!.categories[0].namePln).toBe('Malarstwo PW');
-    expect(queriedUser!.categories[0].artPieces.length).toBe(1);
-    expect(queriedUser!.categories[0].artPieces[0].titlePln).toBe('Dzieło Playwright');
-  });
+        expect(queriedUser).toBeDefined()
+        expect(queriedUser!.username).toBe(testUsername)
+        expect(queriedUser!.profile?.fullName).toBe("Playwright Artist Test")
+        expect((queriedUser!.profile?.bioPln as BioContent).paragraphs[0]).toBe(
+            "Polski opis Playwright"
+        )
+        expect((queriedUser!.profile?.contactPln as ContactContent).paragraphs[0]).toBe(
+            "Kontakt Playwright"
+        )
+        expect(queriedUser!.categories.length).toBe(1)
+        expect(queriedUser!.categories[0].namePln).toBe("Malarstwo PW")
+        expect(queriedUser!.categories[0].artPieces.length).toBe(1)
+        expect(queriedUser!.categories[0].artPieces[0].titlePln).toBe("Dzieło Playwright")
+    })
 
-  test('should successfully save and retrieve site theme JSON settings', async () => {
-    const mockTheme: SiteTheme = {
-      fonts: {
-        primaryFont: 'Playfair Display',
-        secondaryFont: 'Inter',
-        additionalFont: 'Inter',
-      },
-      colors: {
-        primaryColor: '#292524',
-        secondaryColor: '#A8A29E',
-        additionalColor: '#1C1917',
-        accentColor: '#A8A29E',
-        backgroundColor: '#FFFFFF',
-      },
-      presetTheme: 'domyslny',
-      darkModeExperimental: false,
-    };
+    test("should successfully save and retrieve site theme JSON settings", async () => {
+        const mockTheme: SiteTheme = {
+            fonts: {
+                primaryFont: "Playfair Display",
+                secondaryFont: "Inter",
+                additionalFont: "Inter",
+            },
+            colors: {
+                primaryColor: "#292524",
+                secondaryColor: "#A8A29E",
+                additionalColor: "#1C1917",
+                accentColor: "#A8A29E",
+                backgroundColor: "#FFFFFF",
+            },
+            presetTheme: "domyslny",
+            darkModeExperimental: false,
+        }
 
-    // 1. Insert Site Settings with the theme JSON
-    const [settings] = await db.insert(siteSettings).values({
-      userId: createdUserId,
-      theme: mockTheme,
-    }).returning();
+        // 1. Insert Site Settings with the theme JSON
+        const [settings] = await db
+            .insert(siteSettings)
+            .values({
+                userId: createdUserId,
+                theme: mockTheme,
+            })
+            .returning()
 
-    // 2. Query it back
-    const retrieved = await db.query.siteSettings.findFirst({
-      where: eq(siteSettings.siteSettingsId, settings.siteSettingsId),
-    });
+        // 2. Query it back
+        const retrieved = await db.query.siteSettings.findFirst({
+            where: eq(siteSettings.siteSettingsId, settings.siteSettingsId),
+        })
 
-    // 3. Verify properties
-    expect(retrieved).toBeDefined();
-    const theme = retrieved!.theme as SiteTheme;
-    expect(theme.presetTheme).toBe('domyslny');
-    expect(theme.colors.backgroundColor).toBe('#FFFFFF');
-    expect(theme.fonts.primaryFont).toBe('Playfair Display');
-  });
+        // 3. Verify properties
+        expect(retrieved).toBeDefined()
+        const theme = retrieved!.theme as SiteTheme
+        expect(theme.presetTheme).toBe("domyslny")
+        expect(theme.colors.backgroundColor).toBe("#FFFFFF")
+        expect(theme.fonts.primaryFont).toBe("Playfair Display")
+    })
 
-  test('should successfully save and retrieve multi-paragraph bio and contact info', async () => {
-    // 1. Update the profile with 3 paragraphs of bio and contact info
-    await db.update(profiles).set({
-      bioPln: {
-        paragraphs: [
-          "Paragraph PL 1",
-          "Paragraph PL 2",
-          "Paragraph PL 3"
-        ]
-      },
-      bioEng: {
-        paragraphs: [
-          "Paragraph EN 1",
-          "Paragraph EN 2",
-          "Paragraph EN 3"
-        ]
-      },
-      contactPln: {
-        paragraphs: [
-          "Contact PL 1",
-          "Contact PL 2"
-        ]
-      },
-      contactEng: {
-        paragraphs: [
-          "Contact EN 1",
-          "Contact EN 2"
-        ]
-      }
-    }).where(eq(profiles.profileId, createdProfileId));
+    test("should successfully save and retrieve multi-paragraph bio and contact info", async () => {
+        // 1. Update the profile with 3 paragraphs of bio and contact info
+        await db
+            .update(profiles)
+            .set({
+                bioPln: {
+                    paragraphs: ["Paragraph PL 1", "Paragraph PL 2", "Paragraph PL 3"],
+                },
+                bioEng: {
+                    paragraphs: ["Paragraph EN 1", "Paragraph EN 2", "Paragraph EN 3"],
+                },
+                contactPln: {
+                    paragraphs: ["Contact PL 1", "Contact PL 2"],
+                },
+                contactEng: {
+                    paragraphs: ["Contact EN 1", "Contact EN 2"],
+                },
+            })
+            .where(eq(profiles.profileId, createdProfileId))
 
-    // 2. Query it back
-    const retrieved = await db.query.profiles.findFirst({
-      where: eq(profiles.profileId, createdProfileId),
-    });
+        // 2. Query it back
+        const retrieved = await db.query.profiles.findFirst({
+            where: eq(profiles.profileId, createdProfileId),
+        })
 
-    // 3. Verify
-    expect(retrieved).toBeDefined();
-    
-    const bioPln = retrieved!.bioPln as { paragraphs: string[] };
-    const bioEng = retrieved!.bioEng as { paragraphs: string[] };
-    const contactPln = retrieved!.contactPln as { paragraphs: string[] };
-    const contactEng = retrieved!.contactEng as { paragraphs: string[] };
+        // 3. Verify
+        expect(retrieved).toBeDefined()
 
-    expect(bioPln.paragraphs.length).toBe(3);
-    expect(bioPln.paragraphs[0]).toBe("Paragraph PL 1");
-    expect(bioPln.paragraphs[1]).toBe("Paragraph PL 2");
-    expect(bioPln.paragraphs[2]).toBe("Paragraph PL 3");
+        const bioPln = retrieved!.bioPln as { paragraphs: string[] }
+        const bioEng = retrieved!.bioEng as { paragraphs: string[] }
+        const contactPln = retrieved!.contactPln as { paragraphs: string[] }
+        const contactEng = retrieved!.contactEng as { paragraphs: string[] }
 
-    expect(bioEng.paragraphs.length).toBe(3);
-    expect(bioEng.paragraphs[0]).toBe("Paragraph EN 1");
+        expect(bioPln.paragraphs.length).toBe(3)
+        expect(bioPln.paragraphs[0]).toBe("Paragraph PL 1")
+        expect(bioPln.paragraphs[1]).toBe("Paragraph PL 2")
+        expect(bioPln.paragraphs[2]).toBe("Paragraph PL 3")
 
-    expect(contactPln.paragraphs.length).toBe(2);
-    expect(contactPln.paragraphs[0]).toBe("Contact PL 1");
-    expect(contactPln.paragraphs[1]).toBe("Contact PL 2");
+        expect(bioEng.paragraphs.length).toBe(3)
+        expect(bioEng.paragraphs[0]).toBe("Paragraph EN 1")
 
-    expect(contactEng.paragraphs.length).toBe(2);
-    expect(contactEng.paragraphs[0]).toBe("Contact EN 1");
-  });
+        expect(contactPln.paragraphs.length).toBe(2)
+        expect(contactPln.paragraphs[0]).toBe("Contact PL 1")
+        expect(contactPln.paragraphs[1]).toBe("Contact PL 2")
 
-  test('should verify cascading delete integrity on user removal', async () => {
-    // Delete the user
-    await db.delete(users).where(eq(users.userId, createdUserId));
+        expect(contactEng.paragraphs.length).toBe(2)
+        expect(contactEng.paragraphs[0]).toBe("Contact EN 1")
+    })
 
-    // Profile should be deleted automatically
-    const profileCheck = await db.select().from(profiles).where(eq(profiles.profileId, createdProfileId));
-    expect(profileCheck.length).toBe(0);
+    test("should verify cascading delete integrity on user removal", async () => {
+        // Delete the user
+        await db.delete(users).where(eq(users.userId, createdUserId))
 
-    // Category should be deleted automatically
-    const categoryCheck = await db.select().from(categories).where(eq(categories.categoryId, createdCategoryId));
-    expect(categoryCheck.length).toBe(0);
+        // Profile should be deleted automatically
+        const profileCheck = await db
+            .select()
+            .from(profiles)
+            .where(eq(profiles.profileId, createdProfileId))
+        expect(profileCheck.length).toBe(0)
 
-    // Art piece should be deleted automatically
-    const artPieceCheck = await db.select().from(artPieces).where(eq(artPieces.artPieceId, createdArtPieceId));
-    expect(artPieceCheck.length).toBe(0);
+        // Category should be deleted automatically
+        const categoryCheck = await db
+            .select()
+            .from(categories)
+            .where(eq(categories.categoryId, createdCategoryId))
+        expect(categoryCheck.length).toBe(0)
 
-    // Reset reference to prevent cleanup error in afterAll
-    createdUserId = '';
-  });
-});
+        // Art piece should be deleted automatically
+        const artPieceCheck = await db
+            .select()
+            .from(artPieces)
+            .where(eq(artPieces.artPieceId, createdArtPieceId))
+        expect(artPieceCheck.length).toBe(0)
+
+        // Reset reference to prevent cleanup error in afterAll
+        createdUserId = ""
+    })
+})

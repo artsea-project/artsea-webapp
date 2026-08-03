@@ -1,7 +1,7 @@
 export interface BioContent {
-  paragraphs: string[];
+    paragraphs: string[]
 }
 
 export interface ContactContent {
-  paragraphs: string[];
+    paragraphs: string[]
 }
