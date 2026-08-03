@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm"
 
 import { GET } from "../app/media/[mediaId]/route"
 import { db } from "../db"
-import { artPieces, categories, media, users } from "../db/schema"
+import { artPieces, categories, media } from "../db/schema"
 
 const contentFor = {
     png: Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x00, 0xff]),
@@ -16,7 +16,6 @@ const contentFor = {
 
 type SupportedType = "png" | "jpg" | "gif"
 
-const userId = randomUUID()
 const categoryId = randomUUID()
 const visibleArtworkId = randomUUID()
 const hiddenArtworkId = randomUUID()
@@ -32,33 +31,19 @@ async function requestMedia(mediaId: string, ifNoneMatch?: string) {
 }
 
 test.beforeAll(async () => {
-    await db.insert(users).values({
-        userId,
-        username: `media-route-${userId}`,
-        email: `media-route-${userId}@artsea.local`,
-        passwordHash: "test-only",
-    })
     await db.insert(categories).values({
         categoryId,
-        userId,
-        namePln: `Test ${userId}`,
-        nameEng: `Test ${userId}`,
+        namePln: `Test ${categoryId}`,
+        nameEng: `Test ${categoryId}`,
     })
     await db.insert(artPieces).values([
         {
             artPieceId: visibleArtworkId,
-            userId,
             categoryId,
             isVisible: true,
             titleEng: "Visible test work",
         },
-        {
-            artPieceId: hiddenArtworkId,
-            userId,
-            categoryId,
-            isVisible: false,
-            titleEng: "Hidden test work",
-        },
+        { artPieceId: hiddenArtworkId, categoryId, isVisible: false, titleEng: "Hidden test work" },
     ])
 
     for (const fileType of Object.keys(contentFor) as (keyof typeof contentFor)[]) {
@@ -86,10 +71,23 @@ test.beforeAll(async () => {
         fileType: "mp4",
         orderIndex: 1,
     })
+
+    const hiddenImageId = randomUUID()
+    mediaIdByType.set("hidden-png", hiddenImageId)
+    const hiddenImageContent = contentFor.png
+    await db.insert(media).values({
+        mediaId: hiddenImageId,
+        artPieceId: hiddenArtworkId,
+        content: hiddenImageContent,
+        contentHash: createHash("sha256").update(hiddenImageContent).digest("hex"),
+        fileType: "png",
+        orderIndex: 1,
+    })
 })
 
 test.afterAll(async () => {
-    await db.delete(users).where(eq(users.userId, userId))
+    await db.delete(artPieces).where(eq(artPieces.categoryId, categoryId))
+    await db.delete(categories).where(eq(categories.categoryId, categoryId))
 })
 
 test("serves exact PNG, JPG, and GIF bytes with required headers", async () => {
@@ -143,6 +141,7 @@ test("returns a header-only 304 only for a matching quoted ETag", async () => {
 
 test("does not disclose hidden, missing, malformed, or unsupported media", async () => {
     const responses = await Promise.all([
+        requestMedia(mediaIdByType.get("hidden-png")!),
         requestMedia(mediaIdByType.get("mp4")!),
         requestMedia(randomUUID()),
         requestMedia("not-a-uuid"),
