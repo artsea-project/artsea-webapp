@@ -2,6 +2,7 @@ import { pgTable, text, jsonb, boolean, integer, timestamp, uuid, primaryKey, fo
 import { relations } from 'drizzle-orm';
 import type { BioContent, ContactContent } from '../types/profile';
 import type { SiteTheme } from '../types/theme';
+import type { BentoBoxLayout } from '../types/bento';
 
 // User Table
 export const users = pgTable('users', {
@@ -177,7 +178,7 @@ export const siteSettings = pgTable(
         siteSettingsId: uuid('site_settings_id').primaryKey().defaultRandom(),
         userId: uuid('user_id').notNull().unique(),
         theme: jsonb('theme').$type<SiteTheme>(),
-        layoutBentoBox: jsonb('layout_bento_box'), // Left untyped (unknown) for now since the bento layout JSON structure is not yet finalized
+        layoutBentoBox: jsonb('layout_bento_box').$type<BentoBoxLayout>(),
         layoutCategoryView: jsonb('layout_category_view'), // Left untyped (unknown) for now since the category view layout JSON structure is not yet finalized
     },
     (table) => [

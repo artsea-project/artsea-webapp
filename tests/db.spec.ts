@@ -4,6 +4,7 @@ import { users, profiles, categories, artPieces, siteSettings } from '../db/sche
 import { eq } from 'drizzle-orm';
 import { SiteTheme } from '../types/theme';
 import { BioContent, ContactContent } from '../types/profile';
+import type { BentoBoxLayout } from '../types/bento';
 
 test.describe('Database Config & Relations Integration Test', () => {
   let createdUserId: string;
@@ -129,6 +130,39 @@ test.describe('Database Config & Relations Integration Test', () => {
     expect(theme.presetTheme).toBe('domyslny');
     expect(theme.colors.backgroundColor).toBe('#FFFFFF');
     expect(theme.fonts.primaryFont).toBe('Playfair Display');
+  });
+
+  test('should successfully save and retrieve typed bento layout settings', async () => {
+    const layout: BentoBoxLayout = {
+      desktop: {
+        items: [{
+          artPieceId: createdArtPieceId,
+          mediaId: '00000000-0000-0000-0000-000000000001',
+          columnStart: 1,
+          rowStart: 1,
+          columnSpan: 4,
+          rowSpan: 10,
+        }],
+      },
+      mobile: {
+        items: [{
+          artPieceId: createdArtPieceId,
+          mediaId: '00000000-0000-0000-0000-000000000001',
+          columnStart: 1,
+          rowStart: 1,
+          columnSpan: 2,
+          rowSpan: 8,
+        }],
+      },
+    };
+
+    await db.update(siteSettings).set({ layoutBentoBox: layout }).where(eq(siteSettings.userId, createdUserId));
+
+    const retrieved = await db.query.siteSettings.findFirst({
+      where: eq(siteSettings.userId, createdUserId),
+    });
+
+    expect(retrieved?.layoutBentoBox).toEqual(layout);
   });
 
   test('should successfully save and retrieve multi-paragraph bio and contact info', async () => {
