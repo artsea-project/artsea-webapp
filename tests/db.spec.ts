@@ -1,9 +1,12 @@
 import { test, expect } from '@playwright/test';
 import { db } from '../db';
-import { users, profiles, categories, artPieces, siteSettings } from '../db/schema';
+import { createHash } from 'node:crypto';
+import { users, profiles, categories, artPieces, media, siteSettings } from '../db/schema';
 import { eq } from 'drizzle-orm';
 import { SiteTheme } from '../types/theme';
 import { BioContent, ContactContent } from '../types/profile';
+import type { BentoBoxLayout } from '../types/bento';
+import { assertSeedCompatible, seedArtist } from '../db/seed-guard';
 
 test.describe('Database Config & Relations Integration Test', () => {
   let createdUserId: string;
@@ -49,7 +52,6 @@ test.describe('Database Config & Relations Integration Test', () => {
       categoryId: category.categoryId,
       titlePln: 'Dzieło Playwright',
       titleEng: 'Playwright Artwork',
-      isFeatured: true,
       isVisible: true,
       yearOfExecution: 2026,
     }).returning();
@@ -68,6 +70,16 @@ test.describe('Database Config & Relations Integration Test', () => {
     expect(createdProfileId).toBeDefined();
     expect(createdCategoryId).toBeDefined();
     expect(createdArtPieceId).toBeDefined();
+  });
+
+  test('should reject deterministic seed users with mismatched identity fields', () => {
+    expect(() => assertSeedCompatible([{ ...seedArtist, username: 'unexpected-artist' }])).toThrow(
+      'Refusing to seed an incompatible non-empty database.'
+    );
+    expect(() => assertSeedCompatible([{ ...seedArtist, email: 'unexpected@artsea.local' }])).toThrow(
+      'Refusing to seed an incompatible non-empty database.'
+    );
+    expect(() => assertSeedCompatible([seedArtist])).not.toThrow();
   });
 
   test('should retrieve related records through relational query API', async () => {
@@ -129,6 +141,68 @@ test.describe('Database Config & Relations Integration Test', () => {
     expect(theme.presetTheme).toBe('domyslny');
     expect(theme.colors.backgroundColor).toBe('#FFFFFF');
     expect(theme.fonts.primaryFont).toBe('Playfair Display');
+  });
+
+  test('should store and retrieve exact binary media content and its SHA-256 hash', async () => {
+    const content = Buffer.from([0x00, 0xff, 0x10, 0x80, 0x42]);
+    const contentHash = createHash('sha256').update(content).digest('hex');
+
+    const [storedMedia] = await db.insert(media).values({
+      artPieceId: createdArtPieceId,
+      content,
+      contentHash,
+      fileType: 'png',
+      orderIndex: 0,
+    }).returning();
+
+    const [retrieved] = await db.select().from(media).where(eq(media.mediaId, storedMedia.mediaId));
+
+    expect(Buffer.isBuffer(retrieved.content)).toBe(true);
+    expect(retrieved.content.equals(content)).toBe(true);
+    expect(retrieved.contentHash).toBe(contentHash);
+  });
+
+  test('should reject a media content hash that is not 64 lowercase hexadecimal characters', async () => {
+    await expect(db.insert(media).values({
+      artPieceId: createdArtPieceId,
+      content: Buffer.from([0x01]),
+      contentHash: 'NOT-A-SHA-256-HASH',
+      fileType: 'png',
+      orderIndex: 1,
+    })).rejects.toThrow();
+  });
+
+  test('should successfully save and retrieve typed bento layout settings', async () => {
+    const layout: BentoBoxLayout = {
+      desktop: {
+        items: [{
+          artPieceId: createdArtPieceId,
+          mediaId: '00000000-0000-0000-0000-000000000001',
+          columnStart: 1,
+          rowStart: 1,
+          columnSpan: 4,
+          rowSpan: 10,
+        }],
+      },
+      mobile: {
+        items: [{
+          artPieceId: createdArtPieceId,
+          mediaId: '00000000-0000-0000-0000-000000000001',
+          columnStart: 1,
+          rowStart: 1,
+          columnSpan: 2,
+          rowSpan: 8,
+        }],
+      },
+    };
+
+    await db.update(siteSettings).set({ layoutBentoBox: layout }).where(eq(siteSettings.userId, createdUserId));
+
+    const retrieved = await db.query.siteSettings.findFirst({
+      where: eq(siteSettings.userId, createdUserId),
+    });
+
+    expect(retrieved?.layoutBentoBox).toEqual(layout);
   });
 
   test('should successfully save and retrieve multi-paragraph bio and contact info', async () => {

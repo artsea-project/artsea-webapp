@@ -1,7 +1,14 @@
-import { pgTable, text, jsonb, boolean, integer, timestamp, uuid, primaryKey, foreignKey, unique } from 'drizzle-orm/pg-core';
-import { relations } from 'drizzle-orm';
+import { pgTable, text, jsonb, boolean, integer, timestamp, uuid, primaryKey, foreignKey, unique, customType, check } from 'drizzle-orm/pg-core';
+import { relations, sql } from 'drizzle-orm';
 import type { BioContent, ContactContent } from '../types/profile';
 import type { SiteTheme } from '../types/theme';
+import type { BentoBoxLayout } from '../types/bento';
+
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({
+    dataType() {
+        return 'bytea';
+    },
+});
 
 // User Table
 export const users = pgTable('users', {
@@ -98,7 +105,6 @@ export const artPieces = pgTable(
         artPieceId: uuid('art_piece_id').primaryKey().defaultRandom(),
         userId: uuid('user_id').notNull(),
         categoryId: uuid('category_id').notNull(),
-        isFeatured: boolean('is_featured').notNull().default(false),
         isVisible: boolean('is_visible').notNull().default(true),
         titlePln: text('title_pln'),
         titleEng: text('title_eng'),
@@ -109,8 +115,6 @@ export const artPieces = pgTable(
         descriptionPln: jsonb('description_pln'),
         descriptionEng: jsonb('description_eng'),
         uploadedAt: timestamp('uploaded_at', { withTimezone: true }).notNull().defaultNow(),
-        gridWidth: integer('grid_width').default(1),
-        gridHeight: integer('grid_height').default(1),
     },
     (table) => [
         foreignKey({
@@ -132,7 +136,8 @@ export const media = pgTable(
     {
         mediaId: uuid('media_id').primaryKey().defaultRandom(),
         artPieceId: uuid('art_piece_id').notNull(),
-        fileUrl: text('file_url').notNull(),
+        content: bytea('content').notNull(),
+        contentHash: text('content_hash').notNull(),
         fileType: text('file_type', { enum: ['png', 'jpg', 'gif', 'mp4'] }).notNull(),
         orderIndex: integer('order_index').notNull(),
     },
@@ -142,6 +147,7 @@ export const media = pgTable(
             foreignColumns: [artPieces.artPieceId],
             name: 'media_art_piece_fk',
         }).onDelete('cascade').onUpdate('cascade'),
+        check('media_content_hash_format_chk', sql`${table.contentHash} ~ '^[0-9a-f]{64}$'`),
     ]
 );
 
@@ -177,7 +183,7 @@ export const siteSettings = pgTable(
         siteSettingsId: uuid('site_settings_id').primaryKey().defaultRandom(),
         userId: uuid('user_id').notNull().unique(),
         theme: jsonb('theme').$type<SiteTheme>(),
-        layoutBentoBox: jsonb('layout_bento_box'), // Left untyped (unknown) for now since the bento layout JSON structure is not yet finalized
+        layoutBentoBox: jsonb('layout_bento_box').$type<BentoBoxLayout>(),
         layoutCategoryView: jsonb('layout_category_view'), // Left untyped (unknown) for now since the category view layout JSON structure is not yet finalized
     },
     (table) => [

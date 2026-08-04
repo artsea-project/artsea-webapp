@@ -1,0 +1,1 @@
+ALTER TABLE "media" ADD CONSTRAINT "media_content_hash_format_chk" CHECK ("media"."content_hash" ~ '^[0-9a-f]{64}$');
