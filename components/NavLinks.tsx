@@ -63,9 +63,8 @@ function LangToggle({
                     <button
                         type="button"
                         onClick={() => onSelect(lang)}
-                        className={`transition-colors duration-200 focus:outline-none ${
-                            currentLang === lang ? "text-stone-800" : "text-stone-400"
-                        }`}
+                        className={`transition-colors duration-200 focus:outline-none ${currentLang === lang ? "text-stone-800" : "text-stone-400"
+                            }`}
                         aria-label={`Switch language to ${lang === "PL" ? "Polish" : "English"}`}
                     >
                         {lang}
@@ -83,50 +82,40 @@ export default function NavLinks({ bodyFont }: NavLinksProps) {
     return (
         <>
             <nav
-                className="hidden md:flex items-center gap-12 lg:gap-16 text-xs font-normal uppercase tracking-widest"
+                id="menu"
+                className={`${mobileMenuOpen ? "flex" : "hidden md:flex"} absolute top-full left-0 z-50 w-full flex-col gap-4 border-b border-stone-200 bg-white/95 px-6 py-6 text-xs font-normal uppercase tracking-widest shadow-lg backdrop-blur-md md:static md:z-auto md:w-auto md:flex-row md:items-center md:gap-12 md:border-0 md:bg-transparent md:p-0 md:shadow-none md:backdrop-blur-none lg:gap-16`}
                 style={{ fontFamily: bodyFont }}
             >
-                <div className="flex items-center gap-12 lg:gap-16">
-                    <NavItemLinks className="hover:opacity-80" />
+                <div className="contents md:flex md:items-center md:gap-12 lg:gap-16">
+                    <NavItemLinks
+                        className="py-2 md:py-0 md:hover:opacity-80"
+                        onNavigate={() => setMobileMenuOpen(false)}
+                    />
                 </div>
 
-                <div className="flex items-center gap-1.5 ml-16 lg:ml-28 text-xs font-normal">
-                    <LangToggle currentLang={currentLang} onSelect={setCurrentLang} />
+                <div className="flex items-center gap-2 border-t border-stone-100 pt-4 text-xs font-normal md:ml-16 md:gap-1.5 md:border-0 md:pt-0 lg:ml-28">
+                    <LangToggle
+                        currentLang={currentLang}
+                        onSelect={(lang) => {
+                            setCurrentLang(lang)
+                            setMobileMenuOpen(false)
+                        }}
+                    />
                 </div>
             </nav>
 
-            <div className="md:hidden flex items-center gap-4">
+            <div className="flex items-center gap-4 md:hidden">
                 <button
                     type="button"
                     onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                     className="p-2 text-stone-800 transition-colors focus:outline-none"
                     aria-label="Toggle navigation menu"
                     aria-expanded={mobileMenuOpen}
-                    aria-controls="mobile-menu"
+                    aria-controls="menu"
                 >
                     {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
                 </button>
             </div>
-
-            {mobileMenuOpen && (
-                <nav
-                    id="mobile-menu"
-                    className="md:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-md border-b border-stone-200 py-6 px-6 flex flex-col gap-4 text-xs font-normal uppercase tracking-widest shadow-lg z-50"
-                    style={{ fontFamily: bodyFont }}
-                >
-                    <NavItemLinks className="py-2" onNavigate={() => setMobileMenuOpen(false)} />
-
-                    <div className="flex items-center gap-2 pt-4 border-t border-stone-100 text-xs font-normal">
-                        <LangToggle
-                            currentLang={currentLang}
-                            onSelect={(lang) => {
-                                setCurrentLang(lang)
-                                setMobileMenuOpen(false)
-                            }}
-                        />
-                    </div>
-                </nav>
-            )}
         </>
     )
 }
