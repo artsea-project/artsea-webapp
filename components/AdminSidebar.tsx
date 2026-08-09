@@ -58,9 +58,9 @@ export default function AdminSidebar({ userName }: { userName: string }) {
             : pathname === href || pathname.startsWith(`${href}/`)
 
     return (
-        <aside className="flex h-full w-65 flex-col overflow-y-auto border-r border-slate-200 bg-white px-4 pt-5 pb-10 font-secondary">
+        <aside className="flex h-full w-65 shrink-0 flex-col overflow-y-auto border-r border-slate-200 bg-white px-4 pt-5 pb-10 font-secondary">
             <div className="flex items-center gap-4">
-                <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#eaddff] text-[#4f378a]">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-violet-100 text-violet-900">
                     <User className="size-5" strokeWidth={2} aria-hidden="true" />
                 </span>
                 <span className="text-base font-bold text-slate-900">{userName}</span>
