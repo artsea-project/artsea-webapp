@@ -104,24 +104,23 @@ export default function NavLinks() {
                 </button>
             </div>
 
-            {mobileMenuOpen && (
-                <nav
-                    id="mobile-menu"
-                    className={`md:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-md border-b border-stone-200 py-6 px-6 flex flex-col gap-4 shadow-lg z-50 ${NAV_TYPOGRAPHY}`}
-                >
-                    <NavItemLinks className="py-2" onNavigate={() => setMobileMenuOpen(false)} />
+            {/* Stays mounted so the toggle's aria-controls always resolves to a real element. */}
+            <nav
+                id="mobile-menu"
+                className={`${mobileMenuOpen ? "flex" : "hidden"} md:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-md border-b border-stone-200 py-6 px-6 flex-col gap-4 shadow-lg z-50 ${NAV_TYPOGRAPHY}`}
+            >
+                <NavItemLinks className="py-2" onNavigate={() => setMobileMenuOpen(false)} />
 
-                    <div className="flex items-center gap-2 pt-4 border-t border-stone-100 text-xs font-normal">
-                        <LangToggle
-                            currentLang={currentLang}
-                            onSelect={(lang) => {
-                                setCurrentLang(lang)
-                                setMobileMenuOpen(false)
-                            }}
-                        />
-                    </div>
-                </nav>
-            )}
+                <div className="flex items-center gap-2 pt-4 border-t border-stone-100 text-xs font-normal">
+                    <LangToggle
+                        currentLang={currentLang}
+                        onSelect={(lang) => {
+                            setCurrentLang(lang)
+                            setMobileMenuOpen(false)
+                        }}
+                    />
+                </div>
+            </nav>
         </>
     )
 }
