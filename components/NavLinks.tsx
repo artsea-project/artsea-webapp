@@ -5,10 +5,6 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Menu, X } from "lucide-react"
 
-interface NavLinksProps {
-    bodyFont: string
-}
-
 const NAV_ITEMS = [
     { name: "O MNIE", href: "/about" },
     { name: "PORTFOLIO", href: "/" },
@@ -17,6 +13,9 @@ const NAV_ITEMS = [
 
 const LANGUAGES = ["PL", "EN"] as const
 type Language = (typeof LANGUAGES)[number]
+
+// Shared by the desktop bar and the mobile drawer so the two can't drift apart.
+const NAV_TYPOGRAPHY = "font-secondary text-xs font-normal uppercase tracking-widest"
 
 function NavItemLinks({ className, onNavigate }: { className?: string; onNavigate?: () => void }) {
     const pathname = usePathname()
@@ -76,16 +75,13 @@ function LangToggle({
     )
 }
 
-export default function NavLinks({ bodyFont }: NavLinksProps) {
+export default function NavLinks() {
     const [currentLang, setCurrentLang] = useState<Language>("PL")
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
     return (
         <>
-            <nav
-                className="hidden md:flex items-center gap-12 lg:gap-16 text-xs font-normal uppercase tracking-widest"
-                style={{ fontFamily: bodyFont }}
-            >
+            <nav className={`hidden md:flex items-center gap-12 lg:gap-16 ${NAV_TYPOGRAPHY}`}>
                 <div className="flex items-center gap-12 lg:gap-16">
                     <NavItemLinks className="hover:opacity-80" />
                 </div>
@@ -111,8 +107,7 @@ export default function NavLinks({ bodyFont }: NavLinksProps) {
             {mobileMenuOpen && (
                 <nav
                     id="mobile-menu"
-                    className="md:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-md border-b border-stone-200 py-6 px-6 flex flex-col gap-4 text-xs font-normal uppercase tracking-widest shadow-lg z-50"
-                    style={{ fontFamily: bodyFont }}
+                    className={`md:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-md border-b border-stone-200 py-6 px-6 flex flex-col gap-4 shadow-lg z-50 ${NAV_TYPOGRAPHY}`}
                 >
                     <NavItemLinks className="py-2" onNavigate={() => setMobileMenuOpen(false)} />
 
