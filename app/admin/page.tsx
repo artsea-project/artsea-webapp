@@ -1,7 +1,5 @@
+import AdminPageHeader from "@/components/AdminPageHeader"
+
 export default function AdminOverviewPage() {
-    return (
-        <div className="p-8">
-            <h1 className="text-2xl font-bold text-slate-900">Przegląd</h1>
-        </div>
-    )
+    return <AdminPageHeader title="Przegląd" />
 }
