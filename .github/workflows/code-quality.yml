@@ -1,0 +1,70 @@
+name: Code quality
+
+on:
+    pull_request:
+        branches:
+            - main
+
+permissions:
+    contents: read
+
+concurrency:
+    group: code-quality-${{ github.event.pull_request.number }}
+    cancel-in-progress: true
+
+jobs:
+    formatting:
+        name: Formatting
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check out repository history
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: npm
+
+            - name: Check formatting in every commit
+              env:
+                  BASE_SHA: ${{ github.event.pull_request.base.sha }}
+                  HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+              run: |
+                  while IFS= read -r commit; do
+                      echo "::group::Formatting $commit"
+                      git checkout --detach "$commit"
+                      npm ci
+                      npm run format:check
+                      echo "::endgroup::"
+                  done < <(git rev-list --reverse "$BASE_SHA..$HEAD_SHA")
+
+    linting:
+        name: Linting
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check out repository history
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: npm
+
+            - name: Check linting in every commit
+              env:
+                  BASE_SHA: ${{ github.event.pull_request.base.sha }}
+                  HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+              run: |
+                  while IFS= read -r commit; do
+                      echo "::group::Linting $commit"
+                      git checkout --detach "$commit"
+                      npm ci
+                      npm run lint
+                      echo "::endgroup::"
+                  done < <(git rev-list --reverse "$BASE_SHA..$HEAD_SHA")
