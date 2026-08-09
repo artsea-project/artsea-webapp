@@ -27,31 +27,19 @@ export default async function Header() {
     const artistName = rawName.endsWith(".") ? rawName : `${rawName}.`
 
     const primaryColor = theme?.colors.primaryColor || "#292524"
-    const primaryFontName = theme?.fonts.primaryFont
-    const headingFont = primaryFontName
-        ? `"${primaryFontName}", var(--font-playfair), serif`
-        : "var(--font-playfair), serif"
-
-    const secondaryFontName = theme?.fonts.secondaryFont || theme?.fonts.additionalFont
-    const bodyFont = secondaryFontName
-        ? `"${secondaryFontName}", var(--font-inter), sans-serif`
-        : "var(--font-inter), sans-serif"
 
     return (
         <header className="w-full">
             <div className="max-w-7xl mx-auto py-8 px-6 md:py-12 md:px-16 flex items-center justify-between relative">
                 <Link
                     href="/"
-                    className="text-2xl md:text-3xl font-bold tracking-tight hover:opacity-90 transition-opacity"
-                    style={{
-                        fontFamily: headingFont,
-                        color: primaryColor,
-                    }}
+                    className="font-primary text-2xl md:text-3xl font-bold tracking-tight hover:opacity-90 transition-opacity"
+                    style={{ color: primaryColor }}
                 >
                     {artistName}
                 </Link>
 
-                <NavLinks bodyFont={bodyFont} />
+                <NavLinks />
             </div>
         </header>
     )
