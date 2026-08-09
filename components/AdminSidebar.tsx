@@ -13,7 +13,7 @@ import {
     type LucideIcon,
 } from "lucide-react"
 
-import { logout } from "@/app/admin/actions"
+import { logout } from "@/app/(dashboard)/admin/actions"
 import { cn } from "@/lib/utils"
 
 interface NavItem {
@@ -32,7 +32,6 @@ const NAV_ITEMS: NavItem[] = [
 
 const FOOTER_ITEMS: NavItem[] = [{ label: "Podgląd portfolio", href: "/", icon: Eye }]
 
-// Shared so the logout button and the links can't drift apart visually.
 const rowClasses = (active: boolean) =>
     cn(
         "flex h-10 w-full cursor-pointer items-center gap-3 rounded-sm px-3 text-sm transition-colors",
@@ -51,7 +50,6 @@ function SidebarLink({ label, href, icon: Icon, active }: NavItem & { active: bo
 export default function AdminSidebar({ userName }: { userName: string }) {
     const pathname = usePathname()
 
-    // Exact match only for index routes, so "/admin" doesn't stay active on every child page.
     const isActive = (href: string) =>
         href === "/" || href === "/admin"
             ? pathname === href
