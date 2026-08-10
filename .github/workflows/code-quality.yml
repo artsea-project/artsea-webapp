@@ -16,6 +16,7 @@ jobs:
     code-quality:
         name: ${{ matrix.check.name }}
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         strategy:
             fail-fast: false
             matrix:
@@ -46,7 +47,9 @@ jobs:
               run: |
                   while IFS= read -r commit; do
                       echo "::group::${{ matrix.check.name }} $commit"
-                      git checkout --detach "$commit"
-                      npm run "${{ matrix.check.command }}"
+                      if ! git checkout --detach "$commit" || ! npm run "${{ matrix.check.command }}"; then
+                          echo "::endgroup::"
+                          exit 1
+                      fi
                       echo "::endgroup::"
                   done < <(git rev-list --reverse "$BASE_SHA..$HEAD_SHA")
