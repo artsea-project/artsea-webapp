@@ -10,12 +10,18 @@ test.describe("Database Config & Relations Integration Test", () => {
     let createdProfileId: string
     let createdCategoryId: string
     let createdArtPieceId: string
+    let createdSiteSettingsId: string
 
     const testUsername = `playwright_artist_${Date.now()}`
     const testEmail = `playwright_${Date.now()}@eliseroux.com`
 
     // This block runs automatically once before any test executes (even if you play them individually)
     test.beforeAll(async () => {
+        // Clean up existing singleton records
+        await db.delete(profiles)
+        await db.delete(siteSettings)
+        await db.delete(users)
+
         // 1. Insert User
         const [user] = await db
             .insert(users)
@@ -31,7 +37,6 @@ test.describe("Database Config & Relations Integration Test", () => {
         const [profile] = await db
             .insert(profiles)
             .values({
-                userId: user.userId,
                 fullName: "Playwright Artist Test",
                 bioPln: { paragraphs: ["Polski opis Playwright"] },
                 bioEng: { paragraphs: ["English bio Playwright"] },
@@ -45,7 +50,6 @@ test.describe("Database Config & Relations Integration Test", () => {
         const [category] = await db
             .insert(categories)
             .values({
-                userId: user.userId,
                 namePln: "Malarstwo PW",
                 nameEng: "Painting PW",
             })
@@ -56,11 +60,9 @@ test.describe("Database Config & Relations Integration Test", () => {
         const [artPiece] = await db
             .insert(artPieces)
             .values({
-                userId: user.userId,
                 categoryId: category.categoryId,
                 titlePln: "Dzieło Playwright",
                 titleEng: "Playwright Artwork",
-                isFeatured: true,
                 isVisible: true,
                 yearOfExecution: 2026,
             })
@@ -69,16 +71,27 @@ test.describe("Database Config & Relations Integration Test", () => {
     })
 
     test.afterAll(async () => {
-        // Clean up if not deleted in the test
-        if (createdUserId) {
+        // Clean up explicitly since we don't have cascade deletes from user
+        if (createdArtPieceId) {
+            await db.delete(artPieces).where(eq(artPieces.artPieceId, createdArtPieceId))
+        }
+        if (createdCategoryId) {
+            await db.delete(categories).where(eq(categories.categoryId, createdCategoryId))
+        }
+        if (createdProfileId) {
+            await db.delete(profiles).where(eq(profiles.profileId, createdProfileId))
+        }
+        if (createdSiteSettingsId) {
             await db
-                .delete(users)
-                .where(eq(users.userId, createdUserId))
-                .catch(() => {})
+                .delete(siteSettings)
+                .where(eq(siteSettings.siteSettingsId, createdSiteSettingsId))
+        }
+        if (createdUserId) {
+            await db.delete(users).where(eq(users.userId, createdUserId))
         }
     })
 
-    test("should verify database write and linkage success", async () => {
+    test("should verify database write success", async () => {
         expect(createdUserId).toBeDefined()
         expect(createdProfileId).toBeDefined()
         expect(createdCategoryId).toBeDefined()
@@ -86,31 +99,27 @@ test.describe("Database Config & Relations Integration Test", () => {
     })
 
     test("should retrieve related records through relational query API", async () => {
-        const queriedUser = await db.query.users.findFirst({
-            where: eq(users.userId, createdUserId),
+        const queriedProfile = await db.query.profiles.findFirst({
+            where: eq(profiles.profileId, createdProfileId),
+        })
+
+        const queriedCategory = await db.query.categories.findFirst({
+            where: eq(categories.categoryId, createdCategoryId),
             with: {
-                profile: true,
-                categories: {
-                    with: {
-                        artPieces: true,
-                    },
-                },
+                artPieces: true,
             },
         })
 
-        expect(queriedUser).toBeDefined()
-        expect(queriedUser!.username).toBe(testUsername)
-        expect(queriedUser!.profile?.fullName).toBe("Playwright Artist Test")
-        expect((queriedUser!.profile?.bioPln as BioContent).paragraphs[0]).toBe(
-            "Polski opis Playwright"
-        )
-        expect((queriedUser!.profile?.contactPln as ContactContent).paragraphs[0]).toBe(
+        expect(queriedProfile).toBeDefined()
+        expect(queriedProfile!.fullName).toBe("Playwright Artist Test")
+        expect((queriedProfile!.bioPln as BioContent).paragraphs[0]).toBe("Polski opis Playwright")
+        expect((queriedProfile!.contactPln as ContactContent).paragraphs[0]).toBe(
             "Kontakt Playwright"
         )
-        expect(queriedUser!.categories.length).toBe(1)
-        expect(queriedUser!.categories[0].namePln).toBe("Malarstwo PW")
-        expect(queriedUser!.categories[0].artPieces.length).toBe(1)
-        expect(queriedUser!.categories[0].artPieces[0].titlePln).toBe("Dzieło Playwright")
+        expect(queriedCategory).toBeDefined()
+        expect(queriedCategory!.namePln).toBe("Malarstwo PW")
+        expect(queriedCategory!.artPieces.length).toBe(1)
+        expect(queriedCategory!.artPieces[0].titlePln).toBe("Dzieło Playwright")
     })
 
     test("should successfully save and retrieve site theme JSON settings", async () => {
@@ -127,7 +136,7 @@ test.describe("Database Config & Relations Integration Test", () => {
                 accentColor: "#A8A29E",
                 backgroundColor: "#FFFFFF",
             },
-            presetTheme: "domyslny",
+            presetTheme: "default",
             darkModeExperimental: false,
         }
 
@@ -135,10 +144,10 @@ test.describe("Database Config & Relations Integration Test", () => {
         const [settings] = await db
             .insert(siteSettings)
             .values({
-                userId: createdUserId,
                 theme: mockTheme,
             })
             .returning()
+        createdSiteSettingsId = settings.siteSettingsId
 
         // 2. Query it back
         const retrieved = await db.query.siteSettings.findFirst({
@@ -148,7 +157,7 @@ test.describe("Database Config & Relations Integration Test", () => {
         // 3. Verify properties
         expect(retrieved).toBeDefined()
         const theme = retrieved!.theme as SiteTheme
-        expect(theme.presetTheme).toBe("domyslny")
+        expect(theme.presetTheme).toBe("default")
         expect(theme.colors.backgroundColor).toBe("#FFFFFF")
         expect(theme.fonts.primaryFont).toBe("Playfair Display")
     })
@@ -202,32 +211,40 @@ test.describe("Database Config & Relations Integration Test", () => {
         expect(contactEng.paragraphs[0]).toBe("Contact EN 1")
     })
 
-    test("should verify cascading delete integrity on user removal", async () => {
-        // Delete the user
-        await db.delete(users).where(eq(users.userId, createdUserId))
+    test("should enforce singleton constraint on users, profiles, and siteSettings", async () => {
+        await expect(
+            db.insert(users).values({
+                username: "second_admin",
+                email: "admin2@eliseroux.com",
+                passwordHash: "playwrightpass123",
+            })
+        ).rejects.toThrow()
 
-        // Profile should be deleted automatically
-        const profileCheck = await db
-            .select()
-            .from(profiles)
-            .where(eq(profiles.profileId, createdProfileId))
-        expect(profileCheck.length).toBe(0)
+        await expect(
+            db.insert(profiles).values({
+                fullName: "Second Profile (Should Fail)",
+            })
+        ).rejects.toThrow()
 
-        // Category should be deleted automatically
-        const categoryCheck = await db
-            .select()
-            .from(categories)
-            .where(eq(categories.categoryId, createdCategoryId))
-        expect(categoryCheck.length).toBe(0)
-
-        // Art piece should be deleted automatically
-        const artPieceCheck = await db
-            .select()
-            .from(artPieces)
-            .where(eq(artPieces.artPieceId, createdArtPieceId))
-        expect(artPieceCheck.length).toBe(0)
-
-        // Reset reference to prevent cleanup error in afterAll
-        createdUserId = ""
+        await expect(
+            db.insert(siteSettings).values({
+                theme: {
+                    fonts: {
+                        primaryFont: "Inter",
+                        secondaryFont: "Inter",
+                        additionalFont: "Inter",
+                    },
+                    colors: {
+                        primaryColor: "#000000",
+                        secondaryColor: "#000000",
+                        additionalColor: "#000000",
+                        accentColor: "#000000",
+                        backgroundColor: "#FFFFFF",
+                    },
+                    presetTheme: "default",
+                    darkModeExperimental: false,
+                },
+            })
+        ).rejects.toThrow()
     })
 })

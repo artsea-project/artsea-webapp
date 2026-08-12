@@ -19,6 +19,6 @@ export interface SiteThemeColors {
 export interface SiteTheme {
     fonts: SiteThemeFonts
     colors: SiteThemeColors
-    presetTheme: "domyslny" | "ciemny" | "domyslny_zielen" // "Motywy domyślne" (Default, Dark, and Default Green)
+    presetTheme: "default" | "dark" | "default_green" // "Motywy domyślne" (Default, Dark, and Default Green)
     darkModeExperimental: boolean // "Ciemny motyw (eksperymentalny)"
 }
