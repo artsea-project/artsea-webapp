@@ -10,10 +10,18 @@ import {
     foreignKey,
     unique,
     check,
+    customType,
 } from "drizzle-orm/pg-core"
 import { relations, sql } from "drizzle-orm"
+
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({
+    dataType() {
+        return "bytea"
+    },
+})
 import type { BioContent, ContactContent } from "../types/profile"
 import type { SiteTheme } from "../types/theme"
+import type { BentoBoxLayout } from "../types/bento"
 
 // User Table
 export const users = pgTable(
@@ -113,7 +121,8 @@ export const media = pgTable(
     {
         mediaId: uuid("media_id").primaryKey().defaultRandom(),
         artPieceId: uuid("art_piece_id").notNull(),
-        fileUrl: text("file_url").notNull(),
+        content: bytea("content").notNull(),
+        contentHash: text("content_hash").notNull(),
         fileType: text("file_type", { enum: ["png", "jpg", "gif", "mp4"] }).notNull(),
         orderIndex: integer("order_index").notNull(),
     },
@@ -125,6 +134,7 @@ export const media = pgTable(
         })
             .onDelete("cascade")
             .onUpdate("cascade"),
+        check("media_content_hash_format_chk", sql`${table.contentHash} ~ '^[0-9a-f]{64}$'`),
     ]
 )
 
@@ -163,7 +173,7 @@ export const siteSettings = pgTable(
     {
         siteSettingsId: uuid("site_settings_id").primaryKey().defaultRandom(),
         theme: jsonb("theme").$type<SiteTheme>(),
-        layoutBentoBox: jsonb("layout_bento_box"), // Left untyped (unknown) for now since the bento layout JSON structure is not yet finalized
+        layoutBentoBox: jsonb("layout_bento_box").$type<BentoBoxLayout>(),
         layoutCategoryView: jsonb("layout_category_view"), // Left untyped (unknown) for now since the category view layout JSON structure is not yet finalized
         isSingleton: boolean("is_singleton").notNull().default(true),
     },
