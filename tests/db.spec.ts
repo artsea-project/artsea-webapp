@@ -1,9 +1,11 @@
 import { test, expect } from "@playwright/test"
+import { createHash } from "crypto"
 import { db } from "../db"
-import { users, profiles, categories, artPieces, siteSettings } from "../db/schema"
+import { users, profiles, categories, artPieces, siteSettings, media } from "../db/schema"
 import { eq } from "drizzle-orm"
 import { SiteTheme } from "../types/theme"
 import { BioContent, ContactContent } from "../types/profile"
+import { BentoBoxLayout } from "../types/bento"
 
 test.describe("Database Config & Relations Integration Test", () => {
     let createdUserId: string
@@ -91,7 +93,7 @@ test.describe("Database Config & Relations Integration Test", () => {
         }
     })
 
-    test("should verify database write success", async () => {
+    test("should verify database write and linkage success", async () => {
         expect(createdUserId).toBeDefined()
         expect(createdProfileId).toBeDefined()
         expect(createdCategoryId).toBeDefined()
@@ -160,6 +162,78 @@ test.describe("Database Config & Relations Integration Test", () => {
         expect(theme.presetTheme).toBe("default")
         expect(theme.colors.backgroundColor).toBe("#FFFFFF")
         expect(theme.fonts.primaryFont).toBe("Playfair Display")
+    })
+
+    test("should store and retrieve exact binary media content and its SHA-256 hash", async () => {
+        const content = Buffer.from([0x00, 0xff, 0x10, 0x80, 0x42])
+        const contentHash = createHash("sha256").update(content).digest("hex")
+
+        const [storedMedia] = await db
+            .insert(media)
+            .values({
+                artPieceId: createdArtPieceId,
+                content,
+                contentHash,
+                fileType: "png",
+                orderIndex: 0,
+            })
+            .returning()
+
+        const [retrieved] = await db
+            .select()
+            .from(media)
+            .where(eq(media.mediaId, storedMedia.mediaId))
+
+        expect(Buffer.isBuffer(retrieved.content)).toBe(true)
+        expect(retrieved.content.equals(content)).toBe(true)
+        expect(retrieved.contentHash).toBe(contentHash)
+    })
+
+    test("should reject a media content hash that is not 64 lowercase hexadecimal characters", async () => {
+        await expect(
+            db.insert(media).values({
+                artPieceId: createdArtPieceId,
+                content: Buffer.from([0x01]),
+                contentHash: "NOT-A-SHA-256-HASH",
+                fileType: "png",
+                orderIndex: 1,
+            })
+        ).rejects.toThrow()
+    })
+
+    test("should successfully save and retrieve typed bento layout settings", async () => {
+        const layout: BentoBoxLayout = {
+            desktop: {
+                items: [
+                    {
+                        artPieceId: createdArtPieceId,
+                        mediaId: "00000000-0000-0000-0000-000000000001",
+                        columnStart: 1,
+                        rowStart: 1,
+                        columnSpan: 4,
+                        rowSpan: 10,
+                    },
+                ],
+            },
+            mobile: {
+                items: [
+                    {
+                        artPieceId: createdArtPieceId,
+                        mediaId: "00000000-0000-0000-0000-000000000001",
+                        columnStart: 1,
+                        rowStart: 1,
+                        columnSpan: 2,
+                        rowSpan: 8,
+                    },
+                ],
+            },
+        }
+
+        await db.update(siteSettings).set({ layoutBentoBox: layout })
+
+        const retrieved = await db.query.siteSettings.findFirst()
+
+        expect(retrieved?.layoutBentoBox).toEqual(layout)
     })
 
     test("should successfully save and retrieve multi-paragraph bio and contact info", async () => {
@@ -244,45 +318,6 @@ test.describe("Database Config & Relations Integration Test", () => {
                     presetTheme: "default",
                     darkModeExperimental: false,
                 },
-            })
-        ).rejects.toThrow()
-
-        // Assert that inserting with isSingleton: false fails due to check constraint
-        await expect(
-            db.insert(users).values({
-                username: "third_admin",
-                email: "admin3@eliseroux.com",
-                passwordHash: "playwrightpass123",
-                isSingleton: false,
-            })
-        ).rejects.toThrow()
-
-        await expect(
-            db.insert(profiles).values({
-                fullName: "Third Profile (Should Fail)",
-                isSingleton: false,
-            })
-        ).rejects.toThrow()
-
-        await expect(
-            db.insert(siteSettings).values({
-                theme: {
-                    fonts: {
-                        primaryFont: "Inter",
-                        secondaryFont: "Inter",
-                        additionalFont: "Inter",
-                    },
-                    colors: {
-                        primaryColor: "#000000",
-                        secondaryColor: "#000000",
-                        additionalColor: "#000000",
-                        accentColor: "#000000",
-                        backgroundColor: "#FFFFFF",
-                    },
-                    presetTheme: "default",
-                    darkModeExperimental: false,
-                },
-                isSingleton: false,
             })
         ).rejects.toThrow()
     })

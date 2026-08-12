@@ -15,6 +15,7 @@
         "db:migrate": "drizzle-kit migrate",
         "db:push": "drizzle-kit push",
         "db:studio": "drizzle-kit studio",
+        "db:seed": "tsx db/seed.ts",
         "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md,mjs,css}\"",
         "format:check": "git ls-files -z -- '*.js' '*.jsx' '*.ts' '*.tsx' '*.json' '*.md' '*.mjs' '*.css' | xargs -0 prettier --check"
     },
