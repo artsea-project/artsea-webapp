@@ -246,5 +246,44 @@ test.describe("Database Config & Relations Integration Test", () => {
                 },
             })
         ).rejects.toThrow()
+
+        // Assert that inserting with isSingleton: false fails due to check constraint
+        await expect(
+            db.insert(users).values({
+                username: "third_admin",
+                email: "admin3@eliseroux.com",
+                passwordHash: "playwrightpass123",
+                isSingleton: false,
+            })
+        ).rejects.toThrow()
+
+        await expect(
+            db.insert(profiles).values({
+                fullName: "Third Profile (Should Fail)",
+                isSingleton: false,
+            })
+        ).rejects.toThrow()
+
+        await expect(
+            db.insert(siteSettings).values({
+                theme: {
+                    fonts: {
+                        primaryFont: "Inter",
+                        secondaryFont: "Inter",
+                        additionalFont: "Inter",
+                    },
+                    colors: {
+                        primaryColor: "#000000",
+                        secondaryColor: "#000000",
+                        additionalColor: "#000000",
+                        accentColor: "#000000",
+                        backgroundColor: "#FFFFFF",
+                    },
+                    presetTheme: "default",
+                    darkModeExperimental: false,
+                },
+                isSingleton: false,
+            })
+        ).rejects.toThrow()
     })
 })

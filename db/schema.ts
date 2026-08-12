@@ -9,8 +9,9 @@ import {
     primaryKey,
     foreignKey,
     unique,
+    check,
 } from "drizzle-orm/pg-core"
-import { relations } from "drizzle-orm"
+import { relations, sql } from "drizzle-orm"
 import type { BioContent, ContactContent } from "../types/profile"
 import type { SiteTheme } from "../types/theme"
 
@@ -25,7 +26,10 @@ export const users = pgTable(
         createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
         isSingleton: boolean("is_singleton").notNull().default(true),
     },
-    (table) => [unique("users_singleton_uq").on(table.isSingleton)]
+    (table) => [
+        unique("users_singleton_uq").on(table.isSingleton),
+        check("users_singleton_val_chk", sql`${table.isSingleton} = true`),
+    ]
 )
 
 // Profile Table
@@ -41,7 +45,10 @@ export const profiles = pgTable(
         profileImageUrl: text("profile_image_url"),
         isSingleton: boolean("is_singleton").notNull().default(true),
     },
-    (table) => [unique("profile_singleton_uq").on(table.isSingleton)]
+    (table) => [
+        unique("profile_singleton_uq").on(table.isSingleton),
+        check("profile_singleton_val_chk", sql`${table.isSingleton} = true`),
+    ]
 )
 
 // Links Table
@@ -160,7 +167,10 @@ export const siteSettings = pgTable(
         layoutCategoryView: jsonb("layout_category_view"), // Left untyped (unknown) for now since the category view layout JSON structure is not yet finalized
         isSingleton: boolean("is_singleton").notNull().default(true),
     },
-    (table) => [unique("site_settings_singleton_uq").on(table.isSingleton)]
+    (table) => [
+        unique("site_settings_singleton_uq").on(table.isSingleton),
+        check("site_settings_singleton_val_chk", sql`${table.isSingleton} = true`),
+    ]
 )
 
 // Relations
