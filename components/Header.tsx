@@ -3,25 +3,26 @@ import { db } from "@/db"
 import NavLinks from "@/components/NavLinks"
 
 export default async function Header() {
-    let user = null
+    let profile = null
+    let settings = null
 
     if (process.env.DATABASE_URL) {
         try {
-            user = await db.query.users.findFirst({
-                with: {
-                    profile: true,
-                    siteSettings: true,
-                },
-            })
+            const [profileResult, settingsResult] = await Promise.all([
+                db.query.profiles.findFirst(),
+                db.query.siteSettings.findFirst(),
+            ])
+            profile = profileResult
+            settings = settingsResult
         } catch {
             // Fallback to default values if database is offline or uninitialized
         }
     }
 
-    const rawName = user?.profile?.fullName || "Élise Roux."
+    const rawName = profile?.fullName || "Élise Roux."
     const artistName = rawName.endsWith(".") ? rawName : `${rawName}.`
 
-    const primaryColor = user?.siteSettings?.theme?.colors.primaryColor || "#292524"
+    const primaryColor = settings?.theme?.colors.primaryColor || "#292524"
 
     return (
         <header className="w-full">
