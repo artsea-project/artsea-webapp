@@ -237,7 +237,33 @@ async function main() {
         ] of artworks) {
             await tx
                 .insert(artPieces)
-                .values({ artPieceId, categoryId, titleEng, yearOfExecution, isVisible: true })
+                .values({
+                    artPieceId,
+                    categoryId,
+                    titleEng,
+                    titlePln: `${titleEng} (PL)`,
+                    dimensions: "70 x 100 cm",
+                    miniDescriptionPln: {
+                        paragraphs: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit."],
+                    },
+                    miniDescriptionEng: {
+                        paragraphs: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit."],
+                    },
+                    descriptionPln: {
+                        paragraphs: [
+                            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                            "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+                        ],
+                    },
+                    descriptionEng: {
+                        paragraphs: [
+                            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                            "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+                        ],
+                    },
+                    yearOfExecution,
+                    isVisible: true,
+                })
                 .onConflictDoNothing()
 
             const content = await readFile(path.join(fixtureDirectory, fixture))
