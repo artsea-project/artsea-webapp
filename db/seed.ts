@@ -220,10 +220,28 @@ async function main() {
             .values({ categoryId, namePln: "Sztuka", nameEng: "Art" })
             .onConflictDoNothing()
 
+        const tagNamesPln: Record<string, string> = {
+            Marble: "Marmur",
+            Watercolor: "Akwarela",
+            Brass: "Mosiądz",
+            Poster: "Plakat",
+            Glass: "Szkło",
+            Oil: "Olej",
+            "Still Life": "Martwa natura",
+            Flowers: "Kwiaty",
+            Classical: "Klasyczne",
+        }
+
         // 5. Insert Tags
         await tx
             .insert(tags)
-            .values(tagNames.map((name) => ({ tagId: tagIdByName[name], nameEng: name })))
+            .values(
+                tagNames.map((name) => ({
+                    tagId: tagIdByName[name],
+                    nameEng: name,
+                    namePln: tagNamesPln[name],
+                }))
+            )
             .onConflictDoNothing()
 
         // 6. Insert Art Pieces, Media content, and Tag relations
