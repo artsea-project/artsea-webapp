@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import { db } from "@/db"
-import { Image as ImageIcon } from "lucide-react"
+import { Image as ImageIcon, Ruler } from "lucide-react"
 import parse from "html-react-parser"
 
 interface PageProps {
@@ -127,7 +127,7 @@ export default async function WorkPage({ params }: PageProps) {
                                 {title || "Bez tytułu"}
                             </h1>
 
-                            {/* Tags list rendered directly below title */}
+                            {/* Tags list section */}
                             {tagsList.length > 0 && (
                                 <div className="flex flex-wrap gap-2 mt-4">
                                     {tagsList.map((tagText, idx) => (
@@ -143,8 +143,19 @@ export default async function WorkPage({ params }: PageProps) {
                             )}
                         </div>
 
-                        {/* Separating Line */}
-                        <hr className="border-stone-200 dark:border-zinc-800" />
+                        {/* Separating Line & Dimensions */}
+                        {artPiece.dimensions ? (
+                            <div className="flex flex-col">
+                                <hr className="border-stone-200 dark:border-zinc-800" />
+                                <div className="flex items-center gap-2 text-stone-600 dark:text-zinc-400 text-sm font-secondary py-4">
+                                    {/*<Ruler className="w-4 h-4 text-stone-400 dark:text-zinc-500 stroke-[1.5]" />*/}
+                                    <span>{artPiece.dimensions}</span>
+                                </div>
+                                <hr className="border-stone-200 dark:border-zinc-800" />
+                            </div>
+                        ) : (
+                            <hr className="border-stone-200 dark:border-zinc-800" />
+                        )}
 
                         {/* Description Content */}
                         {descriptionParagraphs.length > 0 && (
