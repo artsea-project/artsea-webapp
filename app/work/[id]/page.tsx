@@ -8,34 +8,18 @@ interface PageProps {
     params: Promise<{ id: string }>
 }
 
-// Safely parses JSONB fields (like descriptions) into paragraphs
-function parseJsonbText(value: unknown): string[] {
-    if (!value) return []
-    if (typeof value === "string") return [value]
-    if (value && typeof value === "object") {
-        const obj = value as Record<string, unknown>
-        if (Array.isArray(obj.paragraphs)) {
-            return obj.paragraphs.map(String)
-        }
-        if (Array.isArray(obj.blocks)) {
-            return obj.blocks
-                .map((block: unknown) => {
-                    if (block && typeof block === "object") {
-                        const b = block as Record<string, unknown>
-                        if (b.type === "paragraph" && b.data && typeof b.data === "object") {
-                            const data = b.data as Record<string, unknown>
-                            return String(data.text || "")
-                        }
-                    }
-                    return ""
-                })
-                .filter(Boolean)
-        }
-        if (typeof obj.text === "string") {
-            return [obj.text]
-        }
-    }
-    return []
+// Safely reads the "technique" slot from a named-key JSONB description field
+function parseTechnika(value: unknown): string {
+    if (!value || typeof value !== "object") return ""
+    const obj = value as Record<string, unknown>
+    return typeof obj.technique === "string" ? obj.technique : ""
+}
+
+// Safely reads the "description" slot from a named-key JSONB description field
+function parseOpis(value: unknown): string {
+    if (!value || typeof value !== "object") return ""
+    const obj = value as Record<string, unknown>
+    return typeof obj.description === "string" ? obj.description : ""
 }
 
 export default async function WorkPage({ params }: PageProps) {
@@ -87,8 +71,9 @@ export default async function WorkPage({ params }: PageProps) {
     const title = artPiece.titlePln
     const categoryName = artPiece.category?.namePln
 
-    // Parse Polish description paragraphs
-    const descriptionParagraphs = parseJsonbText(artPiece.descriptionPln)
+    // Parse Polish description  strictly named slots
+    const technikaPln = parseTechnika(artPiece.descriptionPln)
+    const opisPln = parseOpis(artPiece.descriptionPln)
 
     // Parse Polish tag names
     const tagsList = artPiece.tags
@@ -156,26 +141,26 @@ export default async function WorkPage({ params }: PageProps) {
                             <hr className="border-stone-200 dark:border-zinc-800" />
                         )}
 
-                        {/* Section 1: Technika i materiały */}
-                        {descriptionParagraphs[0] && (
+                        {/* Section 1: Technika i materiały  only renders if technique text exists */}
+                        {technikaPln && (
                             <div className="flex flex-col gap-3">
                                 <span className="text-[11px] font-bold tracking-widest text-stone-400 dark:text-zinc-500 uppercase font-secondary">
                                     Technika i materiały
                                 </span>
                                 <div className="text-stone-600 dark:text-zinc-300 leading-relaxed text-base font-body">
-                                    {parse(descriptionParagraphs[0])}
+                                    {parse(technikaPln)}
                                 </div>
                             </div>
                         )}
 
-                        {/* Section 2: O projekcie */}
-                        {descriptionParagraphs[1] && (
+                        {/* Section 2: O projekcie  only renders if description text exists */}
+                        {opisPln && (
                             <div className="flex flex-col gap-3">
                                 <span className="text-[11px] font-bold tracking-widest text-stone-400 dark:text-zinc-500 uppercase font-secondary">
                                     O projekcie
                                 </span>
                                 <div className="text-stone-600 dark:text-zinc-300 leading-relaxed text-base font-body">
-                                    {parse(descriptionParagraphs[1])}
+                                    {parse(opisPln)}
                                 </div>
                             </div>
                         )}
