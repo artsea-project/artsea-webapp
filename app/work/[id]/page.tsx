@@ -126,8 +126,7 @@ export default async function WorkPage({ params }: PageProps) {
                             <h1 className="text-3xl font-semibold tracking-tight font-primary mt-2">
                                 {title || "Bez tytułu"}
                             </h1>
-
-                            {/* Tags list section */}
+                            {/* Tags list (directly below title) */}
                             {tagsList.length > 0 && (
                                 <div className="flex flex-wrap gap-2 mt-4">
                                     {tagsList.map((tagText, idx) => (
@@ -148,7 +147,7 @@ export default async function WorkPage({ params }: PageProps) {
                             <div className="flex flex-col">
                                 <hr className="border-stone-200 dark:border-zinc-800" />
                                 <div className="flex items-center gap-2 text-stone-600 dark:text-zinc-400 text-sm font-secondary py-4">
-                                    {/*<Ruler className="w-4 h-4 text-stone-400 dark:text-zinc-500 stroke-[1.5]" />*/}
+                                    <Ruler className="w-4 h-4 text-stone-400 dark:text-zinc-500 stroke-[1.5]" />
                                     <span>{artPiece.dimensions}</span>
                                 </div>
                                 <hr className="border-stone-200 dark:border-zinc-800" />
@@ -157,12 +156,27 @@ export default async function WorkPage({ params }: PageProps) {
                             <hr className="border-stone-200 dark:border-zinc-800" />
                         )}
 
-                        {/* Description Content */}
-                        {descriptionParagraphs.length > 0 && (
-                            <div className="flex flex-col gap-4 text-stone-600 dark:text-zinc-300 leading-relaxed text-base font-body">
-                                {descriptionParagraphs.map((para, idx) => (
-                                    <p key={idx}>{parse(para)}</p>
-                                ))}
+                        {/* Section 1: Technika i materiały */}
+                        {descriptionParagraphs[0] && (
+                            <div className="flex flex-col gap-3">
+                                <span className="text-[11px] font-bold tracking-widest text-stone-400 dark:text-zinc-500 uppercase font-secondary">
+                                    Technika i materiały
+                                </span>
+                                <div className="text-stone-600 dark:text-zinc-300 leading-relaxed text-base font-body">
+                                    {parse(descriptionParagraphs[0])}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Section 2: O projekcie */}
+                        {descriptionParagraphs[1] && (
+                            <div className="flex flex-col gap-3">
+                                <span className="text-[11px] font-bold tracking-widest text-stone-400 dark:text-zinc-500 uppercase font-secondary">
+                                    O projekcie
+                                </span>
+                                <div className="text-stone-600 dark:text-zinc-300 leading-relaxed text-base font-body">
+                                    {parse(descriptionParagraphs[1])}
+                                </div>
                             </div>
                         )}
                     </div>
