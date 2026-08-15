@@ -113,9 +113,14 @@ export default async function WorkPage({ params }: PageProps) {
                     <div className="md:col-span-5 md:sticky md:top-24 flex flex-col gap-8">
                         {/* Header metadata: Category - Year */}
                         <div>
-                            <div className="text-xs uppercase tracking-widest text-stone-400 font-secondary font-medium">
-                                {categoryName || "Bez kategorii"}
-                                {artPiece.yearOfExecution && ` - ${artPiece.yearOfExecution}`}
+                            <div className="flex items-center gap-6 text-[11px] uppercase tracking-widest text-stone-400 dark:text-zinc-500 font-secondary font-bold">
+                                <span>{categoryName || "Bez kategorii"}</span>
+                                {artPiece.yearOfExecution && (
+                                    <>
+                                        <span className="text-stone-300 dark:text-zinc-700"></span>
+                                        <span>{artPiece.yearOfExecution}</span>
+                                    </>
+                                )}
                             </div>
                             <h1 className="text-3xl font-semibold tracking-tight font-primary mt-2">
                                 {title || "Bez tytułu"}
