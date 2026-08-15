@@ -150,6 +150,41 @@ export default async function WorkPage({ params }: PageProps) {
                         )}
                     </div>
                 </div>
+
+                {/* Next Artwork Navigation */}
+                {nextArtwork && (
+                    <div className="mt-24 pt-12 border-t border-stone-200 dark:border-zinc-800">
+                        <Link
+                            href={`/work/${nextArtwork.artPieceId}`}
+                            className="group flex items-center justify-between gap-8 py-4 hover:opacity-90 transition-opacity"
+                        >
+                            <div className="flex flex-col gap-3">
+                                <span className="text-xs font-bold tracking-widest text-[#a8a29e] dark:text-[#78716c] uppercase font-secondary">
+                                    Zobacz kolejny
+                                </span>
+                                <span className="text-3xl md:text-5xl font-normal font-primary text-stone-950 dark:text-stone-50 transition-colors">
+                                    {nextArtwork.titlePln || "Bez tytułu"}
+                                </span>
+                            </div>
+                            <div className="flex items-center">
+                                {/* Custom arrow matched to Figma bounding boxes (60px tail, 20px head height, 10px head depth) */}
+                                <svg
+                                    viewBox="0 0 70 24"
+                                    className="w-16 h-6 stroke-[1.5] text-stone-950 dark:text-stone-50"
+                                    fill="none"
+                                    stroke="currentColor"
+                                >
+                                    <path d="M0 12H60" strokeLinecap="round" />
+                                    <path
+                                        d="M50 2L60 12L50 22"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    />
+                                </svg>
+                            </div>
+                        </Link>
+                    </div>
+                )}
             </div>
         </div>
     )
