@@ -4,15 +4,32 @@ export const seedArtist = {
     email: "artist@artsea.local",
 } as const
 
-type ExistingUser = {
+export type ExistingSeedUser = {
     userId: string
     username: string
     email: string
 }
 
-export function assertSeedCompatible(existingUsers: ExistingUser[]) {
+type SeedOptions = {
+    reset: boolean
+}
+
+export function parseSeedArguments(args: readonly string[]): SeedOptions {
+    if (args.length === 0) {
+        return { reset: false }
+    }
+
+    if (args.length === 1 && args[0] === "--reset") {
+        return { reset: true }
+    }
+
+    throw new Error("Unknown seed argument. Use --reset to replace existing seed data.")
+}
+
+export function assertSeedSafety(options: SeedOptions & { existingUsers: ExistingSeedUser[] }) {
     if (
-        existingUsers.some(
+        !options.reset &&
+        options.existingUsers.some(
             (user) =>
                 user.userId !== seedArtist.userId ||
                 user.username !== seedArtist.username ||
@@ -20,7 +37,7 @@ export function assertSeedCompatible(existingUsers: ExistingUser[]) {
         )
     ) {
         throw new Error(
-            "Refusing to seed an incompatible non-empty database. Use an empty local development database."
+            "Refusing to seed a database with an incompatible user. Run npm run db:seed -- --reset to replace existing seed data."
         )
     }
 }
