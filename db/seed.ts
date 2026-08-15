@@ -3,13 +3,14 @@ import { readFile } from "node:fs/promises"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { config } from "dotenv"
-import { assertSeedCompatible, seedArtist } from "./seed-guard"
+import { assertSeedSafety, parseSeedArguments, seedArtist } from "./seed-guard"
 import type { SiteTheme } from "../types/theme"
 import type { BentoBoxLayout } from "../types/bento"
 
 config({ path: path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../.env.local") })
 
 async function main() {
+    const seedOptions = parseSeedArguments(process.argv.slice(2))
     console.log("Seeding database...")
 
     // Dynamically import db and schema to ensure dotenv has already initialized env variables
@@ -155,20 +156,20 @@ async function main() {
             email: users.email,
         })
         .from(users)
-    assertSeedCompatible(existingUsers)
-
-    // Clear any existing test data explicitly in reverse-dependency order to avoid foreign key / constraint issues
-    await db.delete(artPieceTags)
-    await db.delete(media)
-    await db.delete(links)
-    await db.delete(profiles)
-    await db.delete(artPieces)
-    await db.delete(tags)
-    await db.delete(categories)
-    await db.delete(siteSettings)
-    await db.delete(users)
+    assertSeedSafety({ ...seedOptions, existingUsers })
 
     await db.transaction(async (tx) => {
+        // Clear existing seed data in reverse-dependency order before every accepted reseed.
+        await tx.delete(artPieceTags)
+        await tx.delete(media)
+        await tx.delete(links)
+        await tx.delete(profiles)
+        await tx.delete(artPieces)
+        await tx.delete(tags)
+        await tx.delete(categories)
+        await tx.delete(siteSettings)
+        await tx.delete(users)
+
         // 1. Insert User
         await tx
             .insert(users)
