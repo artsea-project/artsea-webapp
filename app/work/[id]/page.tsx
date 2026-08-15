@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation"
+import Link from "next/link"
 import { db } from "@/db"
 import { Image as ImageIcon } from "lucide-react"
 
@@ -61,6 +62,27 @@ export default async function WorkPage({ params }: PageProps) {
         notFound()
     }
 
+    // Query all visible artworks to determine the next artwork in sequence
+    let allArtworks: { artPieceId: string; titlePln: string | null }[] = []
+    try {
+        allArtworks = await db.query.artPieces.findMany({
+            columns: {
+                artPieceId: true,
+                titlePln: true,
+            },
+            where: (fields, { eq }) => eq(fields.isVisible, true),
+            orderBy: (fields, { asc }) => asc(fields.artPieceId),
+        })
+    } catch (error) {
+        console.error("Failed to fetch all artworks:", error)
+    }
+
+    const currentIndex = allArtworks.findIndex((a) => a.artPieceId === id)
+    const nextArtwork =
+        currentIndex !== -1 && allArtworks.length > 1
+            ? allArtworks[(currentIndex + 1) % allArtworks.length]
+            : null
+
     const title = artPiece.titlePln
     const categoryName = artPiece.category?.namePln
 
@@ -119,20 +141,12 @@ export default async function WorkPage({ params }: PageProps) {
                         <hr className="border-stone-200 dark:border-zinc-800" />
 
                         {/* Description Content */}
-                        {descriptionParagraphs.length > 0 ? (
+                        {descriptionParagraphs.length > 0 && (
                             <div className="flex flex-col gap-4 text-stone-600 leading-relaxed text-base font-body">
                                 {descriptionParagraphs.map((para, idx) => (
                                     <p key={idx}>{para}</p>
                                 ))}
                             </div>
-                        ) : (
-                            !!artPiece.miniDescriptionPln && (
-                                <div className="text-stone-600 italic text-base">
-                                    {parseJsonbText(artPiece.descriptionPln).map((para, idx) => (
-                                        <p key={idx}>{para}</p>
-                                    ))}
-                                </div>
-                            )
                         )}
                     </div>
                 </div>
