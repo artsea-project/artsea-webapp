@@ -2,6 +2,7 @@ import { notFound } from "next/navigation"
 import Link from "next/link"
 import { db } from "@/db"
 import { Image as ImageIcon } from "lucide-react"
+import parse from "html-react-parser"
 
 interface PageProps {
     params: Promise<{ id: string }>
@@ -147,9 +148,9 @@ export default async function WorkPage({ params }: PageProps) {
 
                         {/* Description Content */}
                         {descriptionParagraphs.length > 0 && (
-                            <div className="flex flex-col gap-4 text-stone-600 leading-relaxed text-base font-body">
+                            <div className="flex flex-col gap-4 text-stone-600 dark:text-zinc-300 leading-relaxed text-base font-body">
                                 {descriptionParagraphs.map((para, idx) => (
-                                    <p key={idx}>{para}</p>
+                                    <p key={idx}>{parse(para)}</p>
                                 ))}
                             </div>
                         )}
