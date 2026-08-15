@@ -268,36 +268,16 @@ async function main() {
                         paragraphs: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit."],
                     },
                     descriptionPln: {
-                        blocks: [
-                            {
-                                type: "paragraph",
-                                data: {
-                                    text: "<b>Lorem ipsum dolor sit amet</b>, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-                                },
-                            },
-                            {
-                                type: "paragraph",
-                                data: {
-                                    text: "Ut enim ad minim veniam, quis nostrud <i>exercitation ullamco laboris</i> nisi ut aliquip ex ea commodo consequat.",
-                                },
-                            },
-                        ],
+                        technique:
+                            "<b>Lorem ipsum dolor sit amet</b>, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                        description:
+                            "Ut enim ad minim veniam, quis nostrud <i>exercitation ullamco laboris</i> nisi ut aliquip ex ea commodo consequat.",
                     },
                     descriptionEng: {
-                        blocks: [
-                            {
-                                type: "paragraph",
-                                data: {
-                                    text: "<b>Lorem ipsum dolor sit amet</b>, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-                                },
-                            },
-                            {
-                                type: "paragraph",
-                                data: {
-                                    text: "Ut enim ad minim veniam, quis nostrud <i>exercitation ullamco laboris</i> nisi ut aliquip ex ea commodo consequat.",
-                                },
-                            },
-                        ],
+                        technique:
+                            "<b>Lorem ipsum dolor sit amet</b>, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                        description:
+                            "Ut enim ad minim veniam, quis nostrud <i>exercitation ullamco laboris</i> nisi ut aliquip ex ea commodo consequat.",
                     },
                     yearOfExecution,
                     isVisible: true,
