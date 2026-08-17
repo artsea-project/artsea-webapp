@@ -22,6 +22,11 @@ export default async function AboutPage() {
 
     const socialLinks = ["Instagram", "Behance", "LinkedIn"]
 
+    const profileImageSrc =
+        profile.profileImageContent && profile.profileImageFileType
+            ? `data:image/${profile.profileImageFileType};base64,${profile.profileImageContent.toString("base64")}`
+            : null
+
     return (
         <div className="w-full">
             {/* 1. Hero Section (O mnie - krótko) */}
@@ -60,12 +65,20 @@ export default async function AboutPage() {
                             }}
                         />
 
-                        {/* Image Placeholder */}
-                        <div className="relative z-10 w-full aspect-[469/703] bg-[#E5E5E5] flex items-center justify-center rounded-[50px]">
-                            <span className="font-secondary text-xs tracking-widest uppercase text-[#A8A29E]">
-                                Miejsce na zdjęcie (469x703)
-                            </span>
-                        </div>
+                        {/* Image Placeholder / Rendered Image */}
+                        {profileImageSrc ? (
+                            <img
+                                src={profileImageSrc}
+                                alt={`Portret - ${profile.fullName}`}
+                                className="relative z-10 w-full aspect-[469/703] object-cover rounded-[50px] shadow-sm"
+                            />
+                        ) : (
+                            <div className="relative z-10 w-full aspect-[469/703] bg-[#E5E5E5] flex items-center justify-center rounded-[50px]">
+                                <span className="font-secondary text-xs tracking-widest uppercase text-[#A8A29E]">
+                                    Miejsce na zdjęcie (469x703)
+                                </span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </section>
