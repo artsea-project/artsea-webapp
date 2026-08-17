@@ -1,0 +1,52 @@
+name: Tests
+
+on:
+    pull_request:
+        types:
+            - opened
+            - synchronize
+            - reopened
+            - edited
+
+permissions:
+    contents: read
+
+concurrency:
+    group: tests-${{ github.event.pull_request.number }}
+    cancel-in-progress: true
+
+jobs:
+    tests:
+        name: Tests
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        env:
+            DATABASE_URL: postgres://artsee:artsee@localhost:5432/artsee_dev
+        steps:
+            - name: Check out repository
+              uses: actions/checkout@v4
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: npm
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Start PostgreSQL
+              run: docker compose -f docker-compose.dev.yml up -d --wait
+
+            - name: Push database schema
+              run: npm run db:push -- --force
+
+            - name: Seed test database
+              run: npm run db:seed
+
+            - name: Run tests
+              run: npm run test
+
+            - name: Stop PostgreSQL
+              if: always()
+              run: docker compose -f docker-compose.dev.yml down --volumes
