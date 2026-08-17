@@ -1,6 +1,7 @@
 import { db } from "@/db"
 import { notFound } from "next/navigation"
 import { ArrowUpRight } from "lucide-react"
+import Image from "next/image"
 
 export default async function AboutPage() {
     let profile = null
@@ -21,6 +22,11 @@ export default async function AboutPage() {
             : "Tworzę ilustracje i identyfikacje wizualne, łącząc organiczne formy z minimalistyczną precyzją. Działam w Gdańsku, inspirując się naturą i surową architekturą."
 
     const socialLinks = ["Instagram", "Behance", "LinkedIn"]
+
+    const profileImageSrc =
+        profile.profileImageContent && profile.profileImageFileType
+            ? `data:image/${profile.profileImageFileType};base64,${profile.profileImageContent.toString("base64")}`
+            : null
 
     return (
         <div className="w-full">
@@ -60,12 +66,24 @@ export default async function AboutPage() {
                             }}
                         />
 
-                        {/* Image Placeholder */}
-                        <div className="relative z-10 w-full aspect-[469/703] bg-[#E5E5E5] flex items-center justify-center rounded-[50px]">
-                            <span className="font-secondary text-xs tracking-widest uppercase text-[#A8A29E]">
-                                Miejsce na zdjęcie (469x703)
-                            </span>
-                        </div>
+                        {/* Image Placeholder / Rendered Image */}
+                        {profileImageSrc ? (
+                            <Image
+                                src={profileImageSrc}
+                                alt={`Portret - ${profile.fullName}`}
+                                width={469}
+                                height={703}
+                                unoptimized
+                                priority
+                                className="relative z-10 w-full aspect-[469/703] object-cover rounded-[50px] shadow-sm"
+                            />
+                        ) : (
+                            <div className="relative z-10 w-full aspect-[469/703] bg-[#E5E5E5] flex items-center justify-center rounded-[50px]">
+                                <span className="font-secondary text-xs tracking-widest uppercase text-[#A8A29E]">
+                                    Miejsce na zdjęcie (469x703)
+                                </span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </section>
