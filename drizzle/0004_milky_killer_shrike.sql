@@ -1,2 +1,0 @@
-ALTER TABLE "profile" ALTER COLUMN "contact_pln" SET DATA TYPE jsonb USING contact_pln::jsonb;--> statement-breakpoint
-ALTER TABLE "profile" ALTER COLUMN "contact_eng" SET DATA TYPE jsonb USING contact_eng::jsonb;
