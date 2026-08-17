@@ -13,20 +13,32 @@ export default async function AboutPage() {
         notFound()
     }
 
+    const bioParagraphs = profile.bioPln?.paragraphs || []
+    const shortIntro =
+        bioParagraphs.length > 0
+            ? bioParagraphs[0]
+            : "Tworzę ilustracje i identyfikacje wizualne, łącząc organiczne formy z minimalistyczną precyzją. Działam w Gdańsku, inspirując się naturą i surową architekturą."
+
     return (
         <div className="w-full">
             {/* 1. Hero Section (O mnie - krótko) */}
             <section className="max-w-[1440px] mx-auto px-10 md:px-32 pt-24 pb-32">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-                    {/* Left: Giant Titles */}
-                    <div className="md:col-span-6 flex flex-col justify-between h-full">
-                        <div className="flex flex-col mb-32">
+                    {/* Left: Giant Titles & Intro */}
+                    <div className="md:col-span-6 flex flex-col">
+                        <div className="flex flex-col mb-12">
                             <h1 className="font-primary text-[96px] leading-[1] font-normal tracking-tight text-[#292524]">
                                 {profile.fullName}
                             </h1>
                             <h2 className="font-primary text-[96px] leading-[1] font-normal tracking-tight text-[#78716C] italic">
                                 O mnie
                             </h2>
+                        </div>
+
+                        <div className="max-w-md">
+                            <p className="font-body text-lg leading-relaxed text-[#57534E]">
+                                {shortIntro}
+                            </p>
                         </div>
                     </div>
 
