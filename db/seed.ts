@@ -177,6 +177,7 @@ async function main() {
             .onConflictDoNothing()
 
         // 2. Insert Profile
+        const profileContent = await readFile(path.join(fixtureDirectory, "profile.jpg"))
         await tx
             .insert(profiles)
             .values({
@@ -202,6 +203,9 @@ async function main() {
                 contactEng: {
                     paragraphs: ["If you like my approach to design, feel free to write to me."],
                 },
+                profileImageContent: profileContent,
+                profileImageContentHash: createHash("sha256").update(profileContent).digest("hex"),
+                profileImageFileType: "jpg",
             })
             .onConflictDoNothing()
 
@@ -220,10 +224,28 @@ async function main() {
             .values({ categoryId, namePln: "Sztuka", nameEng: "Art" })
             .onConflictDoNothing()
 
+        const tagNamesPln: Record<string, string> = {
+            Marble: "Marmur",
+            Watercolor: "Akwarela",
+            Brass: "Mosiądz",
+            Poster: "Plakat",
+            Glass: "Szkło",
+            Oil: "Olej",
+            "Still Life": "Martwa natura",
+            Flowers: "Kwiaty",
+            Classical: "Klasyczne",
+        }
+
         // 5. Insert Tags
         await tx
             .insert(tags)
-            .values(tagNames.map((name) => ({ tagId: tagIdByName[name], nameEng: name })))
+            .values(
+                tagNames.map((name) => ({
+                    tagId: tagIdByName[name],
+                    nameEng: name,
+                    namePln: tagNamesPln[name],
+                }))
+            )
             .onConflictDoNothing()
 
         // 6. Insert Art Pieces, Media content, and Tag relations
@@ -237,7 +259,33 @@ async function main() {
         ] of artworks) {
             await tx
                 .insert(artPieces)
-                .values({ artPieceId, categoryId, titleEng, yearOfExecution, isVisible: true })
+                .values({
+                    artPieceId,
+                    categoryId,
+                    titleEng,
+                    titlePln: `${titleEng} (PL)`,
+                    dimensions: "70 x 100 cm",
+                    miniDescriptionPln: {
+                        paragraphs: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit."],
+                    },
+                    miniDescriptionEng: {
+                        paragraphs: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit."],
+                    },
+                    descriptionPln: {
+                        technique:
+                            "<b>Lorem ipsum dolor sit amet</b>, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                        description:
+                            "Ut enim ad minim veniam, quis nostrud <i>exercitation ullamco laboris</i> nisi ut aliquip ex ea commodo consequat.",
+                    },
+                    descriptionEng: {
+                        technique:
+                            "<b>Lorem ipsum dolor sit amet</b>, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                        description:
+                            "Ut enim ad minim veniam, quis nostrud <i>exercitation ullamco laboris</i> nisi ut aliquip ex ea commodo consequat.",
+                    },
+                    yearOfExecution,
+                    isVisible: true,
+                })
                 .onConflictDoNothing()
 
             const content = await readFile(path.join(fixtureDirectory, fixture))
