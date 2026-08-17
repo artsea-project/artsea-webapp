@@ -89,6 +89,31 @@ export default async function AboutPage() {
                     </svg>
                 </div>
             </div>
+
+            {/* 2. Detailed Bio Section (O mnie - długo) */}
+            <section className="max-w-[1440px] mx-auto px-10 md:px-32 pt-32 pb-32">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 items-start">
+                    {/* Left: Highlight Paragraph */}
+                    {bioParagraphs.length > 1 && (
+                        <div className="md:col-span-5 text-[#292524]">
+                            <p className="font-primary text-[32px] leading-tight font-normal">
+                                {bioParagraphs[1]}
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Right: Remaining Paragraphs */}
+                    {bioParagraphs.length > 2 && (
+                        <div className="md:col-span-6 md:col-start-7 text-[#57534E] flex flex-col gap-6">
+                            {bioParagraphs.slice(2).map((paragraph, idx) => (
+                                <p key={idx} className="font-body text-lg leading-relaxed">
+                                    {paragraph}
+                                </p>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </section>
         </div>
     )
 }
