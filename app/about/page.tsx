@@ -4,10 +4,12 @@ import { ArrowUpRight } from "lucide-react"
 
 export default async function AboutPage() {
     let profile = null
+    let socialLinksDb: { linkId: string; name: string; url: string }[] = []
     try {
         profile = await db.query.profiles.findFirst()
+        socialLinksDb = await db.query.links.findMany()
     } catch (error) {
-        console.error("Failed to fetch profile:", error)
+        console.error("Failed to fetch data:", error)
     }
 
     if (!profile) {
@@ -19,8 +21,6 @@ export default async function AboutPage() {
         bioParagraphs.length > 0
             ? bioParagraphs[0]
             : "Tworzę ilustracje i identyfikacje wizualne, łącząc organiczne formy z minimalistyczną precyzją. Działam w Gdańsku, inspirując się naturą i surową architekturą."
-
-    const socialLinks = ["Instagram", "Behance", "LinkedIn"]
 
     const profileImageSrc =
         profile.profileImageContent && profile.profileImageFileType
@@ -137,7 +137,7 @@ export default async function AboutPage() {
             </div>
 
             {/* 3. Contact Section */}
-            <section className="max-w-[1440px] mx-auto px-10 md:px-32 pt-16 pb-32">
+            <section id="contact" className="max-w-[1440px] mx-auto px-10 md:px-32 pt-16 pb-32">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 items-start">
                     {/* Left: Contact CTA */}
                     <div className="md:col-span-5 flex flex-col gap-6">
@@ -166,13 +166,15 @@ export default async function AboutPage() {
                                 Znajdź mnie tutaj
                             </span>
                             <div className="flex flex-wrap gap-8">
-                                {socialLinks.map((network) => (
+                                {socialLinksDb.map((link) => (
                                     <a
-                                        key={network}
-                                        href="#"
+                                        key={link.linkId}
+                                        href={link.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
                                         className="flex items-center gap-1 font-body text-[16px] text-[#292524] hover:text-[#57534E] transition-colors"
                                     >
-                                        {network}
+                                        {link.name.charAt(0).toUpperCase() + link.name.slice(1)}
                                         <ArrowUpRight size={18} />
                                     </a>
                                 ))}
