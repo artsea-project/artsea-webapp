@@ -1,5 +1,6 @@
 import { db } from "@/db"
 import { notFound } from "next/navigation"
+import { ArrowUpRight } from "lucide-react"
 
 export default async function AboutPage() {
     let profile = null
@@ -18,6 +19,8 @@ export default async function AboutPage() {
         bioParagraphs.length > 0
             ? bioParagraphs[0]
             : "Tworzę ilustracje i identyfikacje wizualne, łącząc organiczne formy z minimalistyczną precyzją. Działam w Gdańsku, inspirując się naturą i surową architekturą."
+
+    const socialLinks = ["Instagram", "Behance", "LinkedIn"]
 
     return (
         <div className="w-full">
@@ -112,6 +115,57 @@ export default async function AboutPage() {
                             ))}
                         </div>
                     )}
+                </div>
+            </section>
+
+            {/* Separator Divider */}
+            <div className="max-w-[1440px] mx-auto px-10 md:px-32">
+                <div className="w-full h-px" style={{ backgroundColor: "#DCD7CF" }} />
+            </div>
+
+            {/* 3. Contact Section */}
+            <section className="max-w-[1440px] mx-auto px-10 md:px-32 pt-16 pb-32">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 items-start">
+                    {/* Left: Contact CTA */}
+                    <div className="md:col-span-5 flex flex-col gap-6">
+                        <h2 className="font-primary text-[40px] md:text-[56px] leading-[1.1] font-normal text-[#292524]">
+                            Skontaktuj się ze mną.
+                        </h2>
+                        <div className="text-[#78716C] font-body text-lg leading-relaxed flex flex-col gap-1">
+                            <p>Jeśli podoba Ci się moje podejście do designu, napisz do mnie.</p>
+                            <p>Zawsze jestem otwarta na nowe, interesujące wyzwania.</p>
+                        </div>
+                    </div>
+
+                    {/* Right: Email & Socials */}
+                    <div className="md:col-span-6 md:col-start-7 flex flex-col gap-12 pt-2 md:pt-4">
+                        <div className="flex w-max">
+                            <a
+                                href="mailto:elise.roux@art.pl"
+                                className="font-body text-[24px] md:text-[28px] text-[#292524] hover:text-[#57534E] transition-colors border-b border-[#292524] pb-1"
+                            >
+                                elise.roux@art.pl
+                            </a>
+                        </div>
+
+                        <div className="flex flex-col gap-4">
+                            <span className="font-secondary text-[12px] tracking-widest uppercase text-[#A8A29E]">
+                                Znajdź mnie tutaj
+                            </span>
+                            <div className="flex flex-wrap gap-8">
+                                {socialLinks.map((network) => (
+                                    <a
+                                        key={network}
+                                        href="#"
+                                        className="flex items-center gap-1 font-body text-[16px] text-[#292524] hover:text-[#57534E] transition-colors"
+                                    >
+                                        {network}
+                                        <ArrowUpRight size={18} />
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
         </div>
