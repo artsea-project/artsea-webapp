@@ -66,6 +66,29 @@ export default async function AboutPage() {
                     </div>
                 </div>
             </section>
+
+            {/* Accent Line & Curvy Deco */}
+            <div className="max-w-[1440px] mx-auto px-10 md:px-32 relative z-0">
+                <div className="w-full h-px" style={{ backgroundColor: "#DCD7CF" }} />
+
+                {/* Curvy SVG */}
+                <div className="absolute right-0 md:-right-16 top-[-100px] -z-10 hidden md:block">
+                    <svg
+                        width="821"
+                        height="184"
+                        viewBox="0 0 821 184"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-full max-w-[600px] lg:max-w-none h-auto"
+                    >
+                        <path
+                            d="M0.223732 60.3106C146.956 -13.0553 287.018 6.95362 420.41 120.337C553.803 233.721 687.195 193.703 820.588 0.284001"
+                            stroke="#DCD7CF"
+                            strokeWidth="1"
+                        />
+                    </svg>
+                </div>
+            </div>
         </div>
     )
 }
