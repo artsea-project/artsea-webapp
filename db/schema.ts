@@ -50,12 +50,20 @@ export const profiles = pgTable(
         bioEng: jsonb("bio_eng").$type<BioContent>(),
         contactPln: jsonb("contact_pln").$type<ContactContent>(),
         contactEng: jsonb("contact_eng").$type<ContactContent>(),
-        profileImageUrl: text("profile_image_url"),
+        profileImageContent: bytea("profile_image_content"),
+        profileImageContentHash: text("profile_image_content_hash"),
+        profileImageFileType: text("profile_image_file_type", {
+            enum: ["png", "jpg", "gif", "mp4"],
+        }),
         isSingleton: boolean("is_singleton").notNull().default(true),
     },
     (table) => [
         unique("profile_singleton_uq").on(table.isSingleton),
         check("profile_singleton_val_chk", sql`${table.isSingleton} = true`),
+        check(
+            "profile_image_content_hash_format_chk",
+            sql`${table.profileImageContentHash} ~ '^[0-9a-f]{64}$'`
+        ),
     ]
 )
 
