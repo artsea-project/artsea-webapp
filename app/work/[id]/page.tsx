@@ -8,16 +8,10 @@ interface PageProps {
     params: Promise<{ id: string }>
 }
 
-function parseTechnika(value: unknown): string {
+function parseDescriptionSlot(value: unknown, slot: "technique" | "description"): string {
     if (!value || typeof value !== "object") return ""
     const obj = value as Record<string, unknown>
-    return typeof obj.technique === "string" ? obj.technique : ""
-}
-
-function parseOpis(value: unknown): string {
-    if (!value || typeof value !== "object") return ""
-    const obj = value as Record<string, unknown>
-    return typeof obj.description === "string" ? obj.description : ""
+    return typeof obj[slot] === "string" ? (obj[slot] as string) : ""
 }
 
 function CarouselPlaceholder() {
@@ -198,8 +192,8 @@ export default async function WorkPage({ params }: PageProps) {
     const title = artPiece.titlePln
     const categoryName = artPiece.category?.namePln
 
-    const technikaPln = parseTechnika(artPiece.descriptionPln)
-    const opisPln = parseOpis(artPiece.descriptionPln)
+    const technique = parseDescriptionSlot(artPiece.descriptionPln, "technique")
+    const description = parseDescriptionSlot(artPiece.descriptionPln, "description")
 
     const tagsList = artPiece.tags
         .map((t) => t.tag?.namePln)
@@ -218,8 +212,8 @@ export default async function WorkPage({ params }: PageProps) {
                             tags={tagsList}
                         />
                         <DimensionsSection dimensions={artPiece.dimensions} />
-                        <DetailSection label="Technika i materiały" content={technikaPln} />
-                        <DetailSection label="O projekcie" content={opisPln} />
+                        <DetailSection label="Technika i materiały" content={technique} />
+                        <DetailSection label="O projekcie" content={description} />
                     </div>
                 </div>
                 <NextArtworkNavigation nextArtwork={nextArtwork} />
