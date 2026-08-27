@@ -98,10 +98,11 @@ interface SocialLink {
 }
 
 interface ContactSectionProps {
+    email?: string | null
     socialLinks: SocialLink[]
 }
 
-function ContactSection({ socialLinks }: ContactSectionProps) {
+function ContactSection({ email, socialLinks }: ContactSectionProps) {
     return (
         <section id="contact" className="max-w-[1440px] mx-auto px-10 md:px-32 pt-16 pb-32">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 items-start">
@@ -116,14 +117,16 @@ function ContactSection({ socialLinks }: ContactSectionProps) {
                 </div>
 
                 <div className="md:col-span-6 md:col-start-7 flex flex-col gap-12 pt-2 md:pt-4">
-                    <div className="flex w-max">
-                        <a
-                            href="mailto:elise.roux@art.pl"
-                            className="font-body text-[24px] md:text-[28px] text-[#292524] hover:text-[#57534E] transition-colors border-b border-[#292524] pb-1"
-                        >
-                            elise.roux@art.pl
-                        </a>
-                    </div>
+                    {email && (
+                        <div className="flex w-max">
+                            <a
+                                href={`mailto:${email}`}
+                                className="font-body text-[24px] md:text-[28px] text-[#292524] hover:text-[#57534E] transition-colors border-b border-[#292524] pb-1"
+                            >
+                                {email}
+                            </a>
+                        </div>
+                    )}
 
                     {socialLinks.length > 0 && (
                         <div className="flex flex-col gap-4">
@@ -155,9 +158,12 @@ function ContactSection({ socialLinks }: ContactSectionProps) {
 export default async function AboutPage() {
     let profile = null
     let socialLinksDb: SocialLink[] = []
+    let email: string | null = null
     try {
         profile = await db.query.profiles.findFirst()
         socialLinksDb = await db.query.links.findMany()
+        const user = await db.query.users.findFirst()
+        email = user?.email || null
     } catch (error) {
         console.error("Failed to fetch data:", error)
     }
@@ -212,7 +218,7 @@ export default async function AboutPage() {
                 <div className="w-full h-px" style={{ backgroundColor: "#DCD7CF" }} />
             </div>
 
-            <ContactSection socialLinks={socialLinksDb} />
+            <ContactSection email={email} socialLinks={socialLinksDb} />
         </div>
     )
 }
