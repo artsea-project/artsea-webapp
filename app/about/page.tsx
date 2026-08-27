@@ -173,10 +173,7 @@ export default async function AboutPage() {
     }
 
     const bioParagraphs = profile.bioPln?.paragraphs || []
-    const shortIntro =
-        bioParagraphs.length > 0
-            ? bioParagraphs[0]
-            : "Tworzę ilustracje i identyfikacje wizualne, łącząc organiczne formy z minimalistyczną precyzją. Działam w Gdańsku, inspirując się naturą i surową architekturą."
+    const shortIntro = bioParagraphs.length > 0 ? bioParagraphs[0] : ""
 
     const profileImageSrc =
         profile.profileImageContent && profile.profileImageFileType
