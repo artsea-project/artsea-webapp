@@ -177,7 +177,7 @@ export default async function WorkPage({ params }: PageProps) {
                 titlePln: true,
             },
             where: (fields, { eq }) => eq(fields.isVisible, true),
-            orderBy: (fields, { asc }) => asc(fields.artPieceId),
+            orderBy: (fields, { asc }) => asc(fields.uploadedAt),
         })
     } catch (error) {
         console.error("Failed to fetch all artworks:", error)
