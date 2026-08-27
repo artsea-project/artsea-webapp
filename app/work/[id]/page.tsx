@@ -109,11 +109,13 @@ interface NextArtworkNavigationProps {
     nextArtwork: {
         artPieceId: string
         titlePln: string | null
+        titleEng: string | null
     } | null
 }
 
 function NextArtworkNavigation({ nextArtwork }: NextArtworkNavigationProps) {
     if (!nextArtwork) return null
+    const nextTitle = nextArtwork.titlePln || nextArtwork.titleEng || "Bez tytułu"
     return (
         <div className="mt-24 pt-12 border-t border-stone-200 dark:border-zinc-800">
             <Link
@@ -125,7 +127,7 @@ function NextArtworkNavigation({ nextArtwork }: NextArtworkNavigationProps) {
                         Zobacz kolejny
                     </span>
                     <span className="text-3xl md:text-5xl font-normal font-primary text-stone-950 dark:text-stone-50 transition-colors">
-                        {nextArtwork.titlePln || "Bez tytułu"}
+                        {nextTitle}
                     </span>
                 </div>
                 <div className="flex items-center">
@@ -169,12 +171,13 @@ export default async function WorkPage({ params }: PageProps) {
         notFound()
     }
 
-    let allArtworks: { artPieceId: string; titlePln: string | null }[] = []
+    let allArtworks: { artPieceId: string; titlePln: string | null; titleEng: string | null }[] = []
     try {
         allArtworks = await db.query.artPieces.findMany({
             columns: {
                 artPieceId: true,
                 titlePln: true,
+                titleEng: true,
             },
             where: (fields, { eq }) => eq(fields.isVisible, true),
             orderBy: (fields, { asc }) => asc(fields.uploadedAt),
@@ -189,7 +192,7 @@ export default async function WorkPage({ params }: PageProps) {
             ? allArtworks[(currentIndex + 1) % allArtworks.length]
             : null
 
-    const title = artPiece.titlePln
+    const title = artPiece.titlePln || artPiece.titleEng || "Bez tytułu"
     const categoryName = artPiece.category?.namePln
 
     const technique = parseDescriptionSlot(artPiece.descriptionPln, "technique")
