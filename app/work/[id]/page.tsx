@@ -195,7 +195,7 @@ export default async function WorkPage({ params }: PageProps) {
     const technique = parseDescriptionSlot(artPiece.descriptionPln, "technique")
     const description = parseDescriptionSlot(artPiece.descriptionPln, "description")
 
-    const tagsList = artPiece.tags
+    const tagsList = (artPiece.tags || [])
         .map((t) => t.tag?.namePln)
         .filter((name): name is string => typeof name === "string")
 
