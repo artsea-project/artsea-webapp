@@ -1,18 +1,13 @@
 import { db } from "@/db"
-import { SiteTheme } from "@/types/theme"
 
 interface ContactSectionProps {
     email?: string | null
-    headingFont: string
 }
 
-function ContactSection({ email, headingFont }: ContactSectionProps) {
+function ContactSection({ email }: ContactSectionProps) {
     return (
         <div className="flex flex-col justify-between space-y-6 md:space-y-12">
-            <h2
-                className="max-w-xl text-4xl font-normal leading-tight tracking-tight text-[#f4f1ec] md:text-5xl lg:text-6xl"
-                style={{ fontFamily: headingFont }}
-            >
+            <h2 className="max-w-xl text-4xl font-normal leading-tight tracking-tight text-[#f4f1ec] md:text-5xl lg:text-6xl font-primary">
                 Porozmawiajmy o sztuce.
             </h2>
             {email && (
@@ -64,25 +59,16 @@ export default async function Footer() {
     const user = await db.query.users.findFirst()
     const linksList = await db.query.links.findMany()
 
-    const settings = await db.query.siteSettings.findFirst()
-    const theme = settings?.theme as SiteTheme | undefined
-
     const email = user?.email || undefined
 
     const dbSocialLinks = linksList.filter((l) => l.name.toLowerCase() !== "email")
 
     const socialLinks = dbSocialLinks.map((l) => ({ name: l.name, url: l.url, id: l.linkId }))
 
-    const headingFont = theme?.fonts.primaryFont || "Playfair Display"
-    const bodyFont = theme?.fonts.secondaryFont || theme?.fonts.additionalFont || "Inter"
-
     return (
-        <footer
-            className="font-sans border-t border-stone-800 bg-[#1c1917] px-6 py-16 text-[#f4f1ec] transition-colors duration-300 md:px-16 md:py-24"
-            style={{ fontFamily: bodyFont }}
-        >
+        <footer className="font-body border-t border-stone-800 bg-[#1c1917] px-6 py-16 text-[#f4f1ec] transition-colors duration-300 md:px-16 md:py-24">
             <div className="mx-auto flex max-w-7xl flex-col gap-12 items-start justify-between md:flex-row md:items-stretch md:gap-6">
-                <ContactSection email={email} headingFont={headingFont} />
+                <ContactSection email={email} />
                 <SocialsSection socialLinks={socialLinks} />
             </div>
         </footer>
