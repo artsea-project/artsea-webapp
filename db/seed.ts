@@ -4,7 +4,7 @@ import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { config } from "dotenv"
 import { assertSeedSafety, parseSeedArguments, seedArtist } from "./seed-guard"
-import type { SiteTheme } from "../types/theme"
+import { defaultSiteTheme } from "@/lib/theme/theme"
 import type { BentoBoxLayout } from "../types/bento"
 
 config({ path: path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../.env.local") })
@@ -263,27 +263,10 @@ async function main() {
                 .onConflictDoNothing()
         }
 
-        // 7. Insert Site Settings with Bento layout and default theme
-        const mockTheme: SiteTheme = {
-            fonts: {
-                primaryFont: "Playfair Display",
-                secondaryFont: "Inter",
-                additionalFont: "Inter",
-            },
-            colors: {
-                primaryColor: "#292524",
-                secondaryColor: "#A8A29E",
-                additionalColor: "#1C1917",
-                accentColor: "#A8A29E",
-                backgroundColor: "#FFFFFF",
-            },
-            presetTheme: "default",
-            darkModeExperimental: false,
-        }
-
+        // 7. Insert Site Settings with Bento layout and the shared default theme
         await tx
             .insert(siteSettings)
-            .values({ siteSettingsId, theme: mockTheme, layoutBentoBox: layout })
+            .values({ siteSettingsId, theme: defaultSiteTheme, layoutBentoBox: layout })
             .onConflictDoNothing()
     })
 
