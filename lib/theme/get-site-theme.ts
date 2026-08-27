@@ -1,10 +1,10 @@
 import { cacheLife, cacheTag } from "next/cache"
 
-import type { SiteThemeFonts } from "@/types/theme"
+import type { SiteTheme } from "@/types/theme"
 
 export const SITE_THEME_CACHE_TAG = "site-theme"
 
-async function loadSiteThemeFonts(): Promise<SiteThemeFonts | null> {
+async function loadSiteTheme(): Promise<SiteTheme | null> {
     "use cache"
 
     cacheLife("max")
@@ -18,16 +18,16 @@ async function loadSiteThemeFonts(): Promise<SiteThemeFonts | null> {
             },
         })
 
-        return settings?.theme?.fonts ?? null
+        return settings?.theme ?? null
     } catch {
         return null
     }
 }
 
-export async function getSiteThemeFonts(): Promise<SiteThemeFonts | null> {
+export async function getSiteTheme(): Promise<SiteTheme | null> {
     if (!process.env.DATABASE_URL) {
         return null
     }
 
-    return loadSiteThemeFonts()
+    return loadSiteTheme()
 }

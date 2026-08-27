@@ -7,7 +7,7 @@ export interface SiteThemeFonts {
 export interface SiteThemeColors {
     primaryColor: string // "Kolor główny" - Used for headings, brand logo, etc. (Default: #292524)
     secondaryColor: string // "Kolor pomocniczy" - Used for secondary text and accents (Default: #A8A29E)
-    additionalColor: string // "Kolor dodatkowy" - Used for main body text (Default: #1C1917)
+    foregroundColor: string // Default text color rendered over the page background (Default: #1C1917)
     accentColor: string // "Kolor akcentów" - Accent color highlights (Default: #A8A29E)
     backgroundColor: string // "Kolor tła" - Page background (Default: #FFFFFF)
 }

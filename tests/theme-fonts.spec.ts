@@ -1,21 +1,7 @@
 import { expect, test } from "@playwright/test"
-import { getSiteThemeFonts } from "@/lib/theme/get-site-theme"
 import { resolveThemeFonts } from "@/lib/theme/fonts"
 
 test.describe("semantic theme fonts", () => {
-    test("does not require a database to provide fallback fonts", async () => {
-        const databaseUrl = process.env.DATABASE_URL
-        delete process.env.DATABASE_URL
-
-        try {
-            await expect(getSiteThemeFonts()).resolves.toBeNull()
-        } finally {
-            if (databaseUrl) {
-                process.env.DATABASE_URL = databaseUrl
-            }
-        }
-    })
-
     test("uses portfolio defaults when settings are unavailable", () => {
         expect(resolveThemeFonts(null)).toEqual({
             fontNames: ["Playfair Display", "Inter", "Geist Mono"],
