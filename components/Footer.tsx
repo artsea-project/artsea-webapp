@@ -61,9 +61,7 @@ export default async function Footer() {
 
     const email = user?.email || undefined
 
-    const dbSocialLinks = linksList.filter((l) => l.name.toLowerCase() !== "email")
-
-    const socialLinks = dbSocialLinks.map((l) => ({ name: l.name, url: l.url, id: l.linkId }))
+    const socialLinks = linksList.map((l) => ({ name: l.name, url: l.url, id: l.linkId }))
 
     return (
         <footer className="font-body border-t border-stone-800 bg-[#1c1917] px-6 py-16 text-[#f4f1ec] transition-colors duration-300 md:px-16 md:py-24">
