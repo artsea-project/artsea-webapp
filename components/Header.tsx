@@ -26,15 +26,13 @@ export default async function Header() {
     return (
         <header className="w-full">
             <div className="max-w-7xl mx-auto py-8 px-6 md:py-12 md:px-16 flex items-center justify-between relative">
-                {artistName && (
-                    <Link
-                        href="/"
-                        className="font-primary text-2xl md:text-3xl font-bold tracking-tight hover:opacity-90 transition-opacity"
-                        style={{ color: primaryColor }}
-                    >
-                        {artistName}
-                    </Link>
-                )}
+                <Link
+                    href="/"
+                    className="font-primary text-2xl md:text-3xl font-bold tracking-tight hover:opacity-90 transition-opacity"
+                    style={{ color: primaryColor }}
+                >
+                    {artistName}
+                </Link>
 
                 <NavLinks />
             </div>
