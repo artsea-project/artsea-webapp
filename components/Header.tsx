@@ -19,8 +19,7 @@ export default async function Header() {
         }
     }
 
-    const rawName = profile?.fullName || "Élise Roux."
-    const artistName = rawName.endsWith(".") ? rawName : `${rawName}.`
+    const artistName = profile?.fullName
 
     const primaryColor = settings?.theme?.colors.primaryColor || "#292524"
 
