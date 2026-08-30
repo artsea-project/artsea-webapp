@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import { db } from "@/db"
-import { Image as ImageIcon, Ruler } from "lucide-react"
+import { Image as ImageIcon, Ruler, MoveRight } from "lucide-react"
 import parse from "html-react-parser"
 
 interface PageProps {
@@ -131,15 +131,7 @@ function NextArtworkNavigation({ nextArtwork }: NextArtworkNavigationProps) {
                     </span>
                 </div>
                 <div className="flex items-center">
-                    <svg
-                        viewBox="0 0 70 24"
-                        className="w-16 h-6 stroke-[1.5] text-stone-950 dark:text-stone-50"
-                        fill="none"
-                        stroke="currentColor"
-                    >
-                        <path d="M0 12H60" strokeLinecap="round" />
-                        <path d="M50 2L60 12L50 22" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
+                    <MoveRight className="w-32 h-12 stroke-[1.5] text-stone-950 dark:text-stone-50" />
                 </div>
             </Link>
         </div>
