@@ -29,33 +29,26 @@ function HeroSection({ fullName, shortIntro, profileImageSrc }: HeroSectionProps
                     </div>
                 </div>
 
-                <div className="md:col-span-5 md:col-start-8 relative pt-12 md:pt-0">
-                    <div
-                        className="absolute rounded-full z-0 max-[1060px]:hidden"
-                        style={{
-                            width: "280px",
-                            height: "280px",
-                            backgroundColor: "#DCD7CF",
-                            opacity: 0.8,
-                            left: "-203px",
-                            bottom: "0px",
-                        }}
-                    />
-
-                    {profileImageSrc ? (
+                {profileImageSrc && (
+                    <div className="md:col-span-5 md:col-start-8 relative pt-12 md:pt-0">
+                        <div
+                            className="absolute rounded-full z-0 max-[1060px]:hidden"
+                            style={{
+                                width: "280px",
+                                height: "280px",
+                                backgroundColor: "#DCD7CF",
+                                opacity: 0.8,
+                                left: "-203px",
+                                bottom: "0px",
+                            }}
+                        />
                         <img
                             src={profileImageSrc}
                             alt={`Portret - ${fullName}`}
                             className="relative z-10 w-full aspect-[469/703] object-cover rounded-[50px] shadow-sm"
                         />
-                    ) : (
-                        <div className="relative z-10 w-full aspect-[469/703] bg-[#E5E5E5] flex items-center justify-center rounded-[50px]">
-                            <span className="font-secondary text-xs tracking-widest uppercase text-[#A8A29E]">
-                                Miejsce na zdjęcie (469x703)
-                            </span>
-                        </div>
-                    )}
-                </div>
+                    </div>
+                )}
             </div>
         </section>
     )
