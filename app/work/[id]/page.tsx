@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import { db } from "@/db"
-import { Image as ImageIcon, Ruler, MoveRight } from "lucide-react"
+import { Ruler, MoveRight } from "lucide-react"
 import parse from "html-react-parser"
 
 interface PageProps {
@@ -15,16 +15,7 @@ function parseDescriptionSlot(value: unknown, slot: "technique" | "description")
 }
 
 function CarouselPlaceholder() {
-    return (
-        <div className="md:col-span-7">
-            <div className="bg-stone-200/50 rounded-lg p-20 text-center text-stone-400 border border-dashed border-stone-300 flex flex-col items-center justify-center min-h-[400px]">
-                <ImageIcon className="w-12 h-12 text-stone-300 mb-4 stroke-[1.5]" />
-                <span className="text-xs uppercase tracking-widest font-secondary font-medium text-stone-400">
-                    Miejsce na karuzelę zdjęć
-                </span>
-            </div>
-        </div>
-    )
+    return <div className="md:col-span-7 bg-stone-100 dark:bg-zinc-900 rounded-lg min-h-[400px]" />
 }
 
 interface ArtworkHeaderProps {
