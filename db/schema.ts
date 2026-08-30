@@ -53,7 +53,7 @@ export const profiles = pgTable(
         profileImageContent: bytea("profile_image_content"),
         profileImageContentHash: text("profile_image_content_hash"),
         profileImageFileType: text("profile_image_file_type", {
-            enum: ["png", "jpg", "gif", "mp4"],
+            enum: ["png", "jpg"],
         }),
         isSingleton: boolean("is_singleton").notNull().default(true),
     },
