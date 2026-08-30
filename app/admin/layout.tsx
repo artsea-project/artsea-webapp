@@ -1,4 +1,11 @@
+import type { Metadata } from "next"
+
 import AdminSidebar from "@/components/AdminSidebar"
+
+export const metadata: Metadata = {
+    title: "Artsea Panel",
+    description: "Panel administracyjny Artsea",
+}
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     return (
