@@ -1,6 +1,13 @@
 import { db } from "@/db"
 import { notFound } from "next/navigation"
 import { ArrowUpRight } from "lucide-react"
+function parseParagraphs(value: unknown): string[] {
+    if (!value || typeof value !== "object") return []
+    const obj = value as Record<string, unknown>
+    return Array.isArray(obj.paragraphs)
+        ? obj.paragraphs.filter((p): p is string => typeof p === "string")
+        : []
+}
 
 interface HeroSectionProps {
     fullName: string
@@ -93,9 +100,16 @@ interface SocialLink {
 interface ContactSectionProps {
     email?: string | null
     socialLinks: SocialLink[]
+    paragraphs: string[]
 }
 
-function ContactSection({ email, socialLinks }: ContactSectionProps) {
+function ContactSection({ email, socialLinks, paragraphs }: ContactSectionProps) {
+    const defaultParagraphs = [
+        "Jeśli podoba Ci się moje podejście do designu, napisz do mnie.",
+        "Zawsze jestem otwarta na nowe, interesujące wyzwania.",
+    ]
+    const displayParagraphs = paragraphs.length > 0 ? paragraphs : defaultParagraphs
+
     return (
         <section id="contact" className="max-w-[1440px] mx-auto px-10 md:px-32 pt-16 pb-32">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 items-start">
@@ -104,8 +118,9 @@ function ContactSection({ email, socialLinks }: ContactSectionProps) {
                         Skontaktuj się ze mną.
                     </h2>
                     <div className="text-[#78716C] font-body text-lg leading-relaxed flex flex-col gap-1">
-                        <p>Jeśli podoba Ci się moje podejście do designu, napisz do mnie.</p>
-                        <p>Zawsze jestem otwarta na nowe, interesujące wyzwania.</p>
+                        {displayParagraphs.map((paragraph, idx) => (
+                            <p key={idx}>{paragraph}</p>
+                        ))}
                     </div>
                 </div>
 
@@ -165,7 +180,8 @@ export default async function AboutPage() {
         notFound()
     }
 
-    const bioParagraphs = profile.bioPln?.paragraphs || []
+    const bioParagraphs = parseParagraphs(profile.bioPln)
+    const contactParagraphs = parseParagraphs(profile.contactPln)
     const shortIntro = bioParagraphs.length > 0 ? bioParagraphs[0] : ""
 
     const profileImageSrc =
@@ -208,7 +224,11 @@ export default async function AboutPage() {
                 <div className="w-full h-px" style={{ backgroundColor: "#DCD7CF" }} />
             </div>
 
-            <ContactSection email={email} socialLinks={socialLinksDb} />
+            <ContactSection
+                email={email}
+                socialLinks={socialLinksDb}
+                paragraphs={contactParagraphs}
+            />
         </div>
     )
 }
