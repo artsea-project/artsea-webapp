@@ -30,7 +30,7 @@ const NAV_ITEMS: NavItem[] = [
     { label: "Profil", href: "/admin/profile", icon: User },
 ]
 
-const FOOTER_ITEMS: NavItem[] = [{ label: "Podgląd portfolio", href: "/", icon: Eye }]
+const PORTFOLIO_PREVIEW_ITEM: NavItem = { label: "Podgląd portfolio", href: "/", icon: Eye }
 
 // Shared so the logout button and the links can't drift apart visually.
 const rowClasses = (active: boolean) =>
@@ -76,9 +76,10 @@ export default function AdminSidebar({ userName }: { userName: string }) {
                 aria-label="Konto"
                 className="mt-auto flex shrink-0 flex-col gap-2 border-t border-slate-100 pt-4"
             >
-                {FOOTER_ITEMS.map((item) => (
-                    <SidebarLink key={item.href} {...item} active={isActive(item.href)} />
-                ))}
+                <SidebarLink
+                    {...PORTFOLIO_PREVIEW_ITEM}
+                    active={isActive(PORTFOLIO_PREVIEW_ITEM.href)}
+                />
 
                 <form action={logout}>
                     <button type="submit" className={rowClasses(false)}>
