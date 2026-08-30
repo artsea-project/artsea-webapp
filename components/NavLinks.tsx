@@ -8,7 +8,7 @@ import { Menu, X } from "lucide-react"
 const NAV_ITEMS = [
     { name: "O MNIE", href: "/about" },
     { name: "PORTFOLIO", href: "/" },
-    { name: "KONTAKT", href: "/contact" },
+    { name: "KONTAKT", href: "/about#contact" },
 ]
 
 const LANGUAGES = ["PL", "EN"] as const
@@ -21,10 +21,11 @@ function NavItemLinks({ className, onNavigate }: { className?: string; onNavigat
     const pathname = usePathname()
 
     const isLinkActive = (href: string) => {
-        if (href === "/") {
+        const pathOnly = href.split("#")[0]
+        if (pathOnly === "/") {
             return pathname === "/" || pathname === ""
         }
-        return pathname === href || pathname.startsWith(`${href}/`)
+        return pathname === pathOnly || pathname.startsWith(`${pathOnly}/`)
     }
 
     return (
