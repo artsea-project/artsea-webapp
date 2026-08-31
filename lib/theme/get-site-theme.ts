@@ -1,12 +1,14 @@
-import { connection } from "next/server"
+import { cacheLife, cacheTag } from "next/cache"
+
 import type { SiteThemeFonts } from "@/types/theme"
 
-export async function getSiteThemeFonts(): Promise<SiteThemeFonts | null> {
-    if (!process.env.DATABASE_URL) {
-        return null
-    }
+export const SITE_THEME_CACHE_TAG = "site-theme"
 
-    await connection()
+async function loadSiteThemeFonts(): Promise<SiteThemeFonts | null> {
+    "use cache"
+
+    cacheLife("max")
+    cacheTag(SITE_THEME_CACHE_TAG)
 
     try {
         const { db } = await import("@/db")
@@ -20,4 +22,12 @@ export async function getSiteThemeFonts(): Promise<SiteThemeFonts | null> {
     } catch {
         return null
     }
+}
+
+export async function getSiteThemeFonts(): Promise<SiteThemeFonts | null> {
+    if (!process.env.DATABASE_URL) {
+        return null
+    }
+
+    return loadSiteThemeFonts()
 }
