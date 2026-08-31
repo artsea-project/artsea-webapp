@@ -5,36 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1779238379059,
-      "tag": "0000_regular_wolfsbane",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1784229908868,
-      "tag": "0001_dizzy_photon",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1784230714719,
-      "tag": "0002_rare_warbound",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1784666617629,
-      "tag": "0003_burly_anita_blake",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1784666947385,
-      "tag": "0004_milky_killer_shrike",
+      "when": 1786994772999,
+      "tag": "0000_amusing_moira_mactaggert",
       "breakpoints": true
     }
   ]
