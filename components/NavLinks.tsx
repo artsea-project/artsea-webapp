@@ -37,7 +37,7 @@ function NavItemLinks({ className, onNavigate }: { className?: string; onNavigat
                         key={item.href}
                         href={item.href}
                         onClick={onNavigate}
-                        className={`transition-colors duration-200 ${active ? "text-stone-800" : "text-stone-400"} ${className ?? ""}`}
+                        className={`transition-colors duration-200 ${active ? "text-primary" : "text-secondary"} ${className ?? ""}`}
                     >
                         {item.name}
                     </Link>
@@ -58,12 +58,12 @@ function LangToggle({
         <>
             {LANGUAGES.map((lang, index) => (
                 <Fragment key={lang}>
-                    {index > 0 && <span className="text-stone-400 opacity-40">/</span>}
+                    {index > 0 && <span className="text-secondary opacity-40">/</span>}
                     <button
                         type="button"
                         onClick={() => onSelect(lang)}
                         className={`transition-colors duration-200 focus:outline-none ${
-                            currentLang === lang ? "text-stone-800" : "text-stone-400"
+                            currentLang === lang ? "text-primary" : "text-secondary"
                         }`}
                         aria-label={`Switch language to ${lang === "PL" ? "Polish" : "English"}`}
                     >
@@ -95,7 +95,7 @@ export default function NavLinks() {
                 <button
                     type="button"
                     onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                    className="p-2 text-stone-800 transition-colors focus:outline-none"
+                    className="p-2 text-primary transition-colors focus:outline-none"
                     aria-label="Toggle navigation menu"
                     aria-expanded={mobileMenuOpen}
                     aria-controls="mobile-menu"
@@ -107,11 +107,11 @@ export default function NavLinks() {
             {/* Stays mounted so the toggle's aria-controls always resolves to a real element. */}
             <nav
                 id="mobile-menu"
-                className={`${mobileMenuOpen ? "flex" : "hidden"} md:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-md border-b border-stone-200 py-6 px-6 flex-col gap-4 shadow-lg z-50 ${NAV_TYPOGRAPHY}`}
+                className={`${mobileMenuOpen ? "flex" : "hidden"} md:hidden absolute top-full left-0 w-full bg-background/95 backdrop-blur-md border-b border-secondary/20 py-6 px-6 flex-col gap-4 shadow-lg z-50 ${NAV_TYPOGRAPHY}`}
             >
                 <NavItemLinks className="py-2" onNavigate={() => setMobileMenuOpen(false)} />
 
-                <div className="flex items-center gap-2 pt-4 border-t border-stone-100 text-xs font-normal">
+                <div className="flex items-center gap-2 pt-4 border-t border-secondary/20 text-xs font-normal">
                     <LangToggle
                         currentLang={currentLang}
                         onSelect={(lang) => {
