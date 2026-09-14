@@ -14,6 +14,7 @@ import {
 import {
     buildBentoLayout,
     cleanDatabase,
+    initializeSeedAuthentication,
     seedArtistProfile,
     seedArtistUser,
     seedSiteSettings,
@@ -127,6 +128,7 @@ async function main() {
         })
         .from(users)
     assertSeedSafety({ ...seedOptions, existingUsers })
+    await initializeSeedAuthentication()
 
     await db.transaction(async (tx) => {
         await cleanDatabase(tx)

@@ -7,6 +7,7 @@ import * as schema from "./schema"
 import {
     accounts,
     artPieces,
+    authInstallation,
     artPieceTags,
     categories,
     links,
@@ -145,6 +146,11 @@ export async function cleanDatabase(tx: SeedTransaction) {
     await tx.delete(users)
 }
 
+export async function initializeSeedAuthentication() {
+    const { getOrCreateAuthInstallation } = await import("@/lib/auth/installation")
+    await getOrCreateAuthInstallation()
+}
+
 export async function seedArtistUser(tx: SeedTransaction, passwordHash: string) {
     await tx.insert(users).values(seedArtist).onConflictDoNothing()
     await tx
@@ -156,6 +162,8 @@ export async function seedArtistUser(tx: SeedTransaction, passwordHash: string) 
             password: passwordHash,
         })
         .onConflictDoNothing()
+    const now = new Date()
+    await tx.update(authInstallation).set({ setupCompletedAt: now, updatedAt: now })
 }
 
 export async function seedArtistProfile(tx: SeedTransaction, profileContent: Buffer) {
