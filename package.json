@@ -21,6 +21,7 @@
         "format:check": "git ls-files -z -- '*.js' '*.jsx' '*.ts' '*.tsx' '*.json' '*.md' '*.mjs' '*.css' | xargs -0 prettier --check"
     },
     "dependencies": {
+        "better-auth": "1.6.23",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "dotenv": "^17.4.2",
