@@ -1,10 +1,11 @@
 import { expect, test } from "@playwright/test"
 import {
+    assertSeedDatabaseUrl,
     assertSeedSafety,
     parseSeedArguments,
     seedArtist,
     type ExistingSeedUser,
-} from "../db/seed-guard"
+} from "@/db/seed-guard"
 
 function assertSafety(existingUsers: ExistingSeedUser[], reset = false) {
     return () => assertSeedSafety({ reset, existingUsers })
@@ -19,7 +20,7 @@ test.describe("seed safety guard", () => {
         expect(assertSafety([seedArtist])).not.toThrow()
     })
 
-    for (const field of ["userId", "username", "email"] as const) {
+    for (const field of ["id", "name", "email"] as const) {
         test(`refuses a user with a different ${field} without reset`, () => {
             expect(
                 assertSafety([
@@ -44,6 +45,11 @@ test.describe("seed safety guard", () => {
                 true
             )
         ).not.toThrow()
+    })
+
+    test("requires a database URL", () => {
+        expect(() => assertSeedDatabaseUrl(undefined)).toThrow(/DATABASE_URL/)
+        expect(() => assertSeedDatabaseUrl("postgres://localhost/artsea")).not.toThrow()
     })
 
     test("accepts only no arguments or --reset", () => {

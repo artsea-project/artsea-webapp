@@ -30,11 +30,13 @@ import type { BentoBoxLayout } from "@/types/bento"
 export const users = pgTable(
     "users",
     {
-        userId: uuid("user_id").primaryKey().defaultRandom(),
-        username: text("username").notNull().unique(),
+        id: uuid("user_id").primaryKey().defaultRandom(),
+        name: text("username").notNull().unique(),
         email: text("email").notNull().unique(),
-        passwordHash: text("password_hash").notNull(),
+        emailVerified: boolean("email_verified").notNull().default(false),
+        image: text("image"),
         createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+        updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
         isSingleton: boolean("is_singleton").notNull().default(true),
     },
     (table) => [
@@ -52,7 +54,7 @@ export const accounts = pgTable(
         providerId: text("provider_id").notNull(),
         userId: uuid("user_id")
             .notNull()
-            .references(() => users.userId, { onDelete: "cascade" }),
+            .references(() => users.id, { onDelete: "cascade" }),
         accessToken: text("access_token"),
         refreshToken: text("refresh_token"),
         idToken: text("id_token"),
@@ -81,7 +83,7 @@ export const sessions = pgTable(
         userAgent: text("user_agent"),
         userId: uuid("user_id")
             .notNull()
-            .references(() => users.userId, { onDelete: "cascade" }),
+            .references(() => users.id, { onDelete: "cascade" }),
     },
     (table) => [
         index("sessions_user_id_idx").on(table.userId),
@@ -299,14 +301,14 @@ export const usersRelations = relations(users, ({ many }) => ({
 export const accountsRelations = relations(accounts, ({ one }) => ({
     user: one(users, {
         fields: [accounts.userId],
-        references: [users.userId],
+        references: [users.id],
     }),
 }))
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
     user: one(users, {
         fields: [sessions.userId],
-        references: [users.userId],
+        references: [users.id],
     }),
 }))
 
