@@ -1,12 +1,16 @@
+import { artistLoginEmail } from "@/lib/auth/config"
+
 export const seedArtist = {
-    userId: "a7f3bc01-0000-4000-8000-000000000001",
-    username: "artsea-artist",
-    email: "artist@artsea.local",
+    id: "a7f3bc01-0000-4000-8000-000000000001",
+    name: "ArtSea Artist",
+    email: artistLoginEmail,
 } as const
 
+export const developmentSeedPassword = "artsea"
+
 export type ExistingSeedUser = {
-    userId: string
-    username: string
+    id: string
+    name: string
     email: string
 }
 
@@ -26,13 +30,19 @@ export function parseSeedArguments(args: readonly string[]): SeedOptions {
     throw new Error("Unknown seed argument. Use --reset to replace existing seed data.")
 }
 
+export function assertSeedDatabaseUrl(databaseUrl: string | undefined) {
+    if (!databaseUrl) {
+        throw new Error("DATABASE_URL is required for development seeding.")
+    }
+}
+
 export function assertSeedSafety(options: SeedOptions & { existingUsers: ExistingSeedUser[] }) {
     if (
         !options.reset &&
         options.existingUsers.some(
             (user) =>
-                user.userId !== seedArtist.userId ||
-                user.username !== seedArtist.username ||
+                user.id !== seedArtist.id ||
+                user.name !== seedArtist.name ||
                 user.email !== seedArtist.email
         )
     ) {
