@@ -1,0 +1,182 @@
+import { expect, test } from "@playwright/test"
+import { hashPassword } from "better-auth/crypto"
+import { db } from "@/db"
+import { accounts, authInstallation, profiles, rateLimits, users } from "@/db/schema"
+import { getOrCreateAuthInstallation } from "@/lib/auth/installation"
+import { artistLoginEmail } from "@/lib/auth/config"
+import { deleteSetupToken, getOrCreateSetupToken } from "@/lib/auth/setup-token"
+
+const userId = "a7f3bc01-0000-4000-8000-000000000094"
+const password = "browser-test-password"
+
+test.describe("admin authentication", () => {
+    test.beforeEach(async () => {
+        await db.delete(users)
+        await db.delete(profiles)
+        await db.delete(authInstallation)
+        await db.delete(rateLimits)
+        await deleteSetupToken()
+    })
+
+    test("registers from the private first-login URL", async ({ browser, page }) => {
+        await getOrCreateAuthInstallation()
+        const token = await getOrCreateSetupToken()
+        const setupPath = `/admin/first-login/${token}`
+        await page.goto(setupPath)
+
+        await expect(page.getByRole("heading", { name: "Pierwsze logowanie" })).toBeVisible()
+        await page.getByLabel("Imię i nazwisko").fill("Élise Roux")
+        await page.getByLabel("Hasło", { exact: true }).fill(password)
+        await page.getByLabel("Powtórz hasło").fill("different-password")
+        await page.getByRole("button", { name: "Utwórz konto" }).click()
+        await expect(page.getByText("Hasła nie są takie same.", { exact: true })).toBeVisible()
+
+        await page.getByLabel("Hasło", { exact: true }).fill(password)
+        await page.getByLabel("Powtórz hasło").fill(password)
+        await page.getByRole("button", { name: "Utwórz konto" }).click()
+
+        await expect(page).toHaveURL(/\/admin$/)
+        await expect(page.getByRole("heading", { name: "Przegląd", exact: true })).toBeVisible()
+        await expect(page.locator("aside").getByText("Élise Roux", { exact: true })).toBeVisible()
+
+        const replayPage = await browser.newPage()
+        await replayPage.goto(new URL(setupPath, page.url()).href)
+        await expect(replayPage).toHaveURL(/\/admin\/login$/)
+        await expect(replayPage.getByRole("heading", { name: "Pierwsze logowanie" })).toHaveCount(0)
+        await replayPage.close()
+    })
+
+    test("logs in with only the artist password and logs out", async ({ page, request }) => {
+        await db.insert(users).values({
+            id: userId,
+            name: "Internal Account Name",
+            email: artistLoginEmail,
+        })
+        await db.insert(accounts).values({
+            accountId: userId,
+            providerId: "credential",
+            userId,
+            password: await hashPassword(password),
+        })
+        await db.insert(profiles).values({
+            fullName: "Élise Roux",
+            contactEmail: "public@example.com",
+        })
+
+        await page.goto("/admin/login")
+        await expect(page.getByLabel("Logowanie do portfolio Élise Roux")).toBeVisible()
+        await expect(page.getByLabel("Imię i nazwisko")).toHaveCount(0)
+        await expect(page.getByRole("navigation", { name: "Menu główne" })).toHaveCount(0)
+
+        await page.getByLabel("Hasło").fill("incorrect-password")
+        await page.getByRole("button", { name: "Zaloguj się" }).click()
+        await expect(
+            page.getByText("Nieprawidłowe hasło. Spróbuj ponownie.", { exact: true })
+        ).toBeVisible()
+
+        await page.getByLabel("Hasło").fill(password)
+        await page.getByRole("button", { name: "Zaloguj się" }).click()
+        await expect(page).toHaveURL(/\/admin$/)
+
+        const sessionResponse = await page.request.get("/api/auth/get-session")
+        expect(sessionResponse.status()).toBe(404)
+        expect(await sessionResponse.text()).not.toContain(artistLoginEmail)
+        expect((await request.post("/api/auth/sign-in/email")).status()).toBe(404)
+        expect(await page.getByText(artistLoginEmail, { exact: true }).count()).toBe(0)
+
+        const protectedRoutes = [
+            ["/admin", "Przegląd"],
+            ["/admin/works", "Prace"],
+            ["/admin/categories", "Kategorie"],
+            ["/admin/appearance", "Układ i Personalizacja"],
+            ["/admin/profile", "Profil"],
+        ] as const
+        for (const [route, title] of protectedRoutes) {
+            await page.goto(route)
+            await expect(page.getByRole("heading", { name: title, exact: true })).toBeVisible()
+            await expect(
+                page.locator("aside").getByText("Élise Roux", { exact: true })
+            ).toBeVisible()
+        }
+
+        await page.locator("aside").getByRole("button", { name: "Wyloguj się" }).click()
+        await expect(page).toHaveURL(/\/admin\/login$/)
+        for (const [route] of protectedRoutes) {
+            await page.goto(route)
+            await expect(page).toHaveURL(/\/admin\/login$/)
+        }
+    })
+
+    for (const route of [
+        "/admin",
+        "/admin/works",
+        "/admin/works/new",
+        `/admin/works/${userId}/edit`,
+        "/admin/categories",
+        "/admin/appearance",
+        "/admin/profile",
+    ]) {
+        test(`redirects anonymous visitors from ${route}`, async ({ page }) => {
+            await page.goto(route)
+            await expect(page).toHaveURL(/\/admin\/login$/)
+            await expect(page.getByRole("heading", { name: "Logowanie do panelu" })).toBeVisible()
+            await expect(page.getByRole("navigation", { name: "Menu główne" })).toHaveCount(0)
+        })
+    }
+    test("throttles repeated login-form failures in PostgreSQL", async ({ page }) => {
+        await db.insert(users).values({
+            id: userId,
+            name: "Élise Roux",
+            email: artistLoginEmail,
+        })
+        await db.insert(accounts).values({
+            accountId: userId,
+            providerId: "credential",
+            userId,
+            password: await hashPassword(password),
+        })
+        await db.insert(profiles).values({ fullName: "Élise Roux" })
+        await page.goto("/admin/login")
+
+        for (let attempt = 0; attempt < 11; attempt += 1) {
+            await page.getByLabel("Hasło").fill("incorrect-password")
+            await Promise.all([
+                page.waitForResponse(
+                    (response) =>
+                        response.request().method() === "POST" &&
+                        response.url().endsWith("/admin/login")
+                ),
+                page.getByRole("button", { name: "Zaloguj się" }).click(),
+            ])
+            if (attempt < 10) {
+                await expect(
+                    page.getByText("Nieprawidłowe hasło. Spróbuj ponownie.", { exact: true })
+                ).toBeVisible()
+            }
+        }
+
+        await expect(
+            page.getByText("Zbyt wiele prób logowania. Spróbuj ponownie za minutę.", {
+                exact: true,
+            })
+        ).toBeVisible()
+    })
+
+    test("does not expose an ordinary first-login route or public signup", async ({
+        page,
+        request,
+    }) => {
+        await page.goto("/admin/first-login")
+        await expect(page.getByText("404")).toBeVisible()
+
+        const response = await request.post("/api/auth/sign-up/email", {
+            data: {
+                name: "Other Artist",
+                email: "other@artsea.local",
+                password,
+            },
+            headers: { Origin: new URL(page.url()).origin },
+        })
+        expect(response.status()).toBe(404)
+    })
+})
