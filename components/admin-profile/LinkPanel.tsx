@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react"
 import { Plus } from "lucide-react"
 
-import { createLink, updateLink } from "@/app/admin/profile/actions"
+import { createLink, updateLink } from "@/app/admin/(protected)/profile/actions"
 import { Button } from "@/components/ui/button"
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
