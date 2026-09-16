@@ -30,6 +30,10 @@ export function resolveLocalizedLabel(
     return polish || english || fallback
 }
 
+export function orderBentoLabels(labels: string[]) {
+    return [...labels].sort((left, right) => left.localeCompare(right, "pl"))
+}
+
 async function loadBentoData(): Promise<BentoData> {
     "use cache"
 
@@ -102,6 +106,9 @@ async function loadBentoData(): Promise<BentoData> {
         const name = resolveLocalizedLabel(tag.namePln, tag.nameEng, "")
         if (name)
             tagsByArtwork.set(tag.artPieceId, [...(tagsByArtwork.get(tag.artPieceId) ?? []), name])
+    }
+    for (const [artPieceId, tagNames] of tagsByArtwork) {
+        tagsByArtwork.set(artPieceId, orderBentoLabels(tagNames))
     }
 
     const cardsFor = (name: LayoutName) =>
