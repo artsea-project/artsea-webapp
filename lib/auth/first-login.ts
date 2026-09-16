@@ -1,6 +1,5 @@
 import { db } from "@/db"
-import { and, eq } from "drizzle-orm"
-import { accounts, profiles, users } from "@/db/schema"
+import { findRegisteredArtistAccount } from "@/lib/auth/artist-account"
 import { getPublicUrl } from "@/lib/auth/config"
 import { getOrCreateAuthInstallation, readAuthInstallation } from "@/lib/auth/installation"
 import { firstLoginSetupLock } from "@/lib/auth/setup-lock"
@@ -19,7 +18,7 @@ export async function prepareFirstLogin(options?: {
     return db.transaction(async (tx): Promise<FirstLoginResult> => {
         await tx.execute(firstLoginSetupLock)
 
-        const account = await findRegisteredArtist(tx)
+        const account = await findRegisteredArtistAccount(tx)
         if (account) {
             return { kind: "registered", artistName: account.artistName }
         }
@@ -60,34 +59,4 @@ export function formatFirstLoginResult(result: FirstLoginResult): string {
         "",
         result.url,
     ].join("\n")
-}
-
-async function findRegisteredArtist(
-    database: Pick<typeof db, "select">
-): Promise<{ artistName: string } | null> {
-    const userRows = await database.select({ id: users.id, name: users.name }).from(users).limit(2)
-
-    if (userRows.length > 1) {
-        throw new Error("Authentication data is inconsistent: multiple users exist.")
-    }
-
-    const user = userRows[0]
-    if (!user) {
-        return null
-    }
-
-    const credentialRows = await database
-        .select({ id: accounts.id })
-        .from(accounts)
-        .where(and(eq(accounts.userId, user.id), eq(accounts.providerId, "credential")))
-        .limit(2)
-
-    if (credentialRows.length !== 1) {
-        throw new Error(
-            "Authentication data is incomplete: the existing user does not have exactly one password credential."
-        )
-    }
-
-    const [profile] = await database.select({ fullName: profiles.fullName }).from(profiles).limit(1)
-    return { artistName: profile?.fullName ?? user.name }
 }
