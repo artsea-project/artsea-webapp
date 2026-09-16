@@ -7,6 +7,7 @@ import { refresh } from "next/cache"
 
 import { db } from "@/db"
 import { links, profiles } from "@/db/schema"
+import { requireArtistSession } from "@/lib/auth/session"
 import type {
     BilingualField,
     LinkField,
@@ -96,6 +97,8 @@ export async function updateProfile(
     _previous: ProfileFormState,
     formData: FormData
 ): Promise<ProfileFormState> {
+    await requireArtistSession()
+
     const fullName = readText(formData, "fullName")
     const email = normalizeContactEmail(readText(formData, "contactEmail"))
     const image = await readProfileImage(formData)
@@ -151,6 +154,8 @@ export async function createLink(
     _previous: LinkFormState,
     formData: FormData
 ): Promise<LinkFormState> {
+    await requireArtistSession()
+
     const link = readLink(formData)
     if (!link.values) return failed(link.fieldErrors)
 
@@ -164,6 +169,8 @@ export async function updateLink(
     _previous: LinkFormState,
     formData: FormData
 ): Promise<LinkFormState> {
+    await requireArtistSession()
+
     const linkId = readText(formData, "linkId")
     if (!UUID_PATTERN.test(linkId)) return failed({})
 
@@ -182,6 +189,8 @@ export async function updateLink(
 }
 
 export async function deleteLink(linkId: string): Promise<void> {
+    await requireArtistSession()
+
     if (!UUID_PATTERN.test(linkId)) return
 
     await db.delete(links).where(eq(links.linkId, linkId))

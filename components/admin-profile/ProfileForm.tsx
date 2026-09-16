@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState } from "react"
 
-import { updateProfile } from "@/app/admin/profile/actions"
+import { updateProfile } from "@/app/admin/(protected)/profile/actions"
 import BilingualTextField, {
     type BilingualFieldCopy,
     type BilingualTexts,

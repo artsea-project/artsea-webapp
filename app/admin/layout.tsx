@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
+import { Suspense } from "react"
 
-import AdminShell from "@/components/AdminShell"
+import { adminFontClassName } from "@/app/fonts"
 import HtmlShell from "@/components/HtmlShell"
 
 export const metadata: Metadata = {
@@ -9,10 +10,12 @@ export const metadata: Metadata = {
     robots: { index: false, follow: false },
 }
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function AdminLayout({ children }: Readonly<{ children: React.ReactNode }>) {
     return (
         <HtmlShell lang="pl">
-            <AdminShell>{children}</AdminShell>
+            <div className={adminFontClassName}>
+                <Suspense fallback={null}>{children}</Suspense>
+            </div>
         </HtmlShell>
     )
 }

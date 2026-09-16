@@ -1,6 +1,6 @@
 "use client"
 
-import { createCategory, updateCategory } from "@/app/admin/categories/actions"
+import { createCategory, updateCategory } from "@/app/admin/(protected)/categories/actions"
 import BilingualNameFormCard, {
     type BilingualNameFormCopy,
 } from "@/components/admin-categories/BilingualNameFormCard"

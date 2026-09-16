@@ -4,7 +4,7 @@ import { Plus } from "lucide-react"
 import Link from "next/link"
 import { useOptimistic, useState, useTransition } from "react"
 
-import { deleteWork, setWorkVisibility } from "@/app/admin/works/actions"
+import { deleteWork, setWorkVisibility } from "@/app/admin/(protected)/works/actions"
 import type { StatusNotice } from "@/components/admin-categories/SectionHeader"
 import WorkCard from "@/components/admin-works/WorkCard"
 import WorksPagination from "@/components/admin-works/WorksPagination"

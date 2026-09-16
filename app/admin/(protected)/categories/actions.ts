@@ -1,5 +1,6 @@
 "use server"
 
+import { requireArtistSession } from "@/lib/auth/session"
 import type { CategoryFormState, TagFormState } from "@/lib/categories/form-state"
 import {
     createCategory as createCategoryMutation,
@@ -21,6 +22,7 @@ export async function createCategory(
     previous: CategoryFormState,
     formData: FormData
 ): Promise<CategoryFormState> {
+    await requireArtistSession()
     return createCategoryMutation(previous, formData)
 }
 
@@ -28,21 +30,26 @@ export async function updateCategory(
     previous: CategoryFormState,
     formData: FormData
 ): Promise<CategoryFormState> {
+    await requireArtistSession()
     return updateCategoryMutation(previous, formData)
 }
 
 export async function deleteCategory(categoryId: string): Promise<DeleteCategoryResult> {
+    await requireArtistSession()
     return deleteCategoryMutation(categoryId)
 }
 
 export async function createTag(previous: TagFormState, formData: FormData): Promise<TagFormState> {
+    await requireArtistSession()
     return createTagMutation(previous, formData)
 }
 
 export async function updateTag(previous: TagFormState, formData: FormData): Promise<TagFormState> {
+    await requireArtistSession()
     return updateTagMutation(previous, formData)
 }
 
 export async function deleteTag(tagId: string): Promise<DeleteTagResult> {
+    await requireArtistSession()
     return deleteTagMutation(tagId)
 }

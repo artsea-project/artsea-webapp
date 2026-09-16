@@ -5,7 +5,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useActionState, useEffect, useMemo, useRef, useState } from "react"
 
-import { createWork, updateWork } from "@/app/admin/works/actions"
+import { createWork, updateWork } from "@/app/admin/(protected)/works/actions"
 import CategoryPanel from "@/components/admin-categories/CategoryPanel"
 import TagFormCard from "@/components/admin-categories/TagFormCard"
 import BilingualTextField, {

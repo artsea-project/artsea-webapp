@@ -2,7 +2,7 @@
 
 import { Info } from "lucide-react"
 
-import { createTag, updateTag } from "@/app/admin/categories/actions"
+import { createTag, updateTag } from "@/app/admin/(protected)/categories/actions"
 import BilingualNameFormCard, {
     type BilingualNameFormCopy,
 } from "@/components/admin-categories/BilingualNameFormCard"

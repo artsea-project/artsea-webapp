@@ -1,6 +1,6 @@
 "use client"
 
-import { deleteTag } from "@/app/admin/categories/actions"
+import { deleteTag } from "@/app/admin/(protected)/categories/actions"
 import CatalogSection from "@/components/admin-categories/CatalogSection"
 import TagFormCard from "@/components/admin-categories/TagFormCard"
 import TagsListCard from "@/components/admin-categories/TagsListCard"
