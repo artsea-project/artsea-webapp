@@ -2,7 +2,7 @@
 
 import { useState, useTransition, type ReactNode } from "react"
 
-import type { DeleteResult } from "@/app/admin/categories/actions"
+import type { DeleteResult } from "@/app/admin/(protected)/categories/actions"
 import SectionHeader, { type StatusNotice } from "@/components/admin-categories/SectionHeader"
 import {
     AlertDialog,

@@ -91,6 +91,8 @@ const fontsByName: Record<FontName, { variable: string; className: string }> = {
     "Geist Mono": geistMono,
 }
 
+export const adminFontClassName = inter.className
+
 export function getFontVariableClasses(fontNames: readonly FontName[]): string {
     return fontNames.map((fontName) => fontsByName[fontName].variable).join(" ")
 }

@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm"
 
 import { db } from "@/db"
 import { media } from "@/db/schema"
+import { readArtistSession } from "@/lib/auth/session"
 import { serveMedia } from "@/lib/media"
 
 async function loadAdminMediaMetadata(mediaId: string) {
@@ -30,6 +31,16 @@ async function loadAdminMediaRecord(mediaId: string) {
 }
 
 export async function GET(request: Request, { params }: { params: Promise<{ mediaId: string }> }) {
+    if (!(await readArtistSession(request.headers))) {
+        return new Response(null, { status: 401, headers: { "Cache-Control": "no-store" } })
+    }
     const { mediaId } = await params
-    return serveMedia(request, mediaId, loadAdminMediaMetadata, loadAdminMediaRecord)
+    const response = await serveMedia(
+        request,
+        mediaId,
+        loadAdminMediaMetadata,
+        loadAdminMediaRecord
+    )
+    response.headers.set("Cache-Control", "private, no-cache")
+    return response
 }

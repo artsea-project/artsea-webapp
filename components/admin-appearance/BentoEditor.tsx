@@ -5,7 +5,7 @@ import { Plus } from "lucide-react"
 import { useSearchParams } from "next/navigation"
 import { useContainerWidth } from "react-grid-layout"
 
-import { saveBentoLayout } from "@/app/admin/appearance/actions"
+import { saveBentoLayout } from "@/app/admin/(protected)/appearance/actions"
 import { ArtworkPickerDialog } from "@/components/admin-appearance/ArtworkPickerDialog"
 import { BentoGridCanvas, desktopCanvasHeight } from "@/components/admin-appearance/BentoGridCanvas"
 import { SaveBar, useSectionSave } from "@/components/admin-appearance/SaveBar"

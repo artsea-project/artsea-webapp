@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useReducer, useState } from "react"
 import { Pipette } from "lucide-react"
 
-import { saveSiteTheme } from "@/app/admin/appearance/actions"
+import { saveSiteTheme } from "@/app/admin/(protected)/appearance/actions"
 import { getFontClassName } from "@/app/fonts"
 import { SaveBar, useSectionSave } from "@/components/admin-appearance/SaveBar"
 import { ThemePreview, ThemeScope } from "@/components/admin-appearance/ThemePreview"

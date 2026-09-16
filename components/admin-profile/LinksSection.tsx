@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react"
 import { Plus } from "lucide-react"
 
-import { deleteLink } from "@/app/admin/profile/actions"
+import { deleteLink } from "@/app/admin/(protected)/profile/actions"
 import LinkPanel from "@/components/admin-profile/LinkPanel"
 import LinkRow from "@/components/admin-profile/LinkRow"
 import {
