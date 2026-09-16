@@ -8,6 +8,14 @@ type BentoCardProps = {
     sizes: string
 }
 
+export function bentoImageProps(mediaId: string, sizes: string) {
+    return {
+        fill: true,
+        sizes,
+        src: `/media/${mediaId}`,
+    } as const
+}
+
 export function BentoCard({ card, className, sizes }: BentoCardProps) {
     const visibleTags = card.tags.slice(0, 3)
     const hasTagOverflow = card.tags.length > visibleTags.length
@@ -17,12 +25,9 @@ export function BentoCard({ card, className, sizes }: BentoCardProps) {
             className={`relative isolate min-h-0 overflow-hidden rounded-[20px] bg-stone-200 ${className}`}
         >
             <Image
+                {...bentoImageProps(card.mediaId, sizes)}
                 alt={card.title}
                 className="object-cover"
-                fill
-                sizes={sizes}
-                src={`/media/${card.mediaId}`}
-                unoptimized
             />
             <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
             <div className="absolute inset-x-0 bottom-0 flex flex-col gap-3 p-4 text-white sm:p-5">
