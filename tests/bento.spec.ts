@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test"
+import { getImageProps } from "next/image"
 
+import { bentoImageProps } from "../components/bento/bento-card"
 import { normalizeBentoLayout } from "../lib/bento-layout"
 
 const artPieceId = "a7f3bc01-0000-4000-8000-000000000101"
