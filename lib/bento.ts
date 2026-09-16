@@ -22,6 +22,14 @@ export type BentoData = {
 
 type LayoutName = keyof BentoData
 
+export function resolveLocalizedLabel(
+    polish: string | null,
+    english: string | null,
+    fallback: string
+) {
+    return polish || english || fallback
+}
+
 async function loadBentoData(): Promise<BentoData> {
     "use cache"
 
@@ -62,7 +70,8 @@ async function loadBentoData(): Promise<BentoData> {
         db
             .select({
                 artPieceId: artPieces.artPieceId,
-                title: artPieces.titleEng,
+                titlePln: artPieces.titlePln,
+                titleEng: artPieces.titleEng,
                 year: artPieces.yearOfExecution,
             })
             .from(artPieces)
@@ -76,7 +85,11 @@ async function loadBentoData(): Promise<BentoData> {
             .from(media)
             .where(inArray(media.mediaId, mediaIds)),
         db
-            .select({ artPieceId: artPieceTags.artPieceId, name: tags.nameEng })
+            .select({
+                artPieceId: artPieceTags.artPieceId,
+                namePln: tags.namePln,
+                nameEng: tags.nameEng,
+            })
             .from(artPieceTags)
             .innerJoin(tags, eq(artPieceTags.tagId, tags.tagId))
             .where(inArray(artPieceTags.artPieceId, artworkIds)),
@@ -86,11 +99,9 @@ async function loadBentoData(): Promise<BentoData> {
     const mediaById = new Map(mediaRows.map((item) => [item.mediaId, item]))
     const tagsByArtwork = new Map<string, string[]>()
     for (const tag of tagRows) {
-        if (tag.name)
-            tagsByArtwork.set(tag.artPieceId, [
-                ...(tagsByArtwork.get(tag.artPieceId) ?? []),
-                tag.name,
-            ])
+        const name = resolveLocalizedLabel(tag.namePln, tag.nameEng, "")
+        if (name)
+            tagsByArtwork.set(tag.artPieceId, [...(tagsByArtwork.get(tag.artPieceId) ?? []), name])
     }
 
     const cardsFor = (name: LayoutName) =>
@@ -109,7 +120,7 @@ async function loadBentoData(): Promise<BentoData> {
             return [
                 {
                     ...item,
-                    title: artwork.title ?? "Untitled work",
+                    title: resolveLocalizedLabel(artwork.titlePln, artwork.titleEng, "Bez tytułu"),
                     year: artwork.year,
                     tags: tagsByArtwork.get(item.artPieceId) ?? [],
                 },
