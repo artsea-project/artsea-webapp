@@ -136,7 +136,8 @@ export default async function WorkPage({ params }: PageProps) {
 
     try {
         artPiece = await db.query.artPieces.findFirst({
-            where: (fields, { eq }) => eq(fields.artPieceId, id),
+            where: (fields, { and, eq }) =>
+                and(eq(fields.artPieceId, id), eq(fields.isVisible, true)),
             with: {
                 category: true,
                 tags: {
@@ -162,7 +163,7 @@ export default async function WorkPage({ params }: PageProps) {
                 titlePln: true,
                 titleEng: true,
             },
-            where: (fields, { eq }) => eq(fields.isVisible, true),
+            where: (fields, { and, eq }) => and(eq(fields.isVisible, true)),
             orderBy: (fields, { asc }) => asc(fields.uploadedAt),
         })
     } catch (error) {
@@ -177,7 +178,6 @@ export default async function WorkPage({ params }: PageProps) {
 
     const title = artPiece.titlePln || artPiece.titleEng || "Bez tytułu"
     const categoryName = artPiece.category?.namePln
-
     const technique = parseDescriptionSlot(artPiece.descriptionPln, "technique")
     const description = parseDescriptionSlot(artPiece.descriptionPln, "description")
 
