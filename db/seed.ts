@@ -177,31 +177,43 @@ async function main() {
             .onConflictDoNothing()
 
         // 2. Insert Profile
+        const profileContent = await readFile(path.join(fixtureDirectory, "profile.jpg"))
         await tx
             .insert(profiles)
             .values({
                 profileId,
-                fullName: "ArtSea Artist",
+                fullName: "Élise Roux",
                 bioPln: {
                     paragraphs: [
-                        "Cześć! Nazywam się Anna i jestem niezależną ilustratorką z Gdańska.",
+                        "Tworzę ilustracje i identyfikacje wizualne, łącząc organiczne formy z minimalistyczną precyzją. Działam w Gdańsku, inspirując się naturą i surową architekturą.",
+                        "Cześć! Nazywam się Anna i jestem niezależną ilustratorką z Gdańska. Od ponad siedmiu lat pomagam markom tworzyć czystą, przemyślaną identyfikację.",
                         "Moja przygoda ze sztuką zaczęła się od tradycyjnego malarstwa, które nauczyło mnie szacunku do światła i barwy. Szybko jednak odkryłam, że cyfrowe płótno daje równie wielkie możliwości wyrazu. Dziś specjalizuję się w łączeniu geometrycznego rygoru z ciepłem organicznych kształtów.",
                         "Współpracowałam z wieloma instytucjami kultury, wydawnictwami i niezależnymi twórcami. Najbardziej cenię sobie projekty, które wymagają nieszablonowego myślenia oraz głębokiego wejścia w kontekst tworzonej opowieści.",
                     ],
                 },
                 bioEng: {
                     paragraphs: [
-                        "Hi! My name is Anna and I am an independent illustrator based in Gdańsk.",
+                        "I create illustrations and visual identities, combining organic forms with minimalist precision. I work in Gdańsk, drawing inspiration from nature and raw architecture.",
+                        "Hi! My name is Anna and I am an independent illustrator based in Gdańsk. For over seven years I have been helping brands create clean, thoughtful identities.",
                         "My adventure with art began with traditional painting, which taught me respect for light and color. However, I quickly discovered that the digital canvas offers equally great possibilities of expression. Today, I specialize in combining geometric rigor with the warmth of organic shapes.",
                         "I have collaborated with many cultural institutions, publishing houses, and independent creators. I value projects that require out-of-the-box thinking and a deep dive into the context of the story being created.",
                     ],
                 },
                 contactPln: {
-                    paragraphs: ["Jeśli podoba Ci się moje podejście do designu, napisz do mnie."],
+                    paragraphs: [
+                        "Jeśli podoba Ci się moje podejście do designu, napisz do mnie.",
+                        "Zawsze jestem otwarta na nowe, interesujące wyzwania.",
+                    ],
                 },
                 contactEng: {
-                    paragraphs: ["If you like my approach to design, feel free to write to me."],
+                    paragraphs: [
+                        "If you like my approach to design, feel free to write to me.",
+                        "I am always open to new, interesting challenges.",
+                    ],
                 },
+                profileImageContent: profileContent,
+                profileImageContentHash: createHash("sha256").update(profileContent).digest("hex"),
+                profileImageFileType: "jpg",
             })
             .onConflictDoNothing()
 
