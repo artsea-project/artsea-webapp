@@ -1,6 +1,7 @@
 import { db } from "@/db"
 import { notFound } from "next/navigation"
 import { ArrowUpRight } from "lucide-react"
+import Image from "next/image"
 function parseParagraphs(value: unknown): string[] {
     if (!value || typeof value !== "object") return []
     const obj = value as Record<string, unknown>
@@ -49,9 +50,13 @@ function HeroSection({ fullName, shortIntro, profileImageSrc }: HeroSectionProps
                                 bottom: "0px",
                             }}
                         />
-                        <img
+                        <Image
                             src={profileImageSrc}
                             alt={`Portret - ${fullName}`}
+                            width={469}
+                            height={703}
+                            unoptimized
+                            priority
                             className="relative z-10 w-full aspect-[469/703] object-cover rounded-[50px] shadow-sm"
                         />
                     </div>
