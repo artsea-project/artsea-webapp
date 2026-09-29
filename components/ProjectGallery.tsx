@@ -217,10 +217,23 @@ export function ProjectGallery({ photos, title }: ProjectGalleryProps) {
                 index={index}
                 close={() => setIndex(-1)}
                 slides={slides}
+                controller={{ closeOnBackdropClick: true }}
+                carousel={{ padding: "48px" }}
                 styles={{
-                    container: {
-                        backgroundColor: "rgba(18, 18, 18, 0.88)",
-                        backdropFilter: "blur(12px)",
+                    root: {
+                        "--yarl__color_backdrop": "rgba(0, 0, 0, 0.6)",
+                        backdropFilter: "blur(10px)",
+                    },
+                    slide: {
+                        padding: "16px",
+                    },
+                    image: {
+                        borderRadius: "16px",
+                        boxShadow:
+                            "0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.12)",
+                        maxHeight: "82vh",
+                        maxWidth: "85vw",
+                        objectFit: "contain",
                     },
                 }}
             />
