@@ -4,6 +4,7 @@ import Link from "next/link"
 import { db } from "@/db"
 import { Ruler, MoveRight } from "lucide-react"
 import parse from "html-react-parser"
+import { ProjectGallery } from "@/components/ProjectGallery"
 
 interface PageProps {
     params: Promise<{ id: string }>
@@ -13,10 +14,6 @@ function parseDescriptionSlot(value: unknown, slot: "technique" | "description")
     if (!value || typeof value !== "object") return ""
     const obj = value as Record<string, unknown>
     return typeof obj[slot] === "string" ? (obj[slot] as string) : ""
-}
-
-function CarouselPlaceholder() {
-    return <div className="md:col-span-7 bg-stone-100 dark:bg-zinc-900 rounded-lg min-h-[400px]" />
 }
 
 interface ArtworkHeaderProps {
@@ -154,6 +151,9 @@ async function WorkDetails({ params }: PageProps) {
                         tag: true,
                     },
                 },
+                media: {
+                    orderBy: (media, { asc }) => [asc(media.orderIndex)],
+                },
             },
         })
     } catch (error) {
@@ -194,11 +194,20 @@ async function WorkDetails({ params }: PageProps) {
         .map((t) => t.tag?.namePln)
         .filter((name): name is string => typeof name === "string")
 
+    const galleryPhotos = (artPiece.media || []).map((m) => ({
+        mediaId: m.mediaId,
+        orderIndex: m.orderIndex,
+        src: `/media/${m.mediaId}`,
+        alt: `${title} - photo ${m.orderIndex + 1}`,
+    }))
+
     return (
         <div className="min-h-screen bg-background text-foreground font-body transition-colors duration-200">
             <div className="max-w-7xl mx-auto px-6 py-8 md:px-16 md:py-12">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-16 items-start">
-                    <CarouselPlaceholder />
+                    <div className="md:col-span-7 w-full">
+                        <ProjectGallery photos={galleryPhotos} title={title} />
+                    </div>
                     <div className="md:col-span-5 md:sticky md:top-24 flex flex-col gap-8">
                         <ArtworkHeader
                             title={title}
