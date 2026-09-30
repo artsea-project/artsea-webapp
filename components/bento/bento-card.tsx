@@ -1,4 +1,5 @@
 import Image from "next/image"
+import Link from "next/link"
 
 import type { BentoCardData } from "@/lib/bento"
 
@@ -24,39 +25,45 @@ export function BentoCard({ card, className, sizes }: BentoCardProps) {
         <article
             className={`relative isolate min-h-0 overflow-hidden rounded-[20px] bg-stone-200 ${className}`}
         >
-            <Image
-                {...bentoImageProps(card.mediaId, sizes)}
-                alt={card.title}
-                className="object-cover"
-            />
-            <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
-            <div className="absolute inset-x-0 bottom-0 flex flex-col gap-3 p-4 text-white sm:p-5">
-                <div>
-                    <h2 className="font-primary text-base font-medium leading-tight sm:text-lg">
-                        {card.title}
-                    </h2>
-                    {card.year && (
-                        <p className="mt-1 text-sm leading-none text-white/80">{card.year}</p>
-                    )}
-                </div>
-                {visibleTags.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5">
-                        {visibleTags.map((tag) => (
-                            <span
-                                className="rounded-full bg-white/20 px-2.5 py-1 text-[11px] font-medium leading-none backdrop-blur-sm"
-                                key={tag}
-                            >
-                                {tag}
-                            </span>
-                        ))}
-                        {hasTagOverflow && (
-                            <span className="rounded-full bg-white/20 px-2.5 py-1 text-[11px] font-medium leading-none backdrop-blur-sm">
-                                ...
-                            </span>
+            <Link
+                href={`/work/${card.artPieceId}`}
+                aria-label={card.title}
+                className="group absolute inset-0 rounded-[20px] focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white"
+            >
+                <Image
+                    {...bentoImageProps(card.mediaId, sizes)}
+                    alt={card.title}
+                    className="object-cover"
+                />
+                <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 flex flex-col gap-3 p-4 text-white sm:p-5">
+                    <div>
+                        <h2 className="font-primary text-base font-medium leading-tight group-hover:underline group-focus-visible:underline sm:text-lg">
+                            {card.title}
+                        </h2>
+                        {card.year && (
+                            <p className="mt-1 text-sm leading-none text-white/80">{card.year}</p>
                         )}
                     </div>
-                )}
-            </div>
+                    {visibleTags.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5">
+                            {visibleTags.map((tag) => (
+                                <span
+                                    className="rounded-full bg-white/20 px-2.5 py-1 text-[11px] font-medium leading-none backdrop-blur-sm"
+                                    key={tag}
+                                >
+                                    {tag}
+                                </span>
+                            ))}
+                            {hasTagOverflow && (
+                                <span className="rounded-full bg-white/20 px-2.5 py-1 text-[11px] font-medium leading-none backdrop-blur-sm">
+                                    ...
+                                </span>
+                            )}
+                        </div>
+                    )}
+                </div>
+            </Link>
         </article>
     )
 }
