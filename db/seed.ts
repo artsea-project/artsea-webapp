@@ -13,7 +13,6 @@ async function main() {
     const seedOptions = parseSeedArguments(process.argv.slice(2))
     console.log("Seeding database...")
 
-    // Dynamically import db and schema to ensure dotenv has already initialized env variables
     const { db } = await import("./index")
     const {
         users,
@@ -27,98 +26,90 @@ async function main() {
         artPieceTags,
     } = await import("./schema")
 
-    const photographyCategoryId = "a7f3bc01-0000-4000-8000-000000000002"
-    const sculptureCategoryId = "a7f3bc01-0000-4000-8000-000000000005"
+    const categoryId = "a7f3bc01-0000-4000-8000-000000000002"
     const profileId = "a7f3bc01-0000-4000-8000-000000000003"
     const siteSettingsId = "a7f3bc01-0000-4000-8000-000000000004"
-    const fixtureDirectory = path.join(path.dirname(fileURLToPath(import.meta.url)), "fixtures")
+    const fixtureDirectory = path.join(
+        path.dirname(fileURLToPath(import.meta.url)),
+        "fixtures",
+        "sample"
+    )
 
-    const breakwaterArtPieceId = "a7f3bc01-0000-4000-8000-000000000101"
-    const digitalEscapeArtPieceId = "a7f3bc01-0000-4000-8000-000000000102"
-
-    const breakwaterDescPln = {
-        technique: "fotografia",
-        description:
-            "Trafiłam w to miejsce przez czysty przypadek. Zwykły postój na szybki posiłek w drodze wzdłuż wybrzeża w Santa Marinella nieoczekiwanie zamienił się w cztery godziny hipnotyzującej obserwacji. Moją uwagę przyciągnął zewnętrzny falochron małego portu jachtowego — z pozoru surowa, użytkowa konstrukcja z betonu, stworzona by rozbijać fale Morza Tyrreńskiego.<br /><br />Umacniające ją potężne bryły skalne okazały się studium wzorów, kolorów i struktur. Wielobarwne warstwy, gęsta sieć mineralnych żył i ślady milionów lat procesów geologicznych zderzone z chłodną wodą morza. Ta seria to studium ukrytego detalu — anatomia kamienia, który z twardego elementu inżynierii nabrzeżnej staje się surową, abstrakcyjną opowieścią o czasie, wodzie i materii.<br /><br />Zdjęcia bez filtrów i zmiany kolorów.",
-    }
-
-    const breakwaterDescEng = {
-        technique: "photography",
-        description:
-            "Coming across this place was pure chance. A brief stop for a quick meal along the coast of Santa Marinella unexpectedly turned into four hours of mesmerized observation. What caught my eye was the outer breakwater of the small marina—at first glance, a raw, utilitarian concrete structure built solely to shatter the waves of the Tyrrhenian Sea.<br /><br />Yet the massive stone blocks reinforcing it proved to be a study in patterns, colors, and textures. Multicolored strata, a dense network of mineral veins, and traces of millions of years of geological history colliding with the cool sea water. This series is a study of hidden detail—the anatomy of stone that shifts from a rigid element of coastal engineering into a raw, abstract tale of time, water, and matter.<br /><br />No filters nor color enhancements were applied on the photos.",
-    }
-
-    const digitalEscapeDescPln = {
-        technique: "glina szkliwiona",
-        description:
-            'Ekran tabletu to współczesna piąta ściana obecna w niemalże każdym pomieszczeniu – bariera dzieląca świat fizyczny od wirtualnego. Jest to gładka, jednolita, chłodna powierzchnia, która daje człowiekowi złudne poczucie bezpieczeństwa i kontroli. Z czasem, niezauważalnie ekran staje się mentalną pułapką, a wyświetlane obrazy są coraz mniej zbliżone do rzeczywistości w jakiej żyjesz, stąd w rzeźbie ekran stracił już cechy lustrzane.<br /><br />Rzeźba "Cyfrowa ucieczka" ukazuje dramatyczny moment przełamywania cyfrowej bariery przez człowieka.<br /><br />Możliwe, że to akt walki - dłoń z determinacją rozbija ekran, symbolizując przełamanie uzależnienia i próbę powrotu do świata realnego.<br /><br />Możliwe, że to wołanie o pomoc - otwarta, skierowana ku górze ręka przypomina gest tonącego, który w ostatniej chwili próbuje się czegoś złapać, nim zostanie całkowicie pochłonięty przez cyfrową otchłań.<br /><br />Czy "Cyfrowa ucieczka" jest ucieczką do cyfrowego świata, czy z cyfrowego świata?',
-    }
-
-    const digitalEscapeDescEng = {
-        technique: "glazed clay",
-        description:
-            'The tablet screen is the modern fifth wall present in nearly every room - a barrier separating the physical world from the virtual. It is a smooth, uniform, cold surface that offers a false sense of security and control. Over time, almost unnoticed, the screen turns into a mental trap, and the displayed images drift ever further from the reality you inhabit; hence, in this sculpture, the screen has already lost its mirror-like quality.<br /><br />The sculpture captures a dramatic moment of a human breaking through the digital barrier.<br /><br />It may be an act of resistance - the hand strikes through the screen with determination, symbolizing a breakthrough against addiction and a bid to return to the real world.<br /><br />It may be a cry for help - open and reaching upward, the hand resembles the gesture of a drowning person grasping for anything in the final second before being entirely swallowed by the digital abyss.<br /><br />Is "Digital escape" an escape into the digital world, or an escape from it?',
-    }
-
-    const tagDefs = [
-        {
-            id: "a7f3bc01-0000-4000-8000-000000000301",
-            namePln: "fotografia",
-            nameEng: "photography",
-        },
-        {
-            id: "a7f3bc01-0000-4000-8000-000000000302",
-            namePln: "kamień",
-            nameEng: "stones",
-        },
-        {
-            id: "a7f3bc01-0000-4000-8000-000000000303",
-            namePln: "rzeźba",
-            nameEng: "sculpture",
-        },
-        {
-            id: "a7f3bc01-0000-4000-8000-000000000304",
-            namePln: "glina",
-            nameEng: "clay",
-        },
-        {
-            id: "a7f3bc01-0000-4000-8000-000000000305",
-            namePln: "uzależnienie cyfrowe",
-            nameEng: "digital addiction",
-        },
+    const artworks = [
+        [
+            "a7f3bc01-0000-4000-8000-000000000101",
+            "a7f3bc01-0000-4000-8000-000000000201",
+            "group-13-1.jpg",
+            "Campaign “Spring in the City”",
+            2025,
+            "Marble",
+        ],
+        [
+            "a7f3bc01-0000-4000-8000-000000000102",
+            "a7f3bc01-0000-4000-8000-000000000202",
+            "group-13-2.jpg",
+            "Spring in the City",
+            2026,
+            "Watercolor",
+        ],
+        [
+            "a7f3bc01-0000-4000-8000-000000000103",
+            "a7f3bc01-0000-4000-8000-000000000203",
+            "group-13-3.png",
+            "Painting",
+            2024,
+            "Watercolor",
+        ],
+        [
+            "a7f3bc01-0000-4000-8000-000000000104",
+            "a7f3bc01-0000-4000-8000-000000000204",
+            "group-13-4.jpg",
+            "Sculpture",
+            2023,
+            "Brass",
+        ],
+        [
+            "a7f3bc01-0000-4000-8000-000000000105",
+            "a7f3bc01-0000-4000-8000-000000000205",
+            "group-13-5.png",
+            "Identity Rebranding",
+            2024,
+            "Poster",
+        ],
+        [
+            "a7f3bc01-0000-4000-8000-000000000106",
+            "a7f3bc01-0000-4000-8000-000000000206",
+            "group-13-6.png",
+            "FinTech Application Design",
+            2025,
+            "Glass",
+        ],
+        [
+            "a7f3bc01-0000-4000-8000-000000000107",
+            "a7f3bc01-0000-4000-8000-000000000207",
+            "group-13-7.jpg",
+            "Organic Identity",
+            2026,
+            "Oil",
+        ],
     ] as const
-
-    const bentoItems = [
-        {
-            artPieceId: digitalEscapeArtPieceId,
-            mediaId: "a7f3bc01-0000-4000-8000-000000000401",
-        },
-        {
-            artPieceId: breakwaterArtPieceId,
-            mediaId: "a7f3bc01-0000-4000-8000-000000000201",
-        },
-        {
-            artPieceId: breakwaterArtPieceId,
-            mediaId: "a7f3bc01-0000-4000-8000-000000000202",
-        },
-        {
-            artPieceId: digitalEscapeArtPieceId,
-            mediaId: "a7f3bc01-0000-4000-8000-000000000402",
-        },
-        {
-            artPieceId: breakwaterArtPieceId,
-            mediaId: "a7f3bc01-0000-4000-8000-000000000203",
-        },
-        {
-            artPieceId: digitalEscapeArtPieceId,
-            mediaId: "a7f3bc01-0000-4000-8000-000000000403",
-        },
-        {
-            artPieceId: breakwaterArtPieceId,
-            mediaId: "a7f3bc01-0000-4000-8000-000000000204",
-        },
+    const tagNames = [
+        "Marble",
+        "Watercolor",
+        "Brass",
+        "Poster",
+        "Glass",
+        "Oil",
+        "Still Life",
+        "Flowers",
+        "Classical",
     ] as const
-
+    const tagIdByName = Object.fromEntries(
+        tagNames.map((name, index) => [
+            name,
+            `a7f3bc01-0000-4000-8000-0000000003${String(index + 1).padStart(2, "0")}`,
+        ])
+    )
     const desktop = [
         [1, 1, 4, 10],
         [5, 1, 3, 5],
@@ -140,9 +131,9 @@ async function main() {
 
     const layout: BentoBoxLayout = {
         desktop: {
-            items: bentoItems.map((item, index) => ({
-                artPieceId: item.artPieceId,
-                mediaId: item.mediaId,
+            items: artworks.map(([artPieceId, mediaId], index) => ({
+                artPieceId,
+                mediaId,
                 columnStart: desktop[index][0],
                 rowStart: desktop[index][1],
                 columnSpan: desktop[index][2],
@@ -150,9 +141,9 @@ async function main() {
             })),
         },
         mobile: {
-            items: bentoItems.map((item, index) => ({
-                artPieceId: item.artPieceId,
-                mediaId: item.mediaId,
+            items: artworks.map(([artPieceId, mediaId], index) => ({
+                artPieceId,
+                mediaId,
                 columnStart: mobile[index][0],
                 rowStart: mobile[index][1],
                 columnSpan: mobile[index][2],
@@ -171,7 +162,6 @@ async function main() {
     assertSeedSafety({ ...seedOptions, existingUsers })
 
     await db.transaction(async (tx) => {
-        // Clear existing seed data in reverse-dependency order before every accepted reseed.
         await tx.delete(artPieceTags)
         await tx.delete(media)
         await tx.delete(links)
@@ -182,13 +172,11 @@ async function main() {
         await tx.delete(siteSettings)
         await tx.delete(users)
 
-        // 1. Insert User
         await tx
             .insert(users)
             .values({ ...seedArtist, passwordHash: "development-only-not-for-login" })
             .onConflictDoNothing()
 
-        // 2. Insert Profile
         const profileContent = await readFile(path.join(fixtureDirectory, "profile.jpg"))
         await tx
             .insert(profiles)
@@ -229,7 +217,6 @@ async function main() {
             })
             .onConflictDoNothing()
 
-        // 3. Insert Social Links
         await tx
             .insert(links)
             .values([
@@ -238,117 +225,96 @@ async function main() {
             ])
             .onConflictDoNothing()
 
-        // 4. Insert Category
         await tx
             .insert(categories)
-            .values([
-                {
-                    categoryId: photographyCategoryId,
-                    namePln: "Kolekcja fotografii",
-                    nameEng: "Collection of photographs",
-                },
-                {
-                    categoryId: sculptureCategoryId,
-                    namePln: "Rzeźba",
-                    nameEng: "Sculpture",
-                },
-            ])
+            .values({ categoryId, namePln: "Sztuka", nameEng: "Art" })
             .onConflictDoNothing()
 
-        // 5. Insert Tags
+        const tagNamesPln: Record<string, string> = {
+            Marble: "Marmur",
+            Watercolor: "Akwarela",
+            Brass: "Mosiądz",
+            Poster: "Plakat",
+            Glass: "Szkło",
+            Oil: "Olej",
+            "Still Life": "Martwa natura",
+            Flowers: "Kwiaty",
+            Classical: "Klasyczne",
+        }
+
         await tx
             .insert(tags)
             .values(
-                tagDefs.map((tag) => ({
-                    tagId: tag.id,
-                    namePln: tag.namePln,
-                    nameEng: tag.nameEng,
+                tagNames.map((name) => ({
+                    tagId: tagIdByName[name],
+                    nameEng: name,
+                    namePln: tagNamesPln[name],
                 }))
             )
             .onConflictDoNothing()
 
-        // 6. Insert Art Pieces, Media content, and Tag relations
-        await tx
-            .insert(artPieces)
-            .values([
-                {
-                    artPieceId: breakwaterArtPieceId,
-                    categoryId: photographyCategoryId,
-                    titlePln: "Anatomia Falochronu. Antemurale Porticciolo de Santa Marinella",
-                    titleEng:
-                        "Anatomy of the Breakwater. Antemurale Porticciolo de Santa Marinella",
-                    dimensions: null,
-                    yearOfExecution: 2025,
+        for (const [
+            artPieceId,
+            mediaId,
+            fixture,
+            titleEng,
+            yearOfExecution,
+            primaryTag,
+        ] of artworks) {
+            await tx
+                .insert(artPieces)
+                .values({
+                    artPieceId,
+                    categoryId,
+                    titleEng,
+                    titlePln: `${titleEng} (PL)`,
+                    dimensions: "70 x 100 cm",
+                    miniDescriptionPln: {
+                        paragraphs: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit."],
+                    },
+                    miniDescriptionEng: {
+                        paragraphs: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit."],
+                    },
+                    descriptionPln: {
+                        technique:
+                            "<b>Lorem ipsum dolor sit amet</b>, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                        description:
+                            "Ut enim ad minim veniam, quis nostrud <i>exercitation ullamco laboris</i> nisi ut aliquip ex ea commodo consequat.",
+                    },
+                    descriptionEng: {
+                        technique:
+                            "<b>Lorem ipsum dolor sit amet</b>, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                        description:
+                            "Ut enim ad minim veniam, quis nostrud <i>exercitation ullamco laboris</i> nisi ut aliquip ex ea commodo consequat.",
+                    },
+                    yearOfExecution,
                     isVisible: true,
-                    miniDescriptionPln: null,
-                    miniDescriptionEng: null,
-                    descriptionPln: breakwaterDescPln,
-                    descriptionEng: breakwaterDescEng,
-                },
-                {
-                    artPieceId: digitalEscapeArtPieceId,
-                    categoryId: sculptureCategoryId,
-                    titlePln: "Cyfrowa ucieczka",
-                    titleEng: "Digital Escape",
-                    dimensions: null,
-                    yearOfExecution: 2025,
-                    isVisible: true,
-                    miniDescriptionPln: null,
-                    miniDescriptionEng: null,
-                    descriptionPln: digitalEscapeDescPln,
-                    descriptionEng: digitalEscapeDescEng,
-                },
-            ])
-            .onConflictDoNothing()
+                })
+                .onConflictDoNothing()
 
-        await tx
-            .insert(artPieceTags)
-            .values([
-                { artPieceId: breakwaterArtPieceId, tagId: tagDefs[0].id },
-                { artPieceId: breakwaterArtPieceId, tagId: tagDefs[1].id },
-                { artPieceId: digitalEscapeArtPieceId, tagId: tagDefs[2].id },
-                { artPieceId: digitalEscapeArtPieceId, tagId: tagDefs[3].id },
-                { artPieceId: digitalEscapeArtPieceId, tagId: tagDefs[4].id },
-            ])
-            .onConflictDoNothing()
-
-        for (let i = 1; i <= 20; i++) {
-            const mediaId = `a7f3bc01-0000-4000-8000-0000000002${String(i).padStart(2, "0")}`
-            const filePath = path.join(fixtureDirectory, "anatomia-falochronu", `${i}.jpg`)
-            const content = await readFile(filePath)
-
+            const content = await readFile(path.join(fixtureDirectory, fixture))
             await tx
                 .insert(media)
                 .values({
                     mediaId,
-                    artPieceId: breakwaterArtPieceId,
+                    artPieceId,
                     content,
                     contentHash: createHash("sha256").update(content).digest("hex"),
-                    fileType: "jpg",
-                    orderIndex: i - 1,
+                    fileType: path.extname(fixture).slice(1) as "png" | "jpg",
+                    orderIndex: 0,
                 })
                 .onConflictDoNothing()
-        }
 
-        for (let i = 1; i <= 6; i++) {
-            const mediaId = `a7f3bc01-0000-4000-8000-0000000004${String(i).padStart(2, "0")}`
-            const filePath = path.join(fixtureDirectory, "cyfrowa-ucieczka", `${i}.jpg`)
-            const content = await readFile(filePath)
-
+            const artworkTags =
+                titleEng === "Organic Identity"
+                    ? [primaryTag, "Still Life", "Flowers", "Classical"]
+                    : [primaryTag]
             await tx
-                .insert(media)
-                .values({
-                    mediaId,
-                    artPieceId: digitalEscapeArtPieceId,
-                    content,
-                    contentHash: createHash("sha256").update(content).digest("hex"),
-                    fileType: "jpg",
-                    orderIndex: i - 1,
-                })
+                .insert(artPieceTags)
+                .values(artworkTags.map((name) => ({ artPieceId, tagId: tagIdByName[name] })))
                 .onConflictDoNothing()
         }
 
-        // 7. Insert Site Settings with Bento layout and default theme
         const mockTheme: SiteTheme = {
             fonts: {
                 primaryFont: "Playfair Display",
