@@ -42,7 +42,7 @@ function GalleryThumbnail({
             onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") onClick()
             }}
-            className={`group relative ${widthClass} ${aspectRatio} rounded-lg overflow-hidden bg-stone-100 dark:bg-zinc-900 cursor-pointer shadow-sm hover:opacity-95 transition-opacity`}
+            className={`group relative ${widthClass} ${aspectRatio} overflow-hidden bg-stone-100 dark:bg-zinc-900 cursor-pointer hover:opacity-95 transition-opacity`}
         >
             <Image
                 src={photo.src}
@@ -80,7 +80,7 @@ function GalleryMainPhoto({
             onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") onClick()
             }}
-            className="group relative w-full aspect-[4/3] rounded-lg overflow-hidden bg-stone-100 dark:bg-zinc-900 cursor-pointer shadow-sm hover:opacity-95 transition-opacity"
+            className="group relative w-full aspect-[4/3] overflow-hidden bg-stone-100 dark:bg-zinc-900 cursor-pointer hover:opacity-95 transition-opacity"
         >
             <Image
                 src={photo.src}
@@ -226,14 +226,6 @@ export function ProjectGallery({ photos, title }: ProjectGalleryProps) {
                     },
                     slide: {
                         padding: "16px",
-                    },
-                    image: {
-                        borderRadius: "16px",
-                        boxShadow:
-                            "0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.12)",
-                        maxHeight: "82vh",
-                        maxWidth: "85vw",
-                        objectFit: "contain",
                     },
                 }}
             />
