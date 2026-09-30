@@ -13,7 +13,6 @@ async function main() {
     const seedOptions = parseSeedArguments(process.argv.slice(2))
     console.log("Seeding database...")
 
-    // Dynamically import db and schema to ensure dotenv has already initialized env variables
     const { db } = await import("./index")
     const {
         users,
@@ -30,7 +29,11 @@ async function main() {
     const categoryId = "a7f3bc01-0000-4000-8000-000000000002"
     const profileId = "a7f3bc01-0000-4000-8000-000000000003"
     const siteSettingsId = "a7f3bc01-0000-4000-8000-000000000004"
-    const fixtureDirectory = path.join(path.dirname(fileURLToPath(import.meta.url)), "fixtures")
+    const fixtureDirectory = path.join(
+        path.dirname(fileURLToPath(import.meta.url)),
+        "fixtures",
+        "sample"
+    )
 
     const artworks = [
         [
@@ -159,7 +162,6 @@ async function main() {
     assertSeedSafety({ ...seedOptions, existingUsers })
 
     await db.transaction(async (tx) => {
-        // Clear existing seed data in reverse-dependency order before every accepted reseed.
         await tx.delete(artPieceTags)
         await tx.delete(media)
         await tx.delete(links)
@@ -170,13 +172,11 @@ async function main() {
         await tx.delete(siteSettings)
         await tx.delete(users)
 
-        // 1. Insert User
         await tx
             .insert(users)
             .values({ ...seedArtist, passwordHash: "development-only-not-for-login" })
             .onConflictDoNothing()
 
-        // 2. Insert Profile
         const profileContent = await readFile(path.join(fixtureDirectory, "profile.jpg"))
         await tx
             .insert(profiles)
@@ -217,7 +217,6 @@ async function main() {
             })
             .onConflictDoNothing()
 
-        // 3. Insert Social Links
         await tx
             .insert(links)
             .values([
@@ -226,7 +225,6 @@ async function main() {
             ])
             .onConflictDoNothing()
 
-        // 4. Insert Category
         await tx
             .insert(categories)
             .values({ categoryId, namePln: "Sztuka", nameEng: "Art" })
@@ -244,7 +242,6 @@ async function main() {
             Classical: "Klasyczne",
         }
 
-        // 5. Insert Tags
         await tx
             .insert(tags)
             .values(
@@ -256,7 +253,6 @@ async function main() {
             )
             .onConflictDoNothing()
 
-        // 6. Insert Art Pieces, Media content, and Tag relations
         for (const [
             artPieceId,
             mediaId,
@@ -319,7 +315,6 @@ async function main() {
                 .onConflictDoNothing()
         }
 
-        // 7. Insert Site Settings with Bento layout and default theme
         const mockTheme: SiteTheme = {
             fonts: {
                 primaryFont: "Playfair Display",
