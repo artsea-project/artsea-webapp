@@ -5,6 +5,7 @@ import { db } from "@/db"
 import { Ruler, MoveRight } from "lucide-react"
 import parse from "html-react-parser"
 import { ProjectGallery } from "@/components/ProjectGallery"
+import { isBentoMediaType } from "@/lib/media"
 
 interface PageProps {
     params: Promise<{ id: string }>
@@ -199,12 +200,14 @@ async function WorkDetails({ params }: PageProps) {
         .map((t) => t.tag?.namePln)
         .filter((name): name is string => typeof name === "string")
 
-    const galleryPhotos = (artPiece.media || []).map((m) => ({
-        mediaId: m.mediaId,
-        orderIndex: m.orderIndex,
-        src: `/media/${m.mediaId}`,
-        alt: `${title} - photo ${m.orderIndex + 1}`,
-    }))
+    const galleryPhotos = (artPiece.media || [])
+        .filter((m) => isBentoMediaType(m.fileType))
+        .map((m) => ({
+            mediaId: m.mediaId,
+            orderIndex: m.orderIndex,
+            src: `/media/${m.mediaId}`,
+            alt: `${title} - photo ${m.orderIndex + 1}`,
+        }))
 
     return (
         <div className="min-h-screen bg-background text-foreground font-body transition-colors duration-200">
