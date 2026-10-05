@@ -203,8 +203,6 @@ async function WorkDetails({ params }: PageProps) {
     const galleryPhotos = (artPiece.media || [])
         .filter((m) => isBentoMediaType(m.fileType))
         .map((m) => ({
-            mediaId: m.mediaId,
-            orderIndex: m.orderIndex,
             src: `/media/${m.mediaId}`,
             alt: `${title} - photo ${m.orderIndex + 1}`,
         }))
@@ -214,7 +212,7 @@ async function WorkDetails({ params }: PageProps) {
             <div className="max-w-7xl mx-auto px-6 py-8 md:px-16 md:py-12">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-16 items-start">
                     <div className="md:col-span-7 w-full">
-                        <ProjectGallery photos={galleryPhotos} title={title} />
+                        <ProjectGallery photos={galleryPhotos} />
                     </div>
                     <div className="md:col-span-5 md:sticky md:top-24 flex flex-col gap-8">
                         <ArtworkHeader
