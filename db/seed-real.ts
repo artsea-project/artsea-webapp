@@ -32,8 +32,26 @@ async function main() {
     const siteSettingsId = "a7f3bc01-0000-4000-8000-000000000004"
     const fixtureDirectory = path.join(path.dirname(fileURLToPath(import.meta.url)), "fixtures")
 
-    const breakwaterArtPieceId = "a7f3bc01-0000-4000-8000-000000000101"
-    const digitalEscapeArtPieceId = "a7f3bc01-0000-4000-8000-000000000102"
+    const artworksConfig = {
+        breakwater: {
+            id: "a7f3bc01-0000-4000-8000-000000000101",
+            folder: "anatomia-falochronu",
+            photoCount: 20,
+            mediaIdPrefix: "a7f3bc01-0000-4000-8000-0000000002",
+        },
+        digitalEscape: {
+            id: "a7f3bc01-0000-4000-8000-000000000102",
+            folder: "cyfrowa-ucieczka",
+            photoCount: 6,
+            mediaIdPrefix: "a7f3bc01-0000-4000-8000-0000000004",
+        },
+    } as const
+
+    const mediaIdFor = (piece: { mediaIdPrefix: string }, photoNumber: number) =>
+        `${piece.mediaIdPrefix}${String(photoNumber).padStart(2, "0")}`
+
+    const breakwaterArtPieceId = artworksConfig.breakwater.id
+    const digitalEscapeArtPieceId = artworksConfig.digitalEscape.id
 
     const breakwaterDescPln = {
         technique: "Fotografia",
@@ -90,33 +108,33 @@ async function main() {
     const bentoItems = [
         {
             artPieceId: digitalEscapeArtPieceId,
-            mediaId: "a7f3bc01-0000-4000-8000-000000000401",
+            mediaId: mediaIdFor(artworksConfig.digitalEscape, 1),
         },
         {
             artPieceId: breakwaterArtPieceId,
-            mediaId: "a7f3bc01-0000-4000-8000-000000000201",
+            mediaId: mediaIdFor(artworksConfig.breakwater, 1),
         },
         {
             artPieceId: breakwaterArtPieceId,
-            mediaId: "a7f3bc01-0000-4000-8000-000000000202",
+            mediaId: mediaIdFor(artworksConfig.breakwater, 2),
         },
         {
             artPieceId: digitalEscapeArtPieceId,
-            mediaId: "a7f3bc01-0000-4000-8000-000000000402",
+            mediaId: mediaIdFor(artworksConfig.digitalEscape, 2),
         },
         {
             artPieceId: breakwaterArtPieceId,
-            mediaId: "a7f3bc01-0000-4000-8000-000000000203",
+            mediaId: mediaIdFor(artworksConfig.breakwater, 3),
         },
         {
             artPieceId: digitalEscapeArtPieceId,
-            mediaId: "a7f3bc01-0000-4000-8000-000000000403",
+            mediaId: mediaIdFor(artworksConfig.digitalEscape, 3),
         },
         {
             artPieceId: breakwaterArtPieceId,
-            mediaId: "a7f3bc01-0000-4000-8000-000000000204",
+            mediaId: mediaIdFor(artworksConfig.breakwater, 4),
         },
-    ] as const
+    ]
 
     const desktop = [
         [1, 1, 4, 10],
@@ -304,40 +322,24 @@ async function main() {
             ])
             .onConflictDoNothing()
 
-        for (let i = 1; i <= 20; i++) {
-            const mediaId = `a7f3bc01-0000-4000-8000-0000000002${String(i).padStart(2, "0")}`
-            const filePath = path.join(fixtureDirectory, "anatomia-falochronu", `${i}.jpg`)
-            const content = await readFile(filePath)
+        for (const artwork of Object.values(artworksConfig)) {
+            for (let i = 1; i <= artwork.photoCount; i++) {
+                const mediaId = mediaIdFor(artwork, i)
+                const filePath = path.join(fixtureDirectory, artwork.folder, `${i}.jpg`)
+                const content = await readFile(filePath)
 
-            await tx
-                .insert(media)
-                .values({
-                    mediaId,
-                    artPieceId: breakwaterArtPieceId,
-                    content,
-                    contentHash: createHash("sha256").update(content).digest("hex"),
-                    fileType: "jpg",
-                    orderIndex: i - 1,
-                })
-                .onConflictDoNothing()
-        }
-
-        for (let i = 1; i <= 6; i++) {
-            const mediaId = `a7f3bc01-0000-4000-8000-0000000004${String(i).padStart(2, "0")}`
-            const filePath = path.join(fixtureDirectory, "cyfrowa-ucieczka", `${i}.jpg`)
-            const content = await readFile(filePath)
-
-            await tx
-                .insert(media)
-                .values({
-                    mediaId,
-                    artPieceId: digitalEscapeArtPieceId,
-                    content,
-                    contentHash: createHash("sha256").update(content).digest("hex"),
-                    fileType: "jpg",
-                    orderIndex: i - 1,
-                })
-                .onConflictDoNothing()
+                await tx
+                    .insert(media)
+                    .values({
+                        mediaId,
+                        artPieceId: artwork.id,
+                        content,
+                        contentHash: createHash("sha256").update(content).digest("hex"),
+                        fileType: "jpg",
+                        orderIndex: i - 1,
+                    })
+                    .onConflictDoNothing()
+            }
         }
 
         const mockTheme: SiteTheme = {
