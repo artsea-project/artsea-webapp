@@ -36,14 +36,10 @@ function GalleryThumbnail({
     children,
 }: ThumbnailProps) {
     return (
-        <div
-            role="button"
-            tabIndex={0}
+        <button
+            type="button"
             onClick={onClick}
-            onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") onClick()
-            }}
-            className={`group relative ${widthClass} ${aspectRatio} overflow-hidden bg-stone-100 dark:bg-zinc-900 cursor-pointer hover:opacity-95 transition-opacity`}
+            className={`group relative ${widthClass} ${aspectRatio} overflow-hidden bg-stone-100 dark:bg-zinc-900 cursor-pointer hover:opacity-95 transition-opacity text-left p-0 border-0`}
         >
             <Image
                 src={photo.src}
@@ -54,7 +50,7 @@ function GalleryThumbnail({
                 className="object-cover transition-transform duration-300 group-hover:scale-[1.01]"
             />
             {children}
-        </div>
+        </button>
     )
 }
 
@@ -74,14 +70,10 @@ function GalleryMainPhoto({
     onClick: () => void
 }) {
     return (
-        <div
-            role="button"
-            tabIndex={0}
+        <button
+            type="button"
             onClick={onClick}
-            onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") onClick()
-            }}
-            className="group relative w-full aspect-[4/3] overflow-hidden bg-stone-100 dark:bg-zinc-900 cursor-pointer hover:opacity-95 transition-opacity"
+            className="group relative w-full aspect-[4/3] overflow-hidden bg-stone-100 dark:bg-zinc-900 cursor-pointer hover:opacity-95 transition-opacity text-left p-0 border-0"
         >
             <Image
                 src={photo.src}
@@ -92,7 +84,7 @@ function GalleryMainPhoto({
                 unoptimized
                 className="object-cover transition-transform duration-300 group-hover:scale-[1.01]"
             />
-        </div>
+        </button>
     )
 }
 
