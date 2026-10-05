@@ -46,7 +46,6 @@ function GalleryThumbnail({
                 alt={alt}
                 fill
                 sizes="(max-width: 768px) 50vw, 30vw"
-                unoptimized
                 className="object-cover transition-transform duration-300 group-hover:scale-[1.01]"
             />
             {children}
@@ -81,7 +80,6 @@ function GalleryMainPhoto({
                 fill
                 sizes="(max-width: 768px) 100vw, 60vw"
                 priority
-                unoptimized
                 className="object-cover transition-transform duration-300 group-hover:scale-[1.01]"
             />
         </button>
