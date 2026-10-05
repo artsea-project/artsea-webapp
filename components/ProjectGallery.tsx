@@ -2,8 +2,9 @@
 
 import { useState } from "react"
 import Image from "next/image"
-import Lightbox from "yet-another-react-lightbox"
-import "yet-another-react-lightbox/styles.css"
+import dynamic from "next/dynamic"
+
+const Lightbox = dynamic(() => import("./ProjectGalleryLightbox"), { ssr: false })
 
 export interface GalleryPhoto {
     src: string
@@ -212,23 +213,25 @@ export function ProjectGallery({ photos, title }: ProjectGalleryProps) {
     return (
         <div className="w-full">
             <GalleryPreview photos={photos} title={title} onSelect={setIndex} />
-            <Lightbox
-                open={index >= 0}
-                index={index}
-                close={() => setIndex(-1)}
-                slides={slides}
-                controller={{ closeOnBackdropClick: true }}
-                carousel={{ padding: "48px" }}
-                styles={{
-                    root: {
-                        "--yarl__color_backdrop": "rgba(0, 0, 0, 0.6)",
-                        backdropFilter: "blur(10px)",
-                    },
-                    slide: {
-                        padding: "16px",
-                    },
-                }}
-            />
+            {index >= 0 && (
+                <Lightbox
+                    open={index >= 0}
+                    index={index}
+                    close={() => setIndex(-1)}
+                    slides={slides}
+                    controller={{ closeOnBackdropClick: true }}
+                    carousel={{ padding: "48px" }}
+                    styles={{
+                        root: {
+                            "--yarl__color_backdrop": "rgba(0, 0, 0, 0.6)",
+                            backdropFilter: "blur(10px)",
+                        },
+                        slide: {
+                            padding: "16px",
+                        },
+                    }}
+                />
+            )}
         </div>
     )
 }
