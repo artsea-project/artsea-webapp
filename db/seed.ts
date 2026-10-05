@@ -3,9 +3,15 @@ import { readFile } from "node:fs/promises"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { config } from "dotenv"
-import { assertSeedSafety, parseSeedArguments, seedArtist } from "./seed-guard"
-import type { SiteTheme } from "../types/theme"
-import type { BentoBoxLayout } from "../types/bento"
+import { assertSeedSafety, parseSeedArguments } from "./seed-guard"
+import {
+    buildBentoLayout,
+    cleanDatabase,
+    seedArtistProfile,
+    seedArtistUser,
+    seedSiteSettings,
+    seedSocialLinks,
+} from "./seed-common"
 
 config({ path: path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../.env.local") })
 
@@ -14,21 +20,9 @@ async function main() {
     console.log("Seeding database...")
 
     const { db } = await import("./index")
-    const {
-        users,
-        profiles,
-        categories,
-        siteSettings,
-        links,
-        tags,
-        artPieces,
-        media,
-        artPieceTags,
-    } = await import("./schema")
+    const { categories, tags, artPieces, media, artPieceTags, users } = await import("./schema")
 
     const categoryId = "a7f3bc01-0000-4000-8000-000000000002"
-    const profileId = "a7f3bc01-0000-4000-8000-000000000003"
-    const siteSettingsId = "a7f3bc01-0000-4000-8000-000000000004"
     const fixtureDirectory = path.join(
         path.dirname(fileURLToPath(import.meta.url)),
         "fixtures",
@@ -110,47 +104,8 @@ async function main() {
             `a7f3bc01-0000-4000-8000-0000000003${String(index + 1).padStart(2, "0")}`,
         ])
     )
-    const desktop = [
-        [1, 1, 4, 10],
-        [5, 1, 3, 5],
-        [5, 6, 3, 5],
-        [8, 1, 4, 10],
-        [1, 11, 3, 7],
-        [4, 11, 4, 7],
-        [8, 11, 4, 7],
-    ]
-    const mobile = [
-        [1, 1, 1, 8],
-        [2, 1, 1, 5],
-        [2, 6, 1, 3],
-        [1, 9, 2, 8],
-        [1, 17, 1, 6],
-        [2, 17, 1, 6],
-        [1, 23, 2, 8],
-    ]
-
-    const layout: BentoBoxLayout = {
-        desktop: {
-            items: artworks.map(([artPieceId, mediaId], index) => ({
-                artPieceId,
-                mediaId,
-                columnStart: desktop[index][0],
-                rowStart: desktop[index][1],
-                columnSpan: desktop[index][2],
-                rowSpan: desktop[index][3],
-            })),
-        },
-        mobile: {
-            items: artworks.map(([artPieceId, mediaId], index) => ({
-                artPieceId,
-                mediaId,
-                columnStart: mobile[index][0],
-                rowStart: mobile[index][1],
-                columnSpan: mobile[index][2],
-                rowSpan: mobile[index][3],
-            })),
-        },
-    }
+    const bentoItems = artworks.map(([artPieceId, mediaId]) => ({ artPieceId, mediaId }))
+    const layout = buildBentoLayout(bentoItems)
 
     const existingUsers = await db
         .select({
@@ -162,68 +117,12 @@ async function main() {
     assertSeedSafety({ ...seedOptions, existingUsers })
 
     await db.transaction(async (tx) => {
-        await tx.delete(artPieceTags)
-        await tx.delete(media)
-        await tx.delete(links)
-        await tx.delete(profiles)
-        await tx.delete(artPieces)
-        await tx.delete(tags)
-        await tx.delete(categories)
-        await tx.delete(siteSettings)
-        await tx.delete(users)
-
-        await tx
-            .insert(users)
-            .values({ ...seedArtist, passwordHash: "development-only-not-for-login" })
-            .onConflictDoNothing()
+        await cleanDatabase(tx)
+        await seedArtistUser(tx)
 
         const profileContent = await readFile(path.join(fixtureDirectory, "profile.jpg"))
-        await tx
-            .insert(profiles)
-            .values({
-                profileId,
-                fullName: "Élise Roux",
-                bioPln: {
-                    paragraphs: [
-                        "Tworzę ilustracje i identyfikacje wizualne, łącząc organiczne formy z minimalistyczną precyzją. Działam w Gdańsku, inspirując się naturą i surową architekturą.",
-                        "Cześć! Nazywam się Anna i jestem niezależną ilustratorką z Gdańska. Od ponad siedmiu lat pomagam markom tworzyć czystą, przemyślaną identyfikację.",
-                        "Moja przygoda ze sztuką zaczęła się od tradycyjnego malarstwa, które nauczyło mnie szacunku do światła i barwy. Szybko jednak odkryłam, że cyfrowe płótno daje równie wielkie możliwości wyrazu. Dziś specjalizuję się w łączeniu geometrycznego rygoru z ciepłem organicznych kształtów.",
-                        "Współpracowałam z wieloma instytucjami kultury, wydawnictwami i niezależnymi twórcami. Najbardziej cenię sobie projekty, które wymagają nieszablonowego myślenia oraz głębokiego wejścia w kontekst tworzonej opowieści.",
-                    ],
-                },
-                bioEng: {
-                    paragraphs: [
-                        "I create illustrations and visual identities, combining organic forms with minimalist precision. I work in Gdańsk, drawing inspiration from nature and raw architecture.",
-                        "Hi! My name is Anna and I am an independent illustrator based in Gdańsk. For over seven years I have been helping brands create clean, thoughtful identities.",
-                        "My adventure with art began with traditional painting, which taught me respect for light and color. However, I quickly discovered that the digital canvas offers equally great possibilities of expression. Today, I specialize in combining geometric rigor with the warmth of organic shapes.",
-                        "I have collaborated with many cultural institutions, publishing houses, and independent creators. I value projects that require out-of-the-box thinking and a deep dive into the context of the story being created.",
-                    ],
-                },
-                contactPln: {
-                    paragraphs: [
-                        "Jeśli podoba Ci się moje podejście do designu, napisz do mnie.",
-                        "Zawsze jestem otwarta na nowe, interesujące wyzwania.",
-                    ],
-                },
-                contactEng: {
-                    paragraphs: [
-                        "If you like my approach to design, feel free to write to me.",
-                        "I am always open to new, interesting challenges.",
-                    ],
-                },
-                profileImageContent: profileContent,
-                profileImageContentHash: createHash("sha256").update(profileContent).digest("hex"),
-                profileImageFileType: "jpg",
-            })
-            .onConflictDoNothing()
-
-        await tx
-            .insert(links)
-            .values([
-                { name: "instagram", url: "https://instagram.com/elise_roux" },
-                { name: "behance", url: "https://behance.net/elise_roux" },
-            ])
-            .onConflictDoNothing()
+        await seedArtistProfile(tx, profileContent)
+        await seedSocialLinks(tx)
 
         await tx
             .insert(categories)
@@ -315,27 +214,7 @@ async function main() {
                 .onConflictDoNothing()
         }
 
-        const mockTheme: SiteTheme = {
-            fonts: {
-                primaryFont: "Playfair Display",
-                secondaryFont: "Inter",
-                additionalFont: "Inter",
-            },
-            colors: {
-                primaryColor: "#292524",
-                secondaryColor: "#A8A29E",
-                additionalColor: "#1C1917",
-                accentColor: "#A8A29E",
-                backgroundColor: "#FFFFFF",
-            },
-            presetTheme: "default",
-            darkModeExperimental: false,
-        }
-
-        await tx
-            .insert(siteSettings)
-            .values({ siteSettingsId, theme: mockTheme, layoutBentoBox: layout })
-            .onConflictDoNothing()
+        await seedSiteSettings(tx, layout)
     })
 
     console.log("Database seeded successfully with Bento portfolio data!")
