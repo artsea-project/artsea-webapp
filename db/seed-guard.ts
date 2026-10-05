@@ -37,7 +37,7 @@ export function assertSeedSafety(options: SeedOptions & { existingUsers: Existin
         )
     ) {
         throw new Error(
-            "Refusing to seed a database with an incompatible user. Run npm run db:seed -- --reset to replace existing seed data."
+            "Refusing to seed a database with an incompatible user. Run the seed again with --reset to replace existing seed data."
         )
     }
 }
