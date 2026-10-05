@@ -152,6 +152,11 @@ async function WorkDetails({ params }: PageProps) {
                     },
                 },
                 media: {
+                    columns: {
+                        mediaId: true,
+                        orderIndex: true,
+                        fileType: true,
+                    },
                     orderBy: (media, { asc }) => [asc(media.orderIndex)],
                 },
             },
