@@ -99,6 +99,11 @@ async function main() {
         },
     ] as const
 
+    const tagIdByName = Object.fromEntries(tagDefs.map((tag) => [tag.nameEng, tag.id])) as Record<
+        (typeof tagDefs)[number]["nameEng"],
+        string
+    >
+
     const bentoItems = [
         {
             artPieceId: digitalEscapeArtPieceId,
@@ -212,11 +217,11 @@ async function main() {
         await tx
             .insert(artPieceTags)
             .values([
-                { artPieceId: breakwaterArtPieceId, tagId: tagDefs[0].id },
-                { artPieceId: breakwaterArtPieceId, tagId: tagDefs[1].id },
-                { artPieceId: digitalEscapeArtPieceId, tagId: tagDefs[2].id },
-                { artPieceId: digitalEscapeArtPieceId, tagId: tagDefs[3].id },
-                { artPieceId: digitalEscapeArtPieceId, tagId: tagDefs[4].id },
+                { artPieceId: breakwaterArtPieceId, tagId: tagIdByName["photography"] },
+                { artPieceId: breakwaterArtPieceId, tagId: tagIdByName["stones"] },
+                { artPieceId: digitalEscapeArtPieceId, tagId: tagIdByName["sculpture"] },
+                { artPieceId: digitalEscapeArtPieceId, tagId: tagIdByName["clay"] },
+                { artPieceId: digitalEscapeArtPieceId, tagId: tagIdByName["digital addiction"] },
             ])
             .onConflictDoNothing()
 
