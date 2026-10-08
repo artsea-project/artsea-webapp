@@ -26,7 +26,7 @@ export const siteSettingsId = "a7f3bc01-0000-4000-8000-000000000004"
 
 export const sharedProfile = {
     profileId,
-    fullName: "Élise Roux",
+    fullName: "Anna",
     bioPln: {
         paragraphs: [
             "Tworzę ilustracje i identyfikacje wizualne, łącząc organiczne formy z minimalistyczną precyzją. Działam w Gdańsku, inspirując się naturą i surową architekturą.",
@@ -58,8 +58,8 @@ export const sharedProfile = {
 }
 
 export const sharedSocialLinks = [
-    { name: "instagram", url: "https://instagram.com/elise_roux" },
-    { name: "behance", url: "https://behance.net/elise_roux" },
+    { name: "instagram", url: "https://instagram.com/anna" },
+    { name: "behance", url: "https://behance.net/anna" },
 ]
 
 export const defaultTheme: SiteTheme = defaultSiteTheme
