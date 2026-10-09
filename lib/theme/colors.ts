@@ -1,3 +1,4 @@
+import { isRecord } from "./record"
 import type { SiteThemeColors } from "@/types/theme"
 
 export const defaultThemeColors = {
@@ -17,12 +18,6 @@ export type ThemeColorVariables = {
 }
 
 const CSS_HEX_COLOR = /^#(?:[\da-f]{3}|[\da-f]{6})$/i
-
-type UnknownRecord = Record<string, unknown>
-
-function isRecord(value: unknown): value is UnknownRecord {
-    return typeof value === "object" && value !== null
-}
 
 function resolveColor(value: unknown, fallback: string): string {
     return typeof value === "string" && CSS_HEX_COLOR.test(value) ? value : fallback

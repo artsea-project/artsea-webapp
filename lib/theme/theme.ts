@@ -1,3 +1,4 @@
+import { isRecord } from "./record"
 import type { SiteTheme, SiteThemeFonts } from "@/types/theme"
 import { defaultThemeColors, resolveThemeColors, type ThemeColorVariables } from "./colors"
 import {
@@ -19,12 +20,6 @@ export type ThemeVariables = ThemeFontVariables & ThemeColorVariables
 export interface ResolvedSiteTheme {
     fontNames: ResolvedThemeFonts["fontNames"]
     variables: ThemeVariables
-}
-
-type UnknownRecord = Record<string, unknown>
-
-function isRecord(value: unknown): value is UnknownRecord {
-    return typeof value === "object" && value !== null
 }
 
 export function resolveSiteTheme(theme: unknown): ResolvedSiteTheme {
