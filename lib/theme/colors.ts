@@ -16,7 +16,7 @@ export type ThemeColorVariables = {
     "--background": string
 }
 
-const CSS_HEX_COLOR = /^#(?:[\da-f]{3}|[\da-f]{4}|[\da-f]{6}|[\da-f]{8})$/i
+const CSS_HEX_COLOR = /^#(?:[\da-f]{3}|[\da-f]{6})$/i
 
 type UnknownRecord = Record<string, unknown>
 
