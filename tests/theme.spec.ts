@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test"
 import { getSiteTheme } from "@/lib/theme/get-site-theme"
+import { defaultThemeColors, resolveThemeColors } from "@/lib/theme/colors"
 import { resolveSiteTheme } from "@/lib/theme/theme"
 
 test.describe("semantic site theme", () => {
@@ -75,7 +76,27 @@ test.describe("semantic site theme", () => {
             "--secondary": "#abc",
             "--foreground": "#1C1917",
             "--accent": "#A8A29E",
-            "--background": "#12345678",
+            "--background": "#FFFFFF",
         })
     })
 })
+
+for (const color of ["#abc0", "#abcd", "#1C191700", "#FFFFFF00", "#12345678"]) {
+    test(`rejects alpha hex color ${color} for every site color role`, () => {
+        expect(
+            resolveThemeColors({
+                primaryColor: color,
+                secondaryColor: color,
+                foregroundColor: color,
+                accentColor: color,
+                backgroundColor: color,
+            })
+        ).toEqual(resolveThemeColors(defaultThemeColors))
+    })
+}
+
+for (const color of ["#abc", "#ABC", "#123456", "#aAbBcC"]) {
+    test(`accepts opaque hex color ${color}`, () => {
+        expect(resolveThemeColors({ foregroundColor: color })["--foreground"]).toBe(color)
+    })
+}
