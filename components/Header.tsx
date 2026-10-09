@@ -20,7 +20,7 @@ export default async function Header() {
             <div className="max-w-7xl mx-auto py-8 px-6 md:py-12 md:px-16 flex items-center justify-between relative">
                 <Link
                     href="/"
-                    className="font-primary text-primary text-2xl md:text-3xl font-bold tracking-tight hover:opacity-90 transition-opacity"
+                    className="font-primary text-foreground text-2xl md:text-3xl font-bold tracking-tight hover:opacity-90 transition-opacity"
                 >
                     {artistName}
                 </Link>

@@ -132,8 +132,6 @@ test.describe("Database Config & Relations Integration Test", () => {
                 additionalFont: "Inter",
             },
             colors: {
-                primaryColor: "#292524",
-                secondaryColor: "#A8A29E",
                 foregroundColor: "#1C1917",
                 accentColor: "#A8A29E",
                 backgroundColor: "#FFFFFF",
@@ -309,8 +307,6 @@ test.describe("Database Config & Relations Integration Test", () => {
                         additionalFont: "Inter",
                     },
                     colors: {
-                        primaryColor: "#000000",
-                        secondaryColor: "#000000",
                         foregroundColor: "#000000",
                         accentColor: "#000000",
                         backgroundColor: "#FFFFFF",
@@ -348,8 +344,6 @@ test.describe("Database Config & Relations Integration Test", () => {
                         additionalFont: "Inter",
                     },
                     colors: {
-                        primaryColor: "#000000",
-                        secondaryColor: "#000000",
                         foregroundColor: "#000000",
                         accentColor: "#000000",
                         backgroundColor: "#FFFFFF",
