@@ -29,10 +29,7 @@ export function resolveThemeColors(colors: unknown): ThemeColorVariables {
     return {
         "--primary": resolveColor(values.primaryColor, defaultThemeColors.primaryColor),
         "--secondary": resolveColor(values.secondaryColor, defaultThemeColors.secondaryColor),
-        "--foreground": resolveColor(
-            values.foregroundColor ?? values.additionalColor,
-            defaultThemeColors.foregroundColor
-        ),
+        "--foreground": resolveColor(values.foregroundColor, defaultThemeColors.foregroundColor),
         "--accent": resolveColor(values.accentColor, defaultThemeColors.accentColor),
         "--background": resolveColor(values.backgroundColor, defaultThemeColors.backgroundColor),
     }
