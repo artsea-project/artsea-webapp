@@ -1,20 +1,16 @@
-import { isRecord } from "./record"
 import type { SiteThemeColors } from "@/types/theme"
+import { isRecord } from "./record"
 
 export const defaultThemeColors = {
-    primaryColor: "#292524",
-    secondaryColor: "#A8A29E",
     foregroundColor: "#1C1917",
-    accentColor: "#A8A29E",
     backgroundColor: "#FFFFFF",
+    accentColor: "#A8A29E",
 } as const satisfies SiteThemeColors
 
 export type ThemeColorVariables = {
-    "--primary": string
-    "--secondary": string
     "--foreground": string
-    "--accent": string
     "--background": string
+    "--primary": string
 }
 
 const CSS_HEX_COLOR = /^#(?:[\da-f]{3}|[\da-f]{6})$/i
@@ -25,12 +21,9 @@ function resolveColor(value: unknown, fallback: string): string {
 
 export function resolveThemeColors(colors: unknown): ThemeColorVariables {
     const values = isRecord(colors) ? colors : {}
-
     return {
-        "--primary": resolveColor(values.primaryColor, defaultThemeColors.primaryColor),
-        "--secondary": resolveColor(values.secondaryColor, defaultThemeColors.secondaryColor),
         "--foreground": resolveColor(values.foregroundColor, defaultThemeColors.foregroundColor),
-        "--accent": resolveColor(values.accentColor, defaultThemeColors.accentColor),
         "--background": resolveColor(values.backgroundColor, defaultThemeColors.backgroundColor),
+        "--primary": resolveColor(values.accentColor, defaultThemeColors.accentColor),
     }
 }

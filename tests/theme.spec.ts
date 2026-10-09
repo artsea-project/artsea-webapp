@@ -3,100 +3,77 @@ import { getSiteTheme } from "@/lib/theme/get-site-theme"
 import { defaultThemeColors, resolveThemeColors } from "@/lib/theme/colors"
 import { resolveSiteTheme } from "@/lib/theme/theme"
 
-test.describe("semantic site theme", () => {
-    test("does not require a database to provide the fallback theme", async () => {
-        const databaseUrl = process.env.DATABASE_URL
-        delete process.env.DATABASE_URL
+const palette = { foregroundColor: "#1C1917", backgroundColor: "#FFFFFF", accentColor: "#57534E" }
 
-        try {
-            await expect(getSiteTheme()).resolves.toBeNull()
-        } finally {
-            if (databaseUrl) {
-                process.env.DATABASE_URL = databaseUrl
-            }
-        }
+test("does not require a database to provide the fallback theme", async () => {
+    const databaseUrl = process.env.DATABASE_URL
+    delete process.env.DATABASE_URL
+    try {
+        await expect(getSiteTheme()).resolves.toBeNull()
+    } finally {
+        if (databaseUrl) process.env.DATABASE_URL = databaseUrl
+    }
+})
+
+test("resolves fonts and the three-color palette together", () => {
+    const resolved = resolveSiteTheme({
+        fonts: { primaryFont: "Inter", secondaryFont: "Playfair Display", additionalFont: "Inter" },
+        colors: palette,
     })
-
-    test("resolves database fonts and standardized color roles together", () => {
-        const resolved = resolveSiteTheme({
-            fonts: {
-                primaryFont: "Inter",
-                secondaryFont: "Playfair Display",
-                additionalFont: "Playfair Display",
-            },
-            colors: {
-                primaryColor: "#112233",
-                secondaryColor: "#445566",
-                foregroundColor: "#778899",
-                accentColor: "#AABBCC",
-                backgroundColor: "#FDFCFB",
-            },
-            presetTheme: "default",
-            darkModeExperimental: false,
-        })
-
-        expect(resolved.fontNames).toEqual(["Inter", "Playfair Display", "Geist Mono"])
-        expect(resolved.variables).toEqual({
-            "--site-font-primary": "var(--font-inter, Arial, Helvetica, sans-serif)",
-            "--site-font-secondary":
-                'var(--font-playfair-display, Georgia, "Times New Roman", serif)',
-            "--site-font-body": 'var(--font-playfair-display, Georgia, "Times New Roman", serif)',
-            "--site-font-mono":
-                "var(--font-geist-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace)",
-            "--primary": "#112233",
-            "--secondary": "#445566",
-            "--foreground": "#778899",
-            "--accent": "#AABBCC",
-            "--background": "#FDFCFB",
-        })
+    expect(resolved.fontNames).toEqual(["Inter", "Playfair Display", "Geist Mono"])
+    expect(resolved.variables).toEqual({
+        "--site-font-primary": "var(--font-inter, Arial, Helvetica, sans-serif)",
+        "--site-font-secondary": 'var(--font-playfair-display, Georgia, "Times New Roman", serif)',
+        "--site-font-body": "var(--font-inter, Arial, Helvetica, sans-serif)",
+        "--site-font-mono":
+            "var(--font-geist-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace)",
+        "--foreground": "#1C1917",
+        "--background": "#FFFFFF",
+        "--primary": "#57534E",
     })
+})
 
-    test("falls back field by field when persisted theme values are invalid", () => {
-        const resolved = resolveSiteTheme({
-            fonts: {
-                primaryFont: "Unknown Font",
-                secondaryFont: "Inter",
-                additionalFont: "Inter",
-            },
-            colors: {
-                primaryColor: "red; background: url(example)",
-                secondaryColor: "#abc",
-                foregroundColor: null,
-                accentColor: "not-a-color",
-                backgroundColor: "#12345678",
-            },
+test("falls back field by field for malformed values, not low contrast", () => {
+    expect(
+        resolveThemeColors({
+            foregroundColor: null,
+            backgroundColor: "red; background: url(example)",
+            accentColor: "#abc",
         })
-
-        expect(resolved.variables).toMatchObject({
-            "--site-font-primary":
-                'var(--font-playfair-display, Georgia, "Times New Roman", serif)',
-            "--site-font-secondary": "var(--font-inter, Arial, Helvetica, sans-serif)",
-            "--site-font-body": "var(--font-inter, Arial, Helvetica, sans-serif)",
-            "--primary": "#292524",
-            "--secondary": "#abc",
-            "--foreground": "#1C1917",
-            "--accent": "#A8A29E",
-            "--background": "#FFFFFF",
-        })
+    ).toMatchObject({
+        "--foreground": defaultThemeColors.foregroundColor,
+        "--background": defaultThemeColors.backgroundColor,
+        "--primary": "#abc",
+    })
+    const resolved = resolveSiteTheme({
+        colors: { foregroundColor: "#fff", backgroundColor: "#fff", accentColor: "#fff" },
+    })
+    expect(resolved.variables).toMatchObject({
+        "--foreground": "#fff",
+        "--background": "#fff",
+        "--primary": "#fff",
     })
 })
 
 for (const color of ["#abc0", "#abcd", "#1C191700", "#FFFFFF00", "#12345678"]) {
-    test(`rejects alpha hex color ${color} for every site color role`, () => {
+    test(`rejects alpha hex color ${color}`, () => {
         expect(
             resolveThemeColors({
-                primaryColor: color,
-                secondaryColor: color,
                 foregroundColor: color,
-                accentColor: color,
                 backgroundColor: color,
+                accentColor: color,
             })
         ).toEqual(resolveThemeColors(defaultThemeColors))
     })
 }
-
 for (const color of ["#abc", "#ABC", "#123456", "#aAbBcC"]) {
-    test(`accepts opaque hex color ${color}`, () => {
-        expect(resolveThemeColors({ foregroundColor: color })["--foreground"]).toBe(color)
+    test(`preserves opaque database color ${color}`, () => {
+        expect(
+            resolveThemeColors({
+                foregroundColor: color,
+                backgroundColor: color,
+                accentColor: color,
+            })
+        ).toMatchObject({ "--foreground": color, "--background": color, "--primary": color })
     })
 }

@@ -14,7 +14,7 @@ function ContactSection({ email }: ContactSectionProps) {
                 <div>
                     <a
                         href={`mailto:${email}`}
-                        className="inline-block border-b border-secondary pb-1 text-lg text-secondary transition-all hover:brightness-125 md:text-xl"
+                        className="inline-block border-b border-background pb-1 text-lg text-background transition-all hover:opacity-80 md:text-xl"
                     >
                         {email}
                     </a>

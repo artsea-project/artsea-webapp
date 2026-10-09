@@ -5,11 +5,9 @@ export interface SiteThemeFonts {
 }
 
 export interface SiteThemeColors {
-    primaryColor: string // "Kolor główny" - Used for headings, brand logo, etc. (Default: #292524)
-    secondaryColor: string // "Kolor pomocniczy" - Used for secondary text and accents (Default: #A8A29E)
-    foregroundColor: string // Default text color rendered over the page background (Default: #1C1917)
-    accentColor: string // "Kolor akcentów" - Accent color highlights (Default: #A8A29E)
-    backgroundColor: string // "Kolor tła" - Page background (Default: #FFFFFF)
+    foregroundColor: string // Main text and inverted section backgrounds
+    backgroundColor: string // Page background and inverted section text
+    accentColor: string // Emphasized text and primary actions (shadcn primary)
 }
 
 /**
