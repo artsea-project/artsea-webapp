@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     return (
-        <div className="flex h-screen overflow-hidden bg-white">
+        <div className="admin-theme flex h-screen overflow-hidden bg-background-admin text-foreground-admin">
             <Suspense fallback={null}>
                 <AdminSidebar />
             </Suspense>
