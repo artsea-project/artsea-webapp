@@ -16,7 +16,7 @@ function parseDescriptionSlot(value: unknown, slot: "technique" | "description")
 }
 
 function CarouselPlaceholder() {
-    return <div className="md:col-span-7 bg-stone-100 dark:bg-zinc-900 rounded-lg min-h-[400px]" />
+    return <div className="md:col-span-7 bg-muted rounded-lg min-h-[400px]" />
 }
 
 interface ArtworkHeaderProps {
@@ -29,11 +29,11 @@ interface ArtworkHeaderProps {
 function ArtworkHeader({ title, categoryName, yearOfExecution, tags }: ArtworkHeaderProps) {
     return (
         <div>
-            <div className="flex items-center gap-6 text-[11px] uppercase tracking-widest text-stone-400 dark:text-zinc-500 font-secondary font-bold">
+            <div className="flex items-center gap-6 text-[11px] uppercase tracking-widest text-muted-foreground font-secondary font-bold">
                 <span>{categoryName || "Bez kategorii"}</span>
                 {yearOfExecution && (
                     <>
-                        <span className="text-stone-300 dark:text-zinc-700"></span>
+                        <span className="text-muted-foreground"></span>
                         <span>{yearOfExecution}</span>
                     </>
                 )}
@@ -46,9 +46,9 @@ function ArtworkHeader({ title, categoryName, yearOfExecution, tags }: ArtworkHe
                     {tags.map((tagText, idx) => (
                         <span
                             key={idx}
-                            className="inline-flex items-center gap-1 text-xs text-stone-600 dark:text-zinc-400 px-3 py-1 rounded-full border border-stone-300 dark:border-zinc-800"
+                            className="inline-flex items-center gap-1 text-xs text-foreground px-3 py-1 rounded-full border border-border"
                         >
-                            <span className="text-stone-400">#</span>
+                            <span className="text-muted-foreground">#</span>
                             {tagText}
                         </span>
                     ))}
@@ -64,16 +64,16 @@ interface DimensionsSectionProps {
 
 function DimensionsSection({ dimensions }: DimensionsSectionProps) {
     if (!dimensions) {
-        return <hr className="border-stone-200 dark:border-zinc-800" />
+        return <hr className="border-border" />
     }
     return (
         <div className="flex flex-col">
-            <hr className="border-stone-200 dark:border-zinc-800" />
-            <div className="flex items-center gap-2 text-stone-600 dark:text-zinc-400 text-sm font-secondary py-4">
-                <Ruler className="w-4 h-4 text-stone-400 dark:text-zinc-500 stroke-[1.5]" />
+            <hr className="border-border" />
+            <div className="flex items-center gap-2 text-foreground text-sm font-secondary py-4">
+                <Ruler className="w-4 h-4 text-muted-foreground stroke-[1.5]" />
                 <span>{dimensions}</span>
             </div>
-            <hr className="border-stone-200 dark:border-zinc-800" />
+            <hr className="border-border" />
         </div>
     )
 }
@@ -87,10 +87,10 @@ function DetailSection({ label, content }: DetailSectionProps) {
     if (!content) return null
     return (
         <div className="flex flex-col gap-3">
-            <span className="text-[11px] font-bold tracking-widest text-stone-400 dark:text-zinc-500 uppercase font-secondary">
+            <span className="text-[11px] font-bold tracking-widest text-muted-foreground uppercase font-secondary">
                 {label}
             </span>
-            <div className="text-stone-600 dark:text-zinc-300 leading-relaxed text-base font-body">
+            <div className="text-foreground leading-relaxed text-base font-body">
                 {parse(content)}
             </div>
         </div>
@@ -109,21 +109,21 @@ function NextArtworkNavigation({ nextArtwork }: NextArtworkNavigationProps) {
     if (!nextArtwork) return null
     const nextTitle = nextArtwork.titlePln || nextArtwork.titleEng || "Bez tytułu"
     return (
-        <div className="mt-24 pt-12 border-t border-stone-200 dark:border-zinc-800">
+        <div className="mt-24 pt-12 border-t border-border">
             <Link
                 href={`/work/${nextArtwork.artPieceId}`}
                 className="group flex items-center justify-between gap-8 py-4 hover:opacity-90 transition-opacity"
             >
                 <div className="flex flex-col gap-3">
-                    <span className="text-xs font-bold tracking-widest text-[#a8a29e] dark:text-[#78716c] uppercase font-secondary">
+                    <span className="text-xs font-bold tracking-widest text-primary uppercase font-secondary">
                         Zobacz kolejny
                     </span>
-                    <span className="text-3xl md:text-5xl font-normal font-primary text-stone-950 dark:text-stone-50 transition-colors">
+                    <span className="text-3xl md:text-5xl font-normal font-primary text-foreground transition-colors">
                         {nextTitle}
                     </span>
                 </div>
                 <div className="flex items-center">
-                    <MoveRight className="w-32 h-12 stroke-[1.5] text-stone-950 dark:text-stone-50" />
+                    <MoveRight className="w-32 h-12 stroke-[1.5] text-foreground" />
                 </div>
             </Link>
         </div>
