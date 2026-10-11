@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import { db } from "@/db"
 import { notFound } from "next/navigation"
 import { ArrowUpRight } from "lucide-react"
@@ -188,7 +189,15 @@ function DecorativeWave() {
     )
 }
 
-export default async function AboutPage() {
+export default function AboutPage() {
+    return (
+        <Suspense fallback={null}>
+            <AboutContent />
+        </Suspense>
+    )
+}
+
+async function AboutContent() {
     let profile = null
     let socialLinksDb: SocialLink[] = []
     let email: string | null = null
