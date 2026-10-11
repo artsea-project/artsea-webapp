@@ -24,16 +24,16 @@ function HeroSection({ fullName, shortIntro, profileImageSrc }: HeroSectionProps
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
                 <div className="md:col-span-6 flex flex-col">
                     <div className="flex flex-col mb-12">
-                        <h1 className="font-primary text-[96px] leading-[1] font-normal tracking-tight text-[#292524]">
+                        <h1 className="font-primary text-[96px] leading-[1] font-normal tracking-tight text-foreground">
                             {fullName}
                         </h1>
-                        <h2 className="font-primary text-[96px] leading-[1] font-normal tracking-tight text-[#78716C] italic">
+                        <h2 className="font-primary text-[96px] leading-[1] font-normal tracking-tight text-muted-foreground italic">
                             O mnie
                         </h2>
                     </div>
 
                     <div className="max-w-md">
-                        <p className="font-body text-lg leading-relaxed text-[#57534E]">
+                        <p className="font-body text-lg leading-relaxed text-foreground">
                             {shortIntro}
                         </p>
                     </div>
@@ -42,11 +42,10 @@ function HeroSection({ fullName, shortIntro, profileImageSrc }: HeroSectionProps
                 {profileImageSrc && (
                     <div className="md:col-span-5 md:col-start-8 relative pt-12 md:pt-0">
                         <div
-                            className="absolute rounded-full z-0 max-[1060px]:hidden"
+                            className="absolute rounded-full bg-border z-0 max-[1060px]:hidden"
                             style={{
                                 width: "280px",
                                 height: "280px",
-                                backgroundColor: "#DCD7CF",
                                 opacity: 0.8,
                                 left: "-203px",
                                 bottom: "0px",
@@ -78,14 +77,14 @@ function DetailedBioSection({ paragraphs }: DetailedBioSectionProps) {
     return (
         <section className="max-w-[1440px] mx-auto px-10 md:px-32 pt-32 pb-32">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 items-start">
-                <div className="md:col-span-5 text-[#292524]">
+                <div className="md:col-span-5 text-foreground">
                     <p className="font-primary text-[32px] leading-tight font-normal">
                         {paragraphs[1]}
                     </p>
                 </div>
 
                 {paragraphs.length > 2 && (
-                    <div className="md:col-span-6 md:col-start-7 text-[#57534E] flex flex-col gap-6">
+                    <div className="md:col-span-6 md:col-start-7 text-foreground flex flex-col gap-6">
                         {paragraphs.slice(2).map((paragraph, idx) => (
                             <p key={idx} className="font-body text-lg leading-relaxed">
                                 {paragraph}
@@ -121,10 +120,10 @@ function ContactSection({ email, socialLinks, paragraphs }: ContactSectionProps)
         <section id="contact" className="max-w-[1440px] mx-auto px-10 md:px-32 pt-16 pb-32">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 items-start">
                 <div className="md:col-span-5 flex flex-col gap-6">
-                    <h2 className="font-primary text-[40px] md:text-[56px] leading-[1.1] font-normal text-[#292524]">
+                    <h2 className="font-primary text-[40px] md:text-[56px] leading-[1.1] font-normal text-foreground">
                         Skontaktuj się ze mną.
                     </h2>
-                    <div className="text-[#78716C] font-body text-lg leading-relaxed flex flex-col gap-1">
+                    <div className="text-muted-foreground font-body text-lg leading-relaxed flex flex-col gap-1">
                         {displayParagraphs.map((paragraph, idx) => (
                             <p key={idx}>{paragraph}</p>
                         ))}
@@ -136,7 +135,7 @@ function ContactSection({ email, socialLinks, paragraphs }: ContactSectionProps)
                         <div className="flex w-max">
                             <a
                                 href={`mailto:${email}`}
-                                className="font-body text-[24px] md:text-[28px] text-[#292524] hover:text-[#57534E] transition-colors border-b border-[#292524] pb-1"
+                                className="font-body text-[24px] md:text-[28px] text-foreground hover:text-primary transition-colors border-b border-foreground pb-1"
                             >
                                 {email}
                             </a>
@@ -145,7 +144,7 @@ function ContactSection({ email, socialLinks, paragraphs }: ContactSectionProps)
 
                     {socialLinks.length > 0 && (
                         <div className="flex flex-col gap-4">
-                            <span className="font-secondary text-[12px] tracking-widest uppercase text-[#A8A29E]">
+                            <span className="font-secondary text-[12px] tracking-widest uppercase text-primary">
                                 Znajdź mnie tutaj
                             </span>
                             <div className="flex flex-wrap gap-8">
@@ -155,7 +154,7 @@ function ContactSection({ email, socialLinks, paragraphs }: ContactSectionProps)
                                         href={link.url}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="flex items-center gap-1 font-body text-[16px] text-[#292524] hover:text-[#57534E] transition-colors"
+                                        className="flex items-center gap-1 font-body text-[16px] text-foreground hover:text-primary transition-colors"
                                     >
                                         {link.name.charAt(0).toUpperCase() + link.name.slice(1)}
                                         <ArrowUpRight size={18} />
@@ -182,7 +181,7 @@ function DecorativeWave() {
         >
             <path
                 d="M0.223732 60.3106C146.956 -13.0553 287.018 6.95362 420.41 120.337C553.803 233.721 687.195 193.703 820.588 0.284001"
-                stroke="#DCD7CF"
+                stroke="var(--border)"
                 strokeWidth="1"
             />
         </svg>
@@ -232,7 +231,7 @@ async function AboutContent() {
             />
 
             <div className="max-w-[1440px] mx-auto px-10 md:px-32 relative z-0">
-                <div className="w-full h-px" style={{ backgroundColor: "#DCD7CF" }} />
+                <div className="w-full h-px bg-border" />
 
                 <div className="absolute right-0 md:-right-16 top-[-100px] -z-10 hidden md:block">
                     <DecorativeWave />
@@ -242,7 +241,7 @@ async function AboutContent() {
             <DetailedBioSection paragraphs={bioParagraphs} />
 
             <div className="max-w-[1440px] mx-auto px-10 md:px-32">
-                <div className="w-full h-px" style={{ backgroundColor: "#DCD7CF" }} />
+                <div className="w-full h-px bg-border" />
             </div>
 
             <ContactSection
