@@ -23,7 +23,7 @@ export function BentoCard({ card, className, sizes }: BentoCardProps) {
 
     return (
         <article
-            className={`relative isolate min-h-0 overflow-hidden rounded-[20px] bg-stone-200 ${className}`}
+            className={`relative isolate min-h-0 overflow-hidden rounded-[20px] bg-muted ${className}`}
         >
             <Link
                 href={`/work/${card.artPieceId}`}
