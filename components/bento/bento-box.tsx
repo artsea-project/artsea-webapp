@@ -123,7 +123,7 @@ function Layout({ cards, kind }: { cards: BentoCardData[]; kind: LayoutKind }) {
         const emptyStateClasses = kind === "desktop" ? "hidden py-16 md:block" : "py-16 md:hidden"
 
         return (
-            <p className={`${emptyStateClasses} text-base text-stone-600`}>
+            <p className={`${emptyStateClasses} text-base text-muted-foreground`}>
                 Selected works will appear here soon.
             </p>
         )

@@ -5,7 +5,7 @@ export default async function Home() {
     const data = await getBentoData()
 
     return (
-        <div className="bg-white px-5 py-12 text-stone-950 sm:px-8 sm:py-16 lg:px-12 lg:py-24">
+        <div className="bg-background px-5 py-12 text-foreground sm:px-8 sm:py-16 lg:px-12 lg:py-24">
             <section
                 aria-labelledby="selected-works-heading"
                 className="mx-auto w-full max-w-[1155px]"
