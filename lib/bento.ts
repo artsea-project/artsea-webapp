@@ -4,6 +4,7 @@ import { cacheLife, cacheTag } from "next/cache"
 import { db } from "@/db"
 import { artPieces, artPieceTags, media, siteSettings, tags } from "@/db/schema"
 import { normalizeBentoLayout } from "@/lib/bento-layout"
+import { orderBentoLabels, resolveLocalizedLabel } from "@/lib/localized-labels"
 import { isBentoMediaType } from "@/lib/media"
 import type { BentoBoxLayout, BentoLayoutItem } from "@/types/bento"
 
@@ -22,17 +23,7 @@ export type BentoData = {
 
 type LayoutName = keyof BentoData
 
-export function resolveLocalizedLabel(
-    polish: string | null,
-    english: string | null,
-    fallback: string
-) {
-    return polish || english || fallback
-}
-
-export function orderBentoLabels(labels: string[]) {
-    return [...labels].sort((left, right) => left.localeCompare(right, "pl"))
-}
+export { orderBentoLabels, resolveLocalizedLabel }
 
 async function loadBentoData(): Promise<BentoData> {
     "use cache"
