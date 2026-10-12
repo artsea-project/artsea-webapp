@@ -9,7 +9,7 @@ import { routing } from "@/i18n/routing"
 
 const NAV_ITEMS = [
     { labelKey: "about", href: "/about" },
-    { labelKey: "portfolio", href: "/" },
+    { labelKey: "portfolio", href: "/portfolio" },
     { labelKey: "contact", href: "/about#contact" },
 ] as const
 
