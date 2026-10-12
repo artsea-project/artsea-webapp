@@ -123,3 +123,13 @@ export function buildPortfolioUrl(query: PortfolioQuery) {
     const search = params.toString()
     return search ? `${PORTFOLIO_PATH}?${search}` : PORTFOLIO_PATH
 }
+
+export function collectTagsByCategory(artworks: PortfolioArtwork[]) {
+    const tagsByCategory = new Map<string, Set<string>>()
+    for (const artwork of artworks) {
+        const tags = tagsByCategory.get(artwork.category) ?? new Set<string>()
+        artwork.tags.forEach((tag) => tags.add(tag))
+        tagsByCategory.set(artwork.category, tags)
+    }
+    return tagsByCategory
+}

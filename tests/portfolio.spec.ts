@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test"
 import {
     buildPortfolioUrl,
     buildPortfolioView,
+    collectTagsByCategory,
     orderPortfolioArtworks,
     parsePortfolioQuery,
     type PortfolioArtwork,
@@ -147,4 +148,12 @@ test("builds portfolio URLs without default values", () => {
     expect(buildPortfolioUrl(query({ category: "Rzeźba", tag: "natura", page: 2 }))).toBe(
         "/portfolio?category=Rze%C5%BAba&tag=natura&page=2"
     )
+})
+
+test("collects the tags used in each category", () => {
+    const tagsByCategory = collectTagsByCategory(thirtyArtworks)
+
+    expect([...tagsByCategory.get("Rzeźba")!].sort()).toEqual(["3D", "natura"])
+    expect(tagsByCategory.get("Rysunek")!.has("natura")).toBe(false)
+    expect(collectTagsByCategory([]).size).toBe(0)
 })
