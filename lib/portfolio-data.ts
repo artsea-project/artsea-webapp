@@ -2,9 +2,9 @@ import { asc, eq } from "drizzle-orm"
 
 import { db } from "@/db"
 import { artPieces, artPieceTags, categories, media, tags } from "@/db/schema"
-import { orderBentoLabels, resolveLocalizedLabel } from "@/lib/localized-labels"
+import { resolveLocalizedLabel } from "@/lib/localized-labels"
 import { isMediaType } from "@/lib/media"
-import type { PortfolioArtwork } from "@/lib/portfolio"
+import { uniqueOrderedLabels, type PortfolioArtwork } from "@/lib/portfolio"
 
 const isVisible = eq(artPieces.isVisible, true)
 
@@ -81,7 +81,7 @@ function toPortfolioArtwork(
         year: artwork.year,
         uploadedAt: artwork.uploadedAt,
         category: artwork.category,
-        tags: orderBentoLabels([...new Set(tagNames)]),
+        tags: uniqueOrderedLabels(tagNames),
         cover: { mediaId: cover.mediaId, fileType: cover.fileType, contentHash: cover.contentHash },
     }
 }
