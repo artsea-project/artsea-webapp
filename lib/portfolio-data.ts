@@ -4,7 +4,15 @@ import { db } from "@/db"
 import { artPieces, artPieceTags, categories, media, tags } from "@/db/schema"
 import { resolveLocalizedLabel } from "@/lib/localized-labels"
 import { isMediaType } from "@/lib/media"
-import { uniqueOrderedLabels, type PortfolioArtwork } from "@/lib/portfolio"
+import {
+    buildPortfolioView,
+    collectTagsByCategory,
+    parsePortfolioQuery,
+    uniqueOrderedLabels,
+    type PortfolioArtwork,
+    type PortfolioView,
+    type RawSearchParams,
+} from "@/lib/portfolio"
 
 const isVisible = eq(artPieces.isVisible, true)
 
@@ -104,4 +112,14 @@ export async function loadPortfolioArtworks(): Promise<PortfolioArtwork[]> {
 
         return [toPortfolioArtwork(artwork, cover, tagsByArtwork.get(artwork.artPieceId) ?? [])]
     })
+}
+
+export type PortfolioPage = PortfolioView & {
+    tagsByCategory: Map<string, Set<string>>
+}
+
+export async function getPortfolioPage(params: RawSearchParams): Promise<PortfolioPage> {
+    const artworks = await loadPortfolioArtworks()
+    const view = buildPortfolioView(artworks, parsePortfolioQuery(params))
+    return { ...view, tagsByCategory: collectTagsByCategory(artworks) }
 }

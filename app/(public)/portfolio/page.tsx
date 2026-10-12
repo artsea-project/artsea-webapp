@@ -1,22 +1,28 @@
 import type { Metadata } from "next"
 import { Suspense } from "react"
 
-import { loadPortfolioArtworks } from "@/lib/portfolio-data"
+import type { RawSearchParams } from "@/lib/portfolio"
+import { getPortfolioPage } from "@/lib/portfolio-data"
 
 export const metadata: Metadata = { title: "Moje prace" }
 
-async function PortfolioContent() {
-    const artworks = await loadPortfolioArtworks()
+type PortfolioPageProps = {
+    searchParams: Promise<RawSearchParams>
+}
+
+async function PortfolioContent({ searchParams }: PortfolioPageProps) {
+    const page = await getPortfolioPage(await searchParams)
+
     return (
         <ul>
-            {artworks.map((artwork) => (
+            {page.items.map((artwork) => (
                 <li key={artwork.artPieceId}>{artwork.title}</li>
             ))}
         </ul>
     )
 }
 
-export default function PortfolioPage() {
+export default function PortfolioPage({ searchParams }: PortfolioPageProps) {
     return (
         <div className="bg-white px-5 py-12 text-stone-950 sm:px-8 sm:py-16 lg:px-12 lg:py-24">
             <section aria-labelledby="portfolio-heading" className="mx-auto w-full max-w-[1200px]">
@@ -27,7 +33,7 @@ export default function PortfolioPage() {
                     Moje prace.
                 </h1>
                 <Suspense fallback={null}>
-                    <PortfolioContent />
+                    <PortfolioContent searchParams={searchParams} />
                 </Suspense>
             </section>
         </div>
