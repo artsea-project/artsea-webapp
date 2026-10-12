@@ -114,3 +114,12 @@ export function buildPortfolioView(
 
     return { categories, tags, query: { category, tag, page }, items, hasMore }
 }
+
+export function buildPortfolioUrl(query: PortfolioQuery) {
+    const params = new URLSearchParams()
+    if (query.category) params.set("category", query.category)
+    if (query.tag) params.set("tag", query.tag)
+    if (query.page > 1) params.set("page", String(query.page))
+    const search = params.toString()
+    return search ? `${PORTFOLIO_PATH}?${search}` : PORTFOLIO_PATH
+}
