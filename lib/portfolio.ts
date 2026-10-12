@@ -1,3 +1,4 @@
+import { orderBentoLabels } from "@/lib/localized-labels"
 import type { MediaType } from "@/lib/media"
 
 export const PORTFOLIO_PATH = "/portfolio"
@@ -62,4 +63,8 @@ export function orderPortfolioArtworks(artworks: PortfolioArtwork[]) {
             compareUploadedNewestFirst(left, right) ||
             compareId(left, right)
     )
+}
+
+export function uniqueOrderedLabels(labels: string[]) {
+    return orderBentoLabels([...new Set(labels)])
 }

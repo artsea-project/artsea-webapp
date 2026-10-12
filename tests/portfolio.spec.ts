@@ -4,6 +4,7 @@ import {
     orderPortfolioArtworks,
     parsePortfolioQuery,
     type PortfolioArtwork,
+    uniqueOrderedLabels,
 } from "../lib/portfolio"
 
 const CATEGORIES = ["Rzeźba", "Obraz", "Rysunek"] as const
@@ -55,4 +56,14 @@ test("orders by year, then newest upload, then id, with undated works last", () 
     expect(
         ids(orderPortfolioArtworks([undated, sameYearOlder, tieA, newest, sameYearNewer]))
     ).toEqual(ids([newest, sameYearNewer, sameYearOlder, tieA, undated]))
+})
+
+test("removes duplicate labels and sorts them in Polish order", () => {
+    expect(uniqueOrderedLabels(["żaba", "ala", "ćma", "ala", "cyna", "zebra"])).toEqual([
+        "ala",
+        "cyna",
+        "ćma",
+        "zebra",
+        "żaba",
+    ])
 })
