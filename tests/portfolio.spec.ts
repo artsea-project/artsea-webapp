@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test"
 
 import {
+    buildPortfolioUrl,
     buildPortfolioView,
     orderPortfolioArtworks,
     parsePortfolioQuery,
@@ -138,4 +139,12 @@ test("treats unknown filters as no filter", () => {
     expect(view.query).toEqual({ category: null, tag: null, page: 1 })
     expect(view.items).toHaveLength(12)
     expect(buildPortfolioView([], query({ category: "Rzeźba" })).categories).toEqual([])
+})
+
+test("builds portfolio URLs without default values", () => {
+    expect(buildPortfolioUrl(query())).toBe("/portfolio")
+    expect(buildPortfolioUrl(query({ page: 2 }))).toBe("/portfolio?page=2")
+    expect(buildPortfolioUrl(query({ category: "Rzeźba", tag: "natura", page: 2 }))).toBe(
+        "/portfolio?category=Rze%C5%BAba&tag=natura&page=2"
+    )
 })
