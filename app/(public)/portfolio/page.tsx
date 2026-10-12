@@ -1,6 +1,20 @@
 import type { Metadata } from "next"
+import { Suspense } from "react"
+
+import { loadPortfolioArtworks } from "@/lib/portfolio-data"
 
 export const metadata: Metadata = { title: "Moje prace" }
+
+async function PortfolioContent() {
+    const artworks = await loadPortfolioArtworks()
+    return (
+        <ul>
+            {artworks.map((artwork) => (
+                <li key={artwork.artPieceId}>{artwork.title}</li>
+            ))}
+        </ul>
+    )
+}
 
 export default function PortfolioPage() {
     return (
@@ -12,6 +26,9 @@ export default function PortfolioPage() {
                 >
                     Moje prace.
                 </h1>
+                <Suspense fallback={null}>
+                    <PortfolioContent />
+                </Suspense>
             </section>
         </div>
     )
