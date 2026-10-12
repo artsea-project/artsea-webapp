@@ -1,9 +1,11 @@
 import { expect, test } from "@playwright/test"
 
 import {
+    buildPortfolioView,
     orderPortfolioArtworks,
     parsePortfolioQuery,
     type PortfolioArtwork,
+    type PortfolioQuery,
     uniqueOrderedLabels,
 } from "../lib/portfolio"
 
@@ -28,6 +30,14 @@ function artwork(index: number, overrides: Partial<PortfolioArtwork> = {}): Port
     }
 }
 
+// 30 visible works with media spread over 3 categories, as in the scenarios from SHAPE.md.
+const thirtyArtworks = Array.from({ length: 30 }, (_, index) => artwork(index))
+const query = (overrides: Partial<PortfolioQuery> = {}): PortfolioQuery => ({
+    category: null,
+    tag: null,
+    page: 1,
+    ...overrides,
+})
 const ids = (artworks: PortfolioArtwork[]) => artworks.map((item) => item.artPieceId)
 
 test("parses page numbers defensively", () => {
@@ -37,6 +47,10 @@ test("parses page numbers defensively", () => {
     expect(parsePortfolioQuery({ page: "2.5" }).page).toBe(1)
     expect(parsePortfolioQuery({ page: ["2", "3"] }).page).toBe(1)
     expect(parsePortfolioQuery({ page: "99" }).page).toBe(99)
+})
+
+test("clamps the page to the last one", () => {
+    expect(buildPortfolioView(thirtyArtworks, query({ page: 99 })).query.page).toBe(3)
 })
 
 test("treats empty or repeated filters as missing", () => {
@@ -66,4 +80,62 @@ test("removes duplicate labels and sorts them in Polish order", () => {
         "zebra",
         "żaba",
     ])
+})
+
+test("loads 12, 24, then 30 works and hides the button at the end", () => {
+    const first = buildPortfolioView(thirtyArtworks, query())
+    const second = buildPortfolioView(thirtyArtworks, query({ page: 2 }))
+    const third = buildPortfolioView(thirtyArtworks, query({ page: 3 }))
+
+    expect(first.items).toHaveLength(12)
+    expect(first.hasMore).toBe(true)
+    expect(second.items).toHaveLength(24)
+    expect(ids(second.items).slice(0, 12)).toEqual(ids(first.items))
+    expect(third.items).toHaveLength(30)
+    expect(third.hasMore).toBe(false)
+    expect(first.items[0].year).toBe(2029)
+})
+
+test("lists categories and tags alphabetically, narrowing tags to the category", () => {
+    const all = buildPortfolioView(thirtyArtworks, query())
+    const sculpture = buildPortfolioView(thirtyArtworks, query({ category: "Rzeźba" }))
+
+    expect(all.categories).toEqual(["Obraz", "Rysunek", "Rzeźba"])
+    expect(all.tags).toEqual(["3D", "minimalizm", "natura", "typografia"])
+    expect(sculpture.tags).toEqual(["3D", "natura"])
+    expect(sculpture.items.every((item) => item.category === "Rzeźba")).toBe(true)
+})
+
+test("combines category and tag with AND", () => {
+    const view = buildPortfolioView(
+        thirtyArtworks,
+        query({ category: "Rzeźba", tag: "natura", page: 3 })
+    )
+
+    expect(view.items.length).toBeGreaterThan(0)
+    expect(
+        view.items.every((item) => item.category === "Rzeźba" && item.tags.includes("natura"))
+    ).toBe(true)
+    expect(view.items).toHaveLength(
+        thirtyArtworks.filter((item) => item.category === "Rzeźba" && item.tags.includes("natura"))
+            .length
+    )
+})
+
+test("drops a tag that the selected category does not use", () => {
+    const view = buildPortfolioView(thirtyArtworks, query({ category: "Rysunek", tag: "natura" }))
+
+    expect(view.query).toEqual({ category: "Rysunek", tag: null, page: 1 })
+    expect(view.items).toHaveLength(10)
+})
+
+test("treats unknown filters as no filter", () => {
+    const view = buildPortfolioView(
+        thirtyArtworks,
+        query({ category: "Fotografia", tag: "nieistniejący" })
+    )
+
+    expect(view.query).toEqual({ category: null, tag: null, page: 1 })
+    expect(view.items).toHaveLength(12)
+    expect(buildPortfolioView([], query({ category: "Rzeźba" })).categories).toEqual([])
 })
