@@ -39,3 +39,27 @@ export function parsePortfolioQuery(params: RawSearchParams): PortfolioQuery {
         page: parsePageNumber(params),
     }
 }
+
+function compareYearNewestFirst(left: PortfolioArtwork, right: PortfolioArtwork) {
+    if (left.year === right.year) return 0
+    if (left.year === null) return 1
+    if (right.year === null) return -1
+    return right.year - left.year
+}
+
+function compareUploadedNewestFirst(left: PortfolioArtwork, right: PortfolioArtwork) {
+    return right.uploadedAt.getTime() - left.uploadedAt.getTime()
+}
+
+function compareId(left: PortfolioArtwork, right: PortfolioArtwork) {
+    return left.artPieceId.localeCompare(right.artPieceId)
+}
+
+export function orderPortfolioArtworks(artworks: PortfolioArtwork[]) {
+    return [...artworks].sort(
+        (left, right) =>
+            compareYearNewestFirst(left, right) ||
+            compareUploadedNewestFirst(left, right) ||
+            compareId(left, right)
+    )
+}
