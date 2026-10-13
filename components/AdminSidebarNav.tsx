@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils"
 const rowClasses = (active: boolean) =>
     cn(
         "flex h-10 w-full cursor-pointer items-center gap-3 rounded-sm px-3 text-sm transition-colors",
-        active ? "bg-sky-100 text-sky-600" : "text-slate-500 hover:bg-slate-50"
+        active ? "bg-accent text-primary" : "text-muted-foreground hover:bg-muted"
     )
 
 function SidebarLink({ label, href, icon: Icon, active }: AdminRoute & { active: boolean }) {
@@ -46,7 +46,7 @@ export default function AdminSidebarNav() {
 
             <nav
                 aria-label="Konto"
-                className="mt-auto flex shrink-0 flex-col gap-2 border-t border-slate-100 pt-4"
+                className="mt-auto flex shrink-0 flex-col gap-2 border-t border-border pt-4"
             >
                 <SidebarLink
                     {...PORTFOLIO_PREVIEW_ROUTE}

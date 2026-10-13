@@ -5,8 +5,6 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-    --color-background-admin: var(--background-admin);
-    --color-foreground-admin: var(--foreground-admin);
     --font-*: initial;
     --color-background: var(--background);
     --color-foreground: var(--foreground);
@@ -55,14 +53,21 @@
 
 :root {
     --radius: 0.625rem;
-    --background-admin: #ffffff;
-    --foreground-admin: #0f172a;
-    --border-admin: #e2e8f0;
-    --ring-admin: #0284c7;
     /* Same source palette as defaultThemeColors; database values override these. */
     --background: #ffffff;
     --foreground: #1c1917;
     --primary: #a8a29e;
+}
+
+.admin-theme {
+    --background: #ffffff;
+    --foreground: #0f172a;
+    --primary: #0284c7;
+}
+
+/* Calculate these colors separately for the public and admin palettes. */
+:root,
+.admin-theme {
     --primary-foreground: var(--background);
     --muted-foreground: color-mix(in oklab, var(--foreground) 70%, var(--background));
     --accent: color-mix(in oklab, var(--primary) 12%, var(--background));
@@ -96,12 +101,6 @@
     --sidebar-accent-foreground: var(--accent-foreground);
     --sidebar-border: var(--border);
     --sidebar-ring: var(--ring);
-}
-
-/* Admin controls keep their own border/focus colors regardless of the portfolio theme. */
-.admin-theme {
-    --border: var(--border-admin);
-    --ring: var(--ring-admin);
 }
 
 @layer base {
