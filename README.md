@@ -3,7 +3,8 @@
 Artsea is a self-hosted portfolio website for a single visual artist, built as an engineering
 thesis project. It is under active development and will consist of two parts:
 
-- **Public portfolio** - a homepage with an artwork bento grid and individual artwork pages.
+- **Public portfolio** - a homepage with an artwork bento grid, individual artwork pages and an
+  about page.
 - **Admin dashboard** (`/admin`) - where the artist manages their works, categories, profile and
   the site's appearance.
 
@@ -31,6 +32,7 @@ thesis project. It is under active development and will consist of two parts:
     git clone https://github.com/artsea-project/artsea-webapp.git
     cd artsea-webapp
     npm install
+    npx playwright install chromium
     ```
 
 2. **Create your local environment file**
@@ -88,93 +90,34 @@ thesis project. It is under active development and will consist of two parts:
 
 ## Commands
 
-### App
+Scripts run with `npm run <script>`; type-check with `npx tsc --noEmit`.
 
-| Command         | Description                                    |
-| --------------- | ---------------------------------------------- |
-| `npm run dev`   | Start the development server                   |
-| `npm run build` | Build the app for production                   |
-| `npm run start` | Serve the production build (run `build` first) |
+| Script                      | Description                                                   |
+| --------------------------- | ------------------------------------------------------------- |
+| `dev`, `build`, `start`     | Dev server, production build, serve the build                 |
+| `lint`                      | ESLint (fails on any warning)                                 |
+| `format`, `format:check`    | Format with Prettier, or only check formatting                |
+| `test`                      | Playwright tests                                              |
+| `db:up`, `db:down`          | Start or stop the database container (data stays in a volume) |
+| `db:push`                   | Sync the database schema with `db/schema.ts`                  |
+| `db:generate`, `db:migrate` | Generate or apply migrations in `drizzle/`                    |
+| `db:studio`, `db:logs`      | Browse the database in Drizzle Studio, follow its logs        |
+| `db:seed`                   | Insert sample data (`-- --reset` replaces existing data)      |
 
-### Code quality
+Tests run against the database from `.env.local` and overwrite its data; run `npm run db:seed`
+afterwards to get the sample data back. To start from an empty database, run
+`docker compose -f docker-compose.dev.yml down --volumes` and repeat steps 3-5.
 
-| Command                | Description                                       |
-| ---------------------- | ------------------------------------------------- |
-| `npm run lint`         | Run ESLint (fails on any warning)                 |
-| `npm run format`       | Format all files with Prettier                    |
-| `npm run format:check` | Check formatting of tracked files without writing |
-| `npx tsc --noEmit`     | Type-check the project                            |
-
-> **Windows:** `npm run format:check` does not work out of the box. npm runs scripts through
-> `cmd.exe`, which can't run the script's POSIX shell pipeline, and Git's default
-> `core.autocrlf=true` checks files out with CRLF line endings, which Prettier reports as errors.
-> Until this is fixed, run:
+> **Windows:** `format:check` needs a POSIX shell and fails on CRLF line endings, so run it as:
 >
 > ```bash
 > npm run format:check --script-shell="C:\Program Files\Git\bin\bash.exe" -- --end-of-line auto
 > ```
 
-### Tests
-
-| Command        | Description              |
-| -------------- | ------------------------ |
-| `npm run test` | Run the Playwright tests |
-
-The tests are database integration tests: they run against the database from `DATABASE_URL`
-in `.env.local`, so the database must be running with an up-to-date schema. They also delete and
-recreate data in it. To get the sample data back afterwards, run `npm run db:seed`.
-
-To run a single file: `npx playwright test tests/seed-guard.spec.ts`.
-
-### Database
-
-| Command               | Description                                              |
-| --------------------- | -------------------------------------------------------- |
-| `npm run db:up`       | Start the PostgreSQL container                           |
-| `npm run db:down`     | Stop the container (data is kept in the volume)          |
-| `npm run db:logs`     | Follow the database logs                                 |
-| `npm run db:push`     | Sync the database schema with `db/schema.ts`             |
-| `npm run db:generate` | Generate a migration from schema changes into `drizzle/` |
-| `npm run db:migrate`  | Apply migrations from `drizzle/`                         |
-| `npm run db:studio`   | Open Drizzle Studio to browse the database               |
-| `npm run db:seed`     | Insert sample data (`-- --reset` replaces existing data) |
-
-To start from a completely empty database, remove the volume and set it up again:
-
-```bash
-docker compose -f docker-compose.dev.yml down --volumes
-npm run db:up
-npm run db:push
-npm run db:seed
-```
-
-## Project structure
-
-```
-app/
-  (public)/        Public portfolio pages (homepage, /work/[id])
-  admin/           Admin dashboard pages
-  api/             Route handlers (e.g. database health check)
-  layout.tsx       Root layout: <html>, fonts and default metadata
-  globals.css      Tailwind theme
-components/        Shared React components
-db/
-  schema.ts        Drizzle schema
-  seed.ts          Sample data seed script
-  fixtures/        Images used by the seed script
-drizzle/           Generated SQL migrations
-lib/               Utilities, admin routes, theme helpers
-tests/             Playwright tests
-types/             Shared TypeScript types
-```
-
 ## Contributing
 
-- Create a branch from `main` and open a pull request back into `main`.
-- Commit messages and PR titles follow [Conventional Commits](https://www.conventionalcommits.org):
-  `type(scope): short imperative description`, e.g. `fix(header): align nav items`. Allowed
-  types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`,
-  `revert`.
-- Every pull request runs these checks in CI: commit messages, PR title, formatting and linting
-  (on every commit), type check, and tests. Run `npm run format:check`, `npm run lint`,
-  `npx tsc --noEmit` and `npm run test` locally before pushing.
+- Branch from `main` and open a pull request back into `main`.
+- Commits and PR titles follow [Conventional Commits](https://www.conventionalcommits.org), e.g.
+  `fix(header): align nav items`.
+- CI checks commit messages, the PR title, formatting, lint, types and tests, so run those locally
+  before pushing.
