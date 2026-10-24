@@ -1,14 +1,17 @@
 import { expect, test } from "@playwright/test"
 
 import {
+    addOrRemoveTag,
     buildPortfolioUrl,
     buildPortfolioView,
     collectTagsByCategory,
-    orderPortfolioArtworks,
+    keepTagsUsedInCategory,
     parsePortfolioQuery,
     type PortfolioArtwork,
     type PortfolioQuery,
-    uniqueOrderedLabels,
+    removeDuplicatesAndSort,
+    sortArtworksNewestFirst,
+    splitIntoVisibleAndHiddenTags,
 } from "../lib/portfolio"
 
 const CATEGORIES = ["Rzeźba", "Obraz", "Rysunek"] as const
@@ -36,7 +39,7 @@ function artwork(index: number, overrides: Partial<PortfolioArtwork> = {}): Port
 const thirtyArtworks = Array.from({ length: 30 }, (_, index) => artwork(index))
 const query = (overrides: Partial<PortfolioQuery> = {}): PortfolioQuery => ({
     category: null,
-    tag: null,
+    tags: [],
     page: 1,
     ...overrides,
 })
@@ -56,10 +59,18 @@ test("clamps the page to the last one", () => {
 })
 
 test("treats empty or repeated filters as missing", () => {
-    expect(parsePortfolioQuery({})).toEqual({ category: null, tag: null, page: 1 })
-    expect(parsePortfolioQuery({ category: "", tag: "  " }).category).toBeNull()
-    expect(parsePortfolioQuery({ tag: ["a", "b"] }).tag).toBeNull()
+    expect(parsePortfolioQuery({})).toEqual({ category: null, tags: [], page: 1 })
+    expect(parsePortfolioQuery({ category: "", tag: "  " })).toEqual(query())
+    expect(parsePortfolioQuery({ category: ["Rzeźba", "Obraz"] }).category).toBeNull()
     expect(parsePortfolioQuery({ category: "Rzeźba" }).category).toBe("Rzeźba")
+})
+
+test("reads every tag from the URL once", () => {
+    expect(parsePortfolioQuery({ tag: "natura" }).tags).toEqual(["natura"])
+    expect(parsePortfolioQuery({ tag: ["natura", " 3D ", "natura", ""] }).tags).toEqual([
+        "natura",
+        "3D",
+    ])
 })
 
 test("orders by year, then newest upload, then id, with undated works last", () => {
@@ -70,12 +81,12 @@ test("orders by year, then newest upload, then id, with undated works last", () 
     const newest = artwork(5, { year: 2024 })
 
     expect(
-        ids(orderPortfolioArtworks([undated, sameYearOlder, tieA, newest, sameYearNewer]))
+        ids(sortArtworksNewestFirst([undated, sameYearOlder, tieA, newest, sameYearNewer]))
     ).toEqual(ids([newest, sameYearNewer, sameYearOlder, tieA, undated]))
 })
 
 test("removes duplicate labels and sorts them in Polish order", () => {
-    expect(uniqueOrderedLabels(["żaba", "ala", "ćma", "ala", "cyna", "zebra"])).toEqual([
+    expect(removeDuplicatesAndSort(["żaba", "ala", "ćma", "ala", "cyna", "zebra"])).toEqual([
         "ala",
         "cyna",
         "ćma",
@@ -108,36 +119,49 @@ test("lists categories and tags alphabetically, narrowing tags to the category",
     expect(sculpture.items.every((item) => item.category === "Rzeźba")).toBe(true)
 })
 
-test("combines category and tag with AND", () => {
+test("combines category and every selected tag with AND", () => {
     const view = buildPortfolioView(
         thirtyArtworks,
-        query({ category: "Rzeźba", tag: "natura", page: 3 })
+        query({ category: "Rzeźba", tags: ["natura", "3D"], page: 3 })
     )
+    const hasCategoryAndTags = (item: PortfolioArtwork) =>
+        item.category === "Rzeźba" && item.tags.includes("natura") && item.tags.includes("3D")
 
     expect(view.items.length).toBeGreaterThan(0)
-    expect(
-        view.items.every((item) => item.category === "Rzeźba" && item.tags.includes("natura"))
-    ).toBe(true)
-    expect(view.items).toHaveLength(
-        thirtyArtworks.filter((item) => item.category === "Rzeźba" && item.tags.includes("natura"))
-            .length
-    )
+    expect(view.items.every(hasCategoryAndTags)).toBe(true)
+    expect(view.items).toHaveLength(thirtyArtworks.filter(hasCategoryAndTags).length)
 })
 
-test("drops a tag that the selected category does not use", () => {
-    const view = buildPortfolioView(thirtyArtworks, query({ category: "Rysunek", tag: "natura" }))
+test("returns no works when no work has all the selected tags", () => {
+    const view = buildPortfolioView(thirtyArtworks, query({ tags: ["3D", "typografia"] }))
 
-    expect(view.query).toEqual({ category: "Rysunek", tag: null, page: 1 })
-    expect(view.items).toHaveLength(10)
+    expect(view.query.tags).toEqual(["3D", "typografia"])
+    expect(view.items).toEqual([])
+    expect(view.hasMore).toBe(false)
+})
+
+test("drops tags that the selected category does not use", () => {
+    const view = buildPortfolioView(
+        thirtyArtworks,
+        query({ category: "Rysunek", tags: ["natura", "typografia"] })
+    )
+
+    expect(view.query).toEqual({ category: "Rysunek", tags: ["typografia"], page: 1 })
+})
+
+test("keeps selected tags in the order of the tag list", () => {
+    const view = buildPortfolioView(thirtyArtworks, query({ tags: ["natura", "3D"] }))
+
+    expect(view.query.tags).toEqual(["3D", "natura"])
 })
 
 test("treats unknown filters as no filter", () => {
     const view = buildPortfolioView(
         thirtyArtworks,
-        query({ category: "Fotografia", tag: "nieistniejący" })
+        query({ category: "Fotografia", tags: ["nieistniejący"] })
     )
 
-    expect(view.query).toEqual({ category: null, tag: null, page: 1 })
+    expect(view.query).toEqual({ category: null, tags: [], page: 1 })
     expect(view.items).toHaveLength(12)
     expect(buildPortfolioView([], query({ category: "Rzeźba" })).categories).toEqual([])
 })
@@ -145,8 +169,8 @@ test("treats unknown filters as no filter", () => {
 test("builds portfolio URLs without default values", () => {
     expect(buildPortfolioUrl(query())).toBe("/portfolio")
     expect(buildPortfolioUrl(query({ page: 2 }))).toBe("/portfolio?page=2")
-    expect(buildPortfolioUrl(query({ category: "Rzeźba", tag: "natura", page: 2 }))).toBe(
-        "/portfolio?category=Rze%C5%BAba&tag=natura&page=2"
+    expect(buildPortfolioUrl(query({ category: "Rzeźba", tags: ["3D", "natura"], page: 2 }))).toBe(
+        "/portfolio?category=Rze%C5%BAba&tag=3D&tag=natura&page=2"
     )
 })
 
@@ -156,4 +180,37 @@ test("collects the tags used in each category", () => {
     expect([...tagsByCategory.get("Rzeźba")!].sort()).toEqual(["3D", "natura"])
     expect(tagsByCategory.get("Rysunek")!.has("natura")).toBe(false)
     expect(collectTagsByCategory([]).size).toBe(0)
+})
+
+test("keeps only the tags the target category uses", () => {
+    const tagsByCategory = collectTagsByCategory(thirtyArtworks)
+
+    expect(keepTagsUsedInCategory("Rzeźba", ["3D", "typografia"], tagsByCategory)).toEqual(["3D"])
+    expect(keepTagsUsedInCategory(null, ["3D", "typografia"], tagsByCategory)).toEqual([
+        "3D",
+        "typografia",
+    ])
+    expect(keepTagsUsedInCategory("Fotografia", ["3D"], tagsByCategory)).toEqual([])
+})
+
+test("toggles a tag on and off", () => {
+    expect(addOrRemoveTag(["3D"], "natura")).toEqual(["3D", "natura"])
+    expect(addOrRemoveTag(["3D", "natura"], "3D")).toEqual(["natura"])
+})
+
+test("shows selected tags first and never hides them", () => {
+    const tags = ["a", "b", "c", "d", "e"]
+
+    expect(splitIntoVisibleAndHiddenTags(tags, [], 3)).toEqual({
+        visible: ["a", "b", "c"],
+        hidden: ["d", "e"],
+    })
+    expect(splitIntoVisibleAndHiddenTags(tags, ["e"], 3)).toEqual({
+        visible: ["e", "a", "b"],
+        hidden: ["c", "d"],
+    })
+    expect(splitIntoVisibleAndHiddenTags(tags, ["e", "d", "c", "b"], 3)).toEqual({
+        visible: ["e", "d", "c", "b"],
+        hidden: ["a"],
+    })
 })
