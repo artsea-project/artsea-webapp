@@ -28,7 +28,7 @@ export function CollapsibleTagList({ visible, hidden }: CollapsibleTagListProps)
                             variant="ghost"
                             className={cn(
                                 PILL_CLASS_NAME,
-                                "px-4 text-stone-500 hover:bg-stone-100 hover:text-stone-800"
+                                "px-4 text-muted-foreground hover:bg-muted hover:text-foreground"
                             )}
                         >
                             {isExpanded ? "Mniej" : `Więcej (+${hidden.length})`}

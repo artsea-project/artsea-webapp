@@ -44,22 +44,24 @@ export function PortfolioCard({ card, sizes }: PortfolioCardProps) {
         <article>
             <Link
                 href={`/work/${card.artPieceId}`}
-                className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-stone-800"
+                className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground"
             >
                 <div
-                    className="w-full overflow-hidden bg-stone-100"
+                    className="w-full overflow-hidden bg-muted"
                     style={{ aspectRatio: `${card.width} / ${card.height}` }}
                 >
                     <CardMedia card={card} sizes={sizes} />
                 </div>
-                <h2 className="mt-4 font-primary text-xl font-bold leading-tight text-stone-800 group-hover:underline group-focus-visible:underline">
+                <h2 className="mt-4 font-primary text-xl font-bold leading-tight text-foreground group-hover:underline group-focus-visible:underline">
                     {card.title}
                 </h2>
                 {(card.year || tags) && (
                     <p className="mt-1.5 font-secondary text-xs whitespace-pre-wrap">
-                        {card.year && <span className="text-stone-400">{card.year}</span>}
-                        {card.year && tags && <span className="text-stone-500">{"  ·  "}</span>}
-                        {tags && <span className="text-stone-500">{tags}</span>}
+                        {card.year && <span className="text-muted-foreground/70">{card.year}</span>}
+                        {card.year && tags && (
+                            <span className="text-muted-foreground">{"  ·  "}</span>
+                        )}
+                        {tags && <span className="text-muted-foreground">{tags}</span>}
                     </p>
                 )}
             </Link>

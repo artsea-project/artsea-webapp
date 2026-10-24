@@ -21,8 +21,8 @@ export function TagPill({ tag, href, isSelected }: TagLink) {
                 PILL_CLASS_NAME,
                 "px-5",
                 isSelected
-                    ? "border-stone-800 bg-stone-800 text-[#f4f1eb] [a&]:hover:bg-stone-700"
-                    : "border-stone-300 text-stone-500 [a&]:hover:bg-stone-100 [a&]:hover:text-stone-800"
+                    ? "border-foreground bg-foreground text-background [a&]:hover:bg-foreground/90"
+                    : "border-border text-muted-foreground [a&]:hover:bg-muted [a&]:hover:text-foreground"
             )}
         >
             <Link href={href} scroll={false} aria-current={isSelected ? "true" : undefined}>
