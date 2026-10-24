@@ -10,7 +10,7 @@ export function LoadMoreLink({ query }: { query: PortfolioQuery }) {
             <Button
                 asChild
                 variant="outline"
-                className="h-12 w-[200px] gap-3 rounded-full border-stone-800 bg-transparent font-secondary text-[13px] font-normal uppercase text-stone-800 shadow-none hover:bg-stone-100 hover:text-stone-800"
+                className="h-12 w-[200px] gap-3 rounded-full border-foreground bg-transparent font-secondary text-[13px] font-normal uppercase text-foreground shadow-none hover:bg-muted hover:text-foreground"
             >
                 <Link
                     href={buildPortfolioUrl({ ...query, page: query.page + 1 })}

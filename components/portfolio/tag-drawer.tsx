@@ -35,7 +35,7 @@ function TagCheckboxList({ tags, checkedTags, onToggle }: TagCheckboxListProps) 
     return (
         <ul className="overflow-y-auto px-4">
             {tags.map((tag) => (
-                <li key={tag} className="border-b border-stone-100 last:border-b-0">
+                <li key={tag} className="border-b border-border last:border-b-0">
                     <Label className="flex min-h-12 items-center gap-3 font-secondary text-sm font-normal">
                         <Checkbox
                             checked={checkedTags.includes(tag)}
@@ -73,7 +73,7 @@ export function TagDrawer({ tags, query }: TagDrawerProps) {
             <DrawerTrigger asChild>
                 <Button
                     variant="outline"
-                    className={cn(PILL_CLASS_NAME, "border-stone-300 px-4 text-stone-700")}
+                    className={cn(PILL_CLASS_NAME, "border-border px-4 text-foreground")}
                 >
                     <SlidersHorizontalIcon aria-hidden />
                     Tagi
