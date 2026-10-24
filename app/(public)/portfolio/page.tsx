@@ -3,6 +3,7 @@ import { Suspense } from "react"
 
 import { LoadMoreLink } from "@/components/portfolio/load-more-link"
 import { PortfolioFilters } from "@/components/portfolio/portfolio-filters"
+import { PortfolioGrid } from "@/components/portfolio/portfolio-grid"
 import type { RawSearchParams } from "@/lib/portfolio"
 import { getPortfolioPage } from "@/lib/portfolio-data"
 
@@ -26,11 +27,7 @@ async function PortfolioContent({ searchParams }: PortfolioPageProps) {
     return (
         <>
             <PortfolioFilters view={page} tagsByCategory={page.tagsByCategory} />
-            <ul>
-                {page.items.map((artwork) => (
-                    <li key={artwork.artPieceId}>{artwork.title}</li>
-                ))}
-            </ul>
+            <PortfolioGrid artworks={page.items} />
             {page.hasMore && <LoadMoreLink query={page.query} />}
         </>
     )
