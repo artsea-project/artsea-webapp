@@ -27,7 +27,7 @@ async function PortfolioContent({ searchParams }: PortfolioPageProps) {
     return (
         <>
             <PortfolioFilters view={page} tagsByCategory={page.tagsByCategory} />
-            <PortfolioGrid artworks={page.cards} />
+            <PortfolioGrid cards={page.cards} />
             {page.hasMore && <LoadMoreLink query={page.query} />}
         </>
     )
