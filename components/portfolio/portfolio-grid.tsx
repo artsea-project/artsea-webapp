@@ -1,7 +1,6 @@
+import { PortfolioCard } from "@/components/portfolio/portfolio-card"
 import { distributeIntoColumns, type PortfolioCard as PortfolioCardData } from "@/lib/portfolio"
 import { cn } from "@/lib/utils"
-
-import { PortfolioCard } from "@/components/portfolio/portfolio-card"
 
 const LAYOUTS = [
     { columns: 1, className: "flex md:hidden", sizes: "100vw" },
