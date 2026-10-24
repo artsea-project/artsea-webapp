@@ -1,5 +1,6 @@
 import { orderBentoLabels } from "@/lib/localized-labels"
 import type { MediaType } from "@/lib/media"
+import type { MediaDimensions } from "@/lib/media-dimensions"
 
 export const PORTFOLIO_PATH = "/portfolio"
 export const PORTFOLIO_PAGE_SIZE = 12
@@ -14,6 +15,8 @@ export type PortfolioArtwork = {
     tags: string[]
     cover: { mediaId: string; fileType: MediaType; contentHash: string }
 }
+
+export type PortfolioCard = PortfolioArtwork & MediaDimensions
 
 export type RawSearchParams = Record<string, string | string[] | undefined>
 
