@@ -18,18 +18,10 @@ export interface ProjectGalleryProps {
 interface ThumbnailProps {
     photo: GalleryPhoto
     onClick: () => void
-    priority?: boolean
-    sizes?: string
     children?: React.ReactNode
 }
 
-function GalleryThumbnail({
-    photo,
-    onClick,
-    priority = false,
-    sizes = "(max-width: 768px) 50vw, 30vw",
-    children,
-}: ThumbnailProps) {
+function GalleryThumbnail({ photo, onClick, children }: ThumbnailProps) {
     return (
         <button
             type="button"
@@ -40,8 +32,7 @@ function GalleryThumbnail({
                 src={photo.src}
                 alt={photo.alt}
                 fill
-                sizes={sizes}
-                priority={priority}
+                sizes="(max-width: 768px) 50vw, 30vw"
                 className="object-cover transition-transform duration-300 group-hover:scale-[1.01]"
             />
             {children}
@@ -51,12 +42,21 @@ function GalleryThumbnail({
 
 function GalleryMainPhoto({ photo, onClick }: { photo: GalleryPhoto; onClick: () => void }) {
     return (
-        <GalleryThumbnail
-            photo={photo}
+        <button
+            type="button"
             onClick={onClick}
-            priority
-            sizes="(max-width: 768px) 100vw, 60vw"
-        />
+            className="group relative w-full overflow-hidden bg-stone-100 dark:bg-zinc-900 cursor-pointer hover:opacity-95 transition-opacity text-left p-0 border-0"
+        >
+            <Image
+                src={photo.src}
+                alt={photo.alt}
+                width={0}
+                height={0}
+                sizes="(max-width: 768px) 100vw, 60vw"
+                priority
+                className="w-full h-auto transition-transform duration-300 group-hover:scale-[1.01]"
+            />
+        </button>
     )
 }
 
