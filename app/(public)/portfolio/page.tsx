@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Suspense } from "react"
 
+import { PortfolioFilters } from "@/components/portfolio/portfolio-filters"
 import type { RawSearchParams } from "@/lib/portfolio"
 import { getPortfolioPage } from "@/lib/portfolio-data"
 
@@ -14,11 +15,14 @@ async function PortfolioContent({ searchParams }: PortfolioPageProps) {
     const page = await getPortfolioPage(await searchParams)
 
     return (
-        <ul>
-            {page.items.map((artwork) => (
-                <li key={artwork.artPieceId}>{artwork.title}</li>
-            ))}
-        </ul>
+        <>
+            <PortfolioFilters view={page} tagsByCategory={page.tagsByCategory} />
+            <ul>
+                {page.items.map((artwork) => (
+                    <li key={artwork.artPieceId}>{artwork.title}</li>
+                ))}
+            </ul>
+        </>
     )
 }
 
