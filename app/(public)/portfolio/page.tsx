@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Suspense } from "react"
 
+import { LoadMoreLink } from "@/components/portfolio/load-more-link"
 import { PortfolioFilters } from "@/components/portfolio/portfolio-filters"
 import type { RawSearchParams } from "@/lib/portfolio"
 import { getPortfolioPage } from "@/lib/portfolio-data"
@@ -14,6 +15,14 @@ type PortfolioPageProps = {
 async function PortfolioContent({ searchParams }: PortfolioPageProps) {
     const page = await getPortfolioPage(await searchParams)
 
+    if (page.categories.length === 0) {
+        return (
+            <p className="mt-8 font-body text-stone-500 sm:mt-10">
+                Nie ma jeszcze żadnych prac do pokazania.
+            </p>
+        )
+    }
+
     return (
         <>
             <PortfolioFilters view={page} tagsByCategory={page.tagsByCategory} />
@@ -22,6 +31,7 @@ async function PortfolioContent({ searchParams }: PortfolioPageProps) {
                     <li key={artwork.artPieceId}>{artwork.title}</li>
                 ))}
             </ul>
+            {page.hasMore && <LoadMoreLink query={page.query} />}
         </>
     )
 }
