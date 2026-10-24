@@ -8,7 +8,7 @@ import {
     buildPortfolioView,
     collectTagsByCategory,
     parsePortfolioQuery,
-    uniqueOrderedLabels,
+    removeDuplicatesAndSort,
     type PortfolioArtwork,
     type PortfolioView,
     type RawSearchParams,
@@ -89,7 +89,7 @@ function toPortfolioArtwork(
         year: artwork.year,
         uploadedAt: artwork.uploadedAt,
         category: artwork.category,
-        tags: uniqueOrderedLabels(tagNames),
+        tags: removeDuplicatesAndSort(tagNames),
         cover: { mediaId: cover.mediaId, fileType: cover.fileType, contentHash: cover.contentHash },
     }
 }

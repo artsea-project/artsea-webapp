@@ -17,7 +17,7 @@ export type PortfolioArtwork = {
 
 export type RawSearchParams = Record<string, string | string[] | undefined>
 
-export type PortfolioQuery = { category: string | null; tag: string | null; page: number }
+export type PortfolioQuery = { category: string | null; tags: string[]; page: number }
 
 export type PortfolioView = {
     categories: string[]
@@ -27,11 +27,24 @@ export type PortfolioView = {
     hasMore: boolean
 }
 
+export type TagsByCategory = Map<string, Set<string>>
+
+function keepOnlyKnown(values: string[], known: string[]) {
+    return known.filter((label) => values.includes(label))
+}
+
 function readSingleParam(params: RawSearchParams, name: string): string | null {
     const value = params[name]
     if (typeof value !== "string") return null
     const trimmed = value.trim()
     return trimmed || null
+}
+
+function readParamValues(params: RawSearchParams, name: string): string[] {
+    const value = params[name] ?? []
+    const values = Array.isArray(value) ? value : [value]
+    const trimmed = values.map((item) => item.trim()).filter(Boolean)
+    return [...new Set(trimmed)]
 }
 
 function parsePageNumber(params: RawSearchParams): number {
@@ -44,7 +57,7 @@ function parsePageNumber(params: RawSearchParams): number {
 export function parsePortfolioQuery(params: RawSearchParams): PortfolioQuery {
     return {
         category: readSingleParam(params, "category"),
-        tag: readSingleParam(params, "tag"),
+        tags: readParamValues(params, "tag"),
         page: parsePageNumber(params),
     }
 }
@@ -60,24 +73,24 @@ function compareUploadedNewestFirst(left: PortfolioArtwork, right: PortfolioArtw
     return right.uploadedAt.getTime() - left.uploadedAt.getTime()
 }
 
-function compareId(left: PortfolioArtwork, right: PortfolioArtwork) {
+function compareIdAscending(left: PortfolioArtwork, right: PortfolioArtwork) {
     return left.artPieceId.localeCompare(right.artPieceId)
 }
 
-export function orderPortfolioArtworks(artworks: PortfolioArtwork[]) {
+export function sortArtworksNewestFirst(artworks: PortfolioArtwork[]) {
     return [...artworks].sort(
         (left, right) =>
             compareYearNewestFirst(left, right) ||
             compareUploadedNewestFirst(left, right) ||
-            compareId(left, right)
+            compareIdAscending(left, right)
     )
 }
 
-export function uniqueOrderedLabels(labels: string[]) {
+export function removeDuplicatesAndSort(labels: string[]) {
     return orderBentoLabels([...new Set(labels)])
 }
 
-function knownOrNull(value: string | null, known: string[]) {
+function keepIfKnown(value: string | null, known: string[]) {
     return value !== null && known.includes(value) ? value : null
 }
 
@@ -86,12 +99,11 @@ function filterByCategory(artworks: PortfolioArtwork[], category: string | null)
     return artworks.filter((artwork) => artwork.category === category)
 }
 
-function filterByTag(artworks: PortfolioArtwork[], tag: string | null) {
-    if (tag === null) return artworks
-    return artworks.filter((artwork) => artwork.tags.includes(tag))
+function keepArtworksWithAllTags(artworks: PortfolioArtwork[], tags: string[]) {
+    return artworks.filter((artwork) => tags.every((tag) => artwork.tags.includes(tag)))
 }
 
-function takePage(artworks: PortfolioArtwork[], requestedPage: number) {
+function limitArtworksToLoadedPage(artworks: PortfolioArtwork[], requestedPage: number) {
     const lastPage = Math.max(1, Math.ceil(artworks.length / PORTFOLIO_PAGE_SIZE))
     const page = Math.min(requestedPage, lastPage)
     const items = artworks.slice(0, page * PORTFOLIO_PAGE_SIZE)
@@ -102,34 +114,64 @@ export function buildPortfolioView(
     artworks: PortfolioArtwork[],
     requested: PortfolioQuery
 ): PortfolioView {
-    const categories = uniqueOrderedLabels(artworks.map((artwork) => artwork.category))
-    const category = knownOrNull(requested.category, categories)
+    const categories = removeDuplicatesAndSort(artworks.map((artwork) => artwork.category))
+    const category = keepIfKnown(requested.category, categories)
 
     const inCategory = filterByCategory(artworks, category)
-    const tags = uniqueOrderedLabels(inCategory.flatMap((artwork) => artwork.tags))
-    const tag = knownOrNull(requested.tag, tags)
+    const tags = removeDuplicatesAndSort(inCategory.flatMap((artwork) => artwork.tags))
+    const selectedTags = keepOnlyKnown(requested.tags, tags)
 
-    const matching = orderPortfolioArtworks(filterByTag(inCategory, tag))
-    const { page, items, hasMore } = takePage(matching, requested.page)
+    const matching = sortArtworksNewestFirst(keepArtworksWithAllTags(inCategory, selectedTags))
+    const { page, items, hasMore } = limitArtworksToLoadedPage(matching, requested.page)
 
-    return { categories, tags, query: { category, tag, page }, items, hasMore }
+    return { categories, tags, query: { category, tags: selectedTags, page }, items, hasMore }
 }
 
 export function buildPortfolioUrl(query: PortfolioQuery) {
     const params = new URLSearchParams()
     if (query.category) params.set("category", query.category)
-    if (query.tag) params.set("tag", query.tag)
+    query.tags.forEach((tag) => params.append("tag", tag))
     if (query.page > 1) params.set("page", String(query.page))
     const search = params.toString()
     return search ? `${PORTFOLIO_PATH}?${search}` : PORTFOLIO_PATH
 }
 
-export function collectTagsByCategory(artworks: PortfolioArtwork[]) {
-    const tagsByCategory = new Map<string, Set<string>>()
+export function collectTagsByCategory(artworks: PortfolioArtwork[]): TagsByCategory {
+    const tagsByCategory: TagsByCategory = new Map()
     for (const artwork of artworks) {
         const tags = tagsByCategory.get(artwork.category) ?? new Set<string>()
         artwork.tags.forEach((tag) => tags.add(tag))
         tagsByCategory.set(artwork.category, tags)
     }
     return tagsByCategory
+}
+
+export function keepTagsUsedInCategory(
+    category: string | null,
+    tags: string[],
+    tagsByCategory: TagsByCategory
+) {
+    if (category === null) return tags
+    const tagsInCategory = tagsByCategory.get(category)
+    return tags.filter((tag) => tagsInCategory?.has(tag))
+}
+
+export function addOrRemoveTag(selectedTags: string[], tag: string) {
+    return selectedTags.includes(tag)
+        ? selectedTags.filter((selected) => selected !== tag)
+        : [...selectedTags, tag]
+}
+
+// Selected tags go first and are never hidden, even when there are more of them than the limit
+export function splitIntoVisibleAndHiddenTags(
+    tags: string[],
+    selectedTags: string[],
+    visibleCount: number
+) {
+    const unselected = tags.filter((tag) => !selectedTags.includes(tag))
+    const unselectedVisibleCount = Math.max(0, visibleCount - selectedTags.length)
+    return {
+        visible: [...selectedTags, ...unselected.slice(0, unselectedVisibleCount)],
+        hidden: unselected.slice(unselectedVisibleCount),
+    }
 }
