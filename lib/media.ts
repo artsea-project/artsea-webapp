@@ -38,7 +38,11 @@ export function mediaHeaders(record: {
 export type StoredMediaMetadata = {
     contentHash: string
     fileType: string
+    size?: number
 }
+
+type MediaRangeLoader = (mediaId: string, range: ByteRange) => Promise<Buffer | undefined>
+type SupportedMediaMetadata = StoredMediaMetadata & { fileType: MediaType }
 
 export type StoredMediaRecord = StoredMediaMetadata & {
     content: Buffer
@@ -68,11 +72,40 @@ export function mediaResponse(record: StoredMediaRecord) {
     })
 }
 
+function acceptsRange(ifRange: string | null, contentHash: string) {
+    return ifRange === null || ifRange === `"${contentHash}"`
+}
+
+function unsatisfiableRange(metadata: SupportedMediaMetadata, size: number) {
+    return new NextResponse(null, {
+        status: 416,
+        headers: { ...mediaHeaders(metadata), "Content-Range": `bytes */${size}` },
+    })
+}
+
+function partialContent(
+    metadata: SupportedMediaMetadata,
+    range: ByteRange,
+    size: number,
+    content: Buffer
+) {
+    return new NextResponse(new Uint8Array(content), {
+        status: 206,
+        headers: {
+            ...mediaHeaders({ ...metadata, content }),
+            "Content-Range": `bytes ${range.start}-${range.end}/${size}`,
+        },
+    })
+}
+
+// With loadRange and a known size only the requested bytes are read,
+// otherwise the range is cut from the full record.
 export async function serveMedia(
     request: Request,
     mediaId: string,
     loadMetadata: (mediaId: string) => Promise<StoredMediaMetadata | undefined>,
-    loadRecord: (mediaId: string) => Promise<StoredMediaRecord | undefined>
+    loadRecord: (mediaId: string) => Promise<StoredMediaRecord | undefined>,
+    { loadRange }: { loadRange?: MediaRangeLoader } = {}
 ): Promise<NextResponse> {
     if (!isUuid(mediaId)) {
         return notFound()
@@ -90,8 +123,34 @@ export async function serveMedia(
         })
     }
 
+    const rangeHeader = acceptsRange(request.headers.get("if-range"), metadata.contentHash)
+        ? request.headers.get("range")
+        : null
+
+    if (loadRange && metadata.size !== undefined) {
+        const range = parseByteRange(rangeHeader, metadata.size)
+        if (range === "unsatisfiable") return unsatisfiableRange(metadata, metadata.size)
+        if (range) {
+            const slice = await loadRange(mediaId, range)
+            return slice ? partialContent(metadata, range, metadata.size, slice) : notFound()
+        }
+    }
+
     const record = await loadRecord(mediaId)
-    return record ? mediaResponse(record) : notFound()
+    if (!record) return notFound()
+
+    const size = record.content.byteLength
+    const range = parseByteRange(rangeHeader, size)
+    if (range === "unsatisfiable") return unsatisfiableRange(metadata, size)
+    if (range) {
+        return partialContent(
+            metadata,
+            range,
+            size,
+            record.content.subarray(range.start, range.end + 1)
+        )
+    }
+    return mediaResponse(record)
 }
 
 export type ByteRange = { start: number; end: number }
