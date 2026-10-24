@@ -1,10 +1,13 @@
 import Link from "next/link"
 
+import { CollapsibleTagList } from "@/components/portfolio/collapsible-tag-list"
+import { TagDrawer } from "@/components/portfolio/tag-drawer"
 import { TagPills, type TagLink } from "@/components/portfolio/tag-pill"
 import {
     addOrRemoveTag,
     buildPortfolioUrl,
     keepTagsUsedInCategory,
+    splitIntoVisibleAndHiddenTags,
     type PortfolioQuery,
     type PortfolioView,
     type TagsByCategory,
@@ -19,6 +22,8 @@ type PortfolioFiltersProps = {
 }
 
 const ALL_CATEGORIES_LABEL = "Wszystkie"
+
+const VISIBLE_TAG_COUNT = 10
 
 function buildCategoryTabUrl(
     category: string | null,
@@ -84,14 +89,43 @@ function CategoryTabs({ view, tagsByCategory }: PortfolioFiltersProps) {
     )
 }
 
+function MobileTagFilters({ view }: { view: FilterView }) {
+    return (
+        <div className="flex flex-wrap items-center gap-2.5">
+            <TagDrawer tags={view.tags} query={view.query} />
+            <TagPills links={buildTagLinks(view.query.tags, view.query)} />
+        </div>
+    )
+}
+
+function DesktopTagFilters({ view }: { view: FilterView }) {
+    const { visible, hidden } = splitIntoVisibleAndHiddenTags(
+        view.tags,
+        view.query.tags,
+        VISIBLE_TAG_COUNT
+    )
+
+    return (
+        <CollapsibleTagList
+            visible={buildTagLinks(visible, view.query)}
+            hidden={buildTagLinks(hidden, view.query)}
+        />
+    )
+}
+
 export function PortfolioFilters({ view, tagsByCategory }: PortfolioFiltersProps) {
     return (
         <div className="mt-8 flex flex-col gap-6 sm:mt-10 lg:gap-9">
             <CategoryTabs view={view} tagsByCategory={tagsByCategory} />
             {view.tags.length > 0 && (
-                <nav aria-label="Tagi" className="flex flex-wrap gap-2.5">
-                    <TagPills links={buildTagLinks(view.tags, view.query)} />
-                </nav>
+                <>
+                    <div className="md:hidden">
+                        <MobileTagFilters view={view} />
+                    </div>
+                    <div className="hidden md:block">
+                        <DesktopTagFilters view={view} />
+                    </div>
+                </>
             )}
         </div>
     )
