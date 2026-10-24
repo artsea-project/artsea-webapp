@@ -178,3 +178,18 @@ export function splitIntoVisibleAndHiddenTags(
         hidden: unselected.slice(unselectedVisibleCount),
     }
 }
+
+// Earlier cards don't move when more cards are appended.
+export function distributeIntoColumns<T extends MediaDimensions>(items: T[], columnCount: number) {
+    const count = Math.max(1, Math.floor(columnCount))
+    const columns: T[][] = Array.from({ length: count }, () => [])
+    const heights = Array<number>(count).fill(0)
+
+    for (const item of items) {
+        const shortest = heights.indexOf(Math.min(...heights))
+        columns[shortest].push(item)
+        heights[shortest] += item.height / item.width + PORTFOLIO_CARD_TEXT_HEIGHT
+    }
+
+    return columns
+}

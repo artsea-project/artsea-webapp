@@ -5,6 +5,7 @@ import {
     buildPortfolioUrl,
     buildPortfolioView,
     collectTagsByCategory,
+    distributeIntoColumns,
     keepTagsUsedInCategory,
     parsePortfolioQuery,
     type PortfolioArtwork,
@@ -213,4 +214,37 @@ test("shows selected tags first and never hides them", () => {
         visible: ["e", "d", "c", "b"],
         hidden: ["a"],
     })
+})
+
+test("keeps earlier cards in place when more cards are appended", () => {
+    const cards = Array.from({ length: 24 }, (_, index) => ({
+        id: index,
+        width: 100 + ((index * 37) % 90),
+        height: 100 + ((index * 53) % 140),
+    }))
+
+    for (const columnCount of [1, 2, 3]) {
+        const firstPage = distributeIntoColumns(cards.slice(0, 12), columnCount)
+        const bothPages = distributeIntoColumns(cards, columnCount)
+
+        expect(firstPage).toHaveLength(columnCount)
+        firstPage.forEach((column, index) => {
+            expect(bothPages[index].slice(0, column.length)).toEqual(column)
+        })
+        expect(bothPages.flat()).toHaveLength(24)
+    }
+    expect(distributeIntoColumns(cards.slice(0, 3), 0)).toEqual([cards.slice(0, 3)])
+})
+
+test("places the next card in the shortest column, leftmost on ties", () => {
+    const tall = { id: "tall", width: 1, height: 3 }
+    const square = { id: "square", width: 1, height: 1 }
+    const next = { id: "next", width: 1, height: 1 }
+
+    expect(distributeIntoColumns([tall, square, next], 2)).toEqual([[tall], [square, next]])
+    expect(distributeIntoColumns([square, square, square], 3)).toEqual([
+        [square],
+        [square],
+        [square],
+    ])
 })
