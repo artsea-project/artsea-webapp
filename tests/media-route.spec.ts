@@ -22,12 +22,13 @@ const hiddenArtworkId = randomUUID()
 const mediaIdByType = new Map<string, string>()
 
 async function requestMedia(mediaId: string, ifNoneMatch?: string) {
-    return GET(
-        new Request(`http://localhost/media/${mediaId}`, {
-            headers: ifNoneMatch ? { "if-none-match": ifNoneMatch } : {},
-        }),
-        { params: Promise.resolve({ mediaId }) }
-    )
+    return requestMediaWithHeaders(mediaId, ifNoneMatch ? { "if-none-match": ifNoneMatch } : {})
+}
+
+async function requestMediaWithHeaders(mediaId: string, headers: Record<string, string>) {
+    return GET(new Request(`http://localhost/media/${mediaId}`, { headers }), {
+        params: Promise.resolve({ mediaId }),
+    })
 }
 
 test.beforeAll(async () => {
@@ -151,4 +152,51 @@ test("does not disclose hidden, missing, malformed, or unsupported media", async
         expect(response.status).toBe(404)
         expect(await response.text()).toBe("")
     }
+})
+
+test("serves a single byte range with 206 and Content-Range", async () => {
+    const content = contentFor.mp4
+    const mediaId = mediaIdByType.get("visible-mp4")!
+    const firstBytes = await requestMediaWithHeaders(mediaId, { range: "bytes=0-3" })
+    const suffix = await requestMediaWithHeaders(mediaId, { range: "bytes=-2" })
+    const openEnded = await requestMediaWithHeaders(mediaId, { range: "bytes=6-" })
+
+    expect(firstBytes.status).toBe(206)
+    expect(firstBytes.headers.get("content-range")).toBe(`bytes 0-3/${content.byteLength}`)
+    expect(firstBytes.headers.get("content-length")).toBe("4")
+    expect(firstBytes.headers.get("accept-ranges")).toBe("bytes")
+    expect(firstBytes.headers.get("content-type")).toBe("video/mp4")
+    expect(Buffer.from(await firstBytes.arrayBuffer()).equals(content.subarray(0, 4))).toBe(true)
+    expect(suffix.status).toBe(206)
+    expect(suffix.headers.get("content-range")).toBe(`bytes 6-7/${content.byteLength}`)
+    expect(Buffer.from(await suffix.arrayBuffer()).equals(content.subarray(6))).toBe(true)
+    expect(openEnded.status).toBe(206)
+    expect(Buffer.from(await openEnded.arrayBuffer()).equals(content.subarray(6))).toBe(true)
+})
+
+test("rejects unsatisfiable ranges and ignores ranges for a stale If-Range", async () => {
+    const content = contentFor.mp4
+    const mediaId = mediaIdByType.get("visible-mp4")!
+    const unsatisfiable = await requestMediaWithHeaders(mediaId, { range: "bytes=100-" })
+    const stale = await requestMediaWithHeaders(mediaId, {
+        range: "bytes=0-3",
+        "if-range": `"${"0".repeat(64)}"`,
+    })
+    const multiple = await requestMediaWithHeaders(mediaId, { range: "bytes=0-1,4-5" })
+
+    expect(unsatisfiable.status).toBe(416)
+    expect(unsatisfiable.headers.get("content-range")).toBe(`bytes */${content.byteLength}`)
+    expect(await unsatisfiable.text()).toBe("")
+    expect(stale.status).toBe(200)
+    expect(Buffer.from(await stale.arrayBuffer()).equals(content)).toBe(true)
+    expect(multiple.status).toBe(200)
+    expect(Buffer.from(await multiple.arrayBuffer()).equals(content)).toBe(true)
+})
+
+test("does not disclose hidden media through range requests", async () => {
+    const response = await requestMediaWithHeaders(mediaIdByType.get("hidden-png")!, {
+        range: "bytes=0-1",
+    })
+
+    expect(response.status).toBe(404)
 })
