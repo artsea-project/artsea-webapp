@@ -18,7 +18,7 @@ async function PortfolioContent({ searchParams }: PortfolioPageProps) {
 
     if (page.categories.length === 0) {
         return (
-            <p className="mt-8 font-body text-stone-500 sm:mt-10">
+            <p className="mt-8 font-body text-muted-foreground sm:mt-10">
                 Nie ma jeszcze żadnych prac do pokazania.
             </p>
         )
@@ -35,7 +35,7 @@ async function PortfolioContent({ searchParams }: PortfolioPageProps) {
 
 export default function PortfolioPage({ searchParams }: PortfolioPageProps) {
     return (
-        <div className="bg-white px-5 py-12 text-stone-950 sm:px-8 sm:py-16 lg:px-12 lg:py-24">
+        <div className="bg-background px-5 py-12 text-foreground sm:px-8 sm:py-16 lg:px-12 lg:py-24">
             <section aria-labelledby="portfolio-heading" className="mx-auto w-full max-w-[1200px]">
                 <h1
                     id="portfolio-heading"
