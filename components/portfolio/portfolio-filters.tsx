@@ -60,8 +60,8 @@ function CategoryTab({ label, href, isActive }: CategoryTabProps) {
             className={cn(
                 "border-b pb-2 font-secondary text-sm whitespace-nowrap uppercase transition-colors",
                 isActive
-                    ? "border-stone-800 text-stone-800"
-                    : "border-transparent text-stone-400 hover:text-stone-800"
+                    ? "border-foreground text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
             )}
         >
             {label}
