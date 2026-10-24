@@ -1,17 +1,21 @@
-import { asc, eq } from "drizzle-orm"
+import { and, asc, eq } from "drizzle-orm"
+import { cacheLife } from "next/cache"
 
 import { db } from "@/db"
 import { artPieces, artPieceTags, categories, media, tags } from "@/db/schema"
 import { resolveLocalizedLabel } from "@/lib/localized-labels"
 import { isMediaType } from "@/lib/media"
+import { readMediaDimensions, type MediaDimensions } from "@/lib/media-dimensions"
 import {
     buildPortfolioView,
     collectTagsByCategory,
     parsePortfolioQuery,
     removeDuplicatesAndSort,
     type PortfolioArtwork,
+    type PortfolioCard,
     type PortfolioView,
     type RawSearchParams,
+    type TagsByCategory,
 } from "@/lib/portfolio"
 
 const isVisible = eq(artPieces.isVisible, true)
@@ -114,12 +118,42 @@ export async function loadPortfolioArtworks(): Promise<PortfolioArtwork[]> {
     })
 }
 
-export type PortfolioPage = PortfolioView & {
-    tagsByCategory: Map<string, Set<string>>
+export type PortfolioPage = Omit<PortfolioView, "items"> & {
+    cards: PortfolioCard[]
+    tagsByCategory: TagsByCategory
+}
+
+const FALLBACK_DIMENSIONS: MediaDimensions = { width: 1, height: 1 }
+
+export async function getMediaDimensions(
+    mediaId: string,
+    contentHash: string
+): Promise<MediaDimensions> {
+    "use cache"
+
+    // contentHash is part of the cache key and a new file gets a new hash,
+    // so the parsed size never goes stale and can be cached forever
+    cacheLife("max")
+
+    const [record] = await db
+        .select({ content: media.content, fileType: media.fileType })
+        .from(media)
+        .where(and(eq(media.mediaId, mediaId), eq(media.contentHash, contentHash)))
+
+    if (!record || !isMediaType(record.fileType)) return FALLBACK_DIMENSIONS
+    return readMediaDimensions(record.content, record.fileType) ?? FALLBACK_DIMENSIONS
 }
 
 export async function getPortfolioPage(params: RawSearchParams): Promise<PortfolioPage> {
     const artworks = await loadPortfolioArtworks()
-    const view = buildPortfolioView(artworks, parsePortfolioQuery(params))
-    return { ...view, tagsByCategory: collectTagsByCategory(artworks) }
+    const { items, ...view } = buildPortfolioView(artworks, parsePortfolioQuery(params))
+    const dimensions = await Promise.all(
+        items.map((item) => getMediaDimensions(item.cover.mediaId, item.cover.contentHash))
+    )
+
+    return {
+        ...view,
+        cards: items.map((item, index) => ({ ...item, ...dimensions[index] })),
+        tagsByCategory: collectTagsByCategory(artworks),
+    }
 }
