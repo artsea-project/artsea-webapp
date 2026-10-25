@@ -3,6 +3,8 @@ import { db } from "@/db"
 import { notFound } from "next/navigation"
 import { ArrowUpRight } from "lucide-react"
 import Image from "next/image"
+import { profileImagePath } from "@/lib/profile/image"
+import { getOrderedLinks, type ProfileLink } from "@/lib/profile/queries"
 
 function parseParagraphs(value: unknown): string[] {
     if (!value || typeof value !== "object") return []
@@ -97,15 +99,9 @@ function DetailedBioSection({ paragraphs }: DetailedBioSectionProps) {
     )
 }
 
-interface SocialLink {
-    linkId: string
-    name: string
-    url: string
-}
-
 interface ContactSectionProps {
     email?: string | null
-    socialLinks: SocialLink[]
+    socialLinks: ProfileLink[]
     paragraphs: string[]
 }
 
@@ -156,7 +152,7 @@ function ContactSection({ email, socialLinks, paragraphs }: ContactSectionProps)
                                         rel="noopener noreferrer"
                                         className="flex items-center gap-1 font-body text-[16px] text-foreground hover:text-primary transition-colors"
                                     >
-                                        {link.name.charAt(0).toUpperCase() + link.name.slice(1)}
+                                        {link.name}
                                         <ArrowUpRight size={18} />
                                     </a>
                                 ))}
@@ -198,13 +194,12 @@ export default function AboutPage() {
 
 async function AboutContent() {
     let profile = null
-    let socialLinksDb: SocialLink[] = []
-    let email: string | null = null
+    let socialLinksDb: ProfileLink[] = []
     try {
-        profile = await db.query.profiles.findFirst()
-        socialLinksDb = await db.query.links.findMany()
-        const user = await db.query.users.findFirst()
-        email = user?.email || null
+        profile = await db.query.profiles.findFirst({
+            columns: { profileImageContent: false },
+        })
+        socialLinksDb = await getOrderedLinks()
     } catch (error) {
         console.error("Failed to fetch data:", error)
     }
@@ -217,10 +212,9 @@ async function AboutContent() {
     const contactParagraphs = parseParagraphs(profile.contactPln)
     const shortIntro = bioParagraphs.length > 0 ? bioParagraphs[0] : ""
 
-    const profileImageSrc =
-        profile.profileImageContent && profile.profileImageFileType
-            ? `data:image/${profile.profileImageFileType};base64,${profile.profileImageContent.toString("base64")}`
-            : null
+    const profileImageSrc = profile.profileImageContentHash
+        ? profileImagePath(profile.profileImageContentHash)
+        : null
 
     return (
         <div className="w-full">
@@ -245,7 +239,7 @@ async function AboutContent() {
             </div>
 
             <ContactSection
-                email={email}
+                email={profile.contactEmail}
                 socialLinks={socialLinksDb}
                 paragraphs={contactParagraphs}
             />
