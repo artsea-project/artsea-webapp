@@ -3,8 +3,12 @@
 import { useActionState, useRef, useState } from "react"
 
 import { updateProfile } from "@/app/admin/profile/actions"
-import BioField, { type BioLanguage } from "@/components/admin-profile/BioField"
+import BilingualTextField, {
+    type BilingualTexts,
+    type Language,
+} from "@/components/admin-profile/BilingualTextField"
 import { useLeaveGuard } from "@/components/admin-profile/LeaveGuard"
+import { bioFieldCopy, contactFieldCopy } from "@/components/admin-profile/profile-text-fields"
 import ProfilePhotoField from "@/components/admin-profile/ProfilePhotoField"
 import { Button } from "@/components/ui/button"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
@@ -17,27 +21,44 @@ import { joinParagraphs, splitParagraphs } from "@/lib/profile/validation"
 type Draft = {
     fullName: string
     contactEmail: string
-    bio: Record<BioLanguage, string>
+    bio: BilingualTexts
+    contact: BilingualTexts
 }
 
+type TextFieldKey = "bio" | "contact"
+
+const TEXT_FIELDS = [
+    { key: "bio", copy: bioFieldCopy },
+    { key: "contact", copy: contactFieldCopy },
+] as const satisfies { key: TextFieldKey; copy: typeof bioFieldCopy }[]
+
 type PickedPhoto = { file: File; previewUrl: string }
+
+function textsFrom(pln: string[] = [], eng: string[] = []): BilingualTexts {
+    return { pln: joinParagraphs(pln), eng: joinParagraphs(eng) }
+}
 
 function draftFromSaved(saved: EditableProfile | null): Draft {
     return {
         fullName: saved?.fullName ?? "",
         contactEmail: saved?.contactEmail ?? "",
-        bio: { pln: joinParagraphs(saved?.bioPln ?? []), eng: joinParagraphs(saved?.bioEng ?? []) },
+        bio: textsFrom(saved?.bioPln, saved?.bioEng),
+        contact: textsFrom(saved?.contactPln, saved?.contactEng),
     }
 }
 
-function differsFromSaved(draft: Draft, saved: Draft) {
-    const normalizeBio = (text: string) => joinParagraphs(splitParagraphs(text))
+function textsDiffer(draft: BilingualTexts, saved: BilingualTexts) {
+    const languages: Language[] = ["pln", "eng"]
+    return languages.some(
+        (language) => joinParagraphs(splitParagraphs(draft[language])) !== saved[language]
+    )
+}
 
+function differsFromSaved(draft: Draft, saved: Draft) {
     return (
         draft.fullName.trim() !== saved.fullName ||
         draft.contactEmail.trim() !== saved.contactEmail ||
-        normalizeBio(draft.bio.pln) !== saved.bio.pln ||
-        normalizeBio(draft.bio.eng) !== saved.bio.eng
+        TEXT_FIELDS.some(({ key }) => textsDiffer(draft[key], saved[key]))
     )
 }
 
@@ -115,12 +136,16 @@ export default function ProfileForm({ saved }: ProfileFormProps) {
                     <FieldError>{state.fieldErrors.contactEmail}</FieldError>
                 </Field>
 
-                <BioField
-                    texts={draft.bio}
-                    onChange={(language, text) =>
-                        setDraft({ ...draft, bio: { ...draft.bio, [language]: text } })
-                    }
-                />
+                {TEXT_FIELDS.map(({ key, copy }) => (
+                    <BilingualTextField
+                        key={key}
+                        copy={copy}
+                        texts={draft[key]}
+                        onChange={(language, text) =>
+                            setDraft({ ...draft, [key]: { ...draft[key], [language]: text } })
+                        }
+                    />
+                ))}
             </FieldGroup>
 
             <div className="flex flex-wrap items-center gap-3">
