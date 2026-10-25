@@ -47,7 +47,6 @@ export default function ProfilePhotoField({
                 <input
                     ref={inputRef}
                     type="file"
-                    name="profileImage"
                     accept="image/png,image/jpeg"
                     className="hidden"
                     onChange={handleChange}
