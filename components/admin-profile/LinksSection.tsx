@@ -4,6 +4,7 @@ import { useState, useTransition } from "react"
 import { Plus } from "lucide-react"
 
 import { deleteLink } from "@/app/admin/profile/actions"
+import LinkPanel from "@/components/admin-profile/LinkPanel"
 import LinkRow from "@/components/admin-profile/LinkRow"
 import {
     AlertDialog,
@@ -18,14 +19,27 @@ import {
 import { Button } from "@/components/ui/button"
 import type { ProfileLink } from "@/lib/profile/queries"
 
+type Panel = { mode: "closed" } | { mode: "add" } | { mode: "edit"; link: ProfileLink }
+
 interface LinksSectionProps {
     links: ProfileLink[]
 }
 
 export default function LinksSection({ links }: LinksSectionProps) {
+    const [panel, setPanel] = useState<Panel>({ mode: "closed" })
     const [message, setMessage] = useState("")
     const [linkToDelete, setLinkToDelete] = useState<ProfileLink | null>(null)
     const [, startDeleting] = useTransition()
+
+    function openPanel(next: Panel) {
+        setMessage("")
+        setPanel(next)
+    }
+
+    function finishPanel(doneMessage: string) {
+        setPanel({ mode: "closed" })
+        setMessage(doneMessage)
+    }
 
     function confirmDelete() {
         if (!linkToDelete) return
@@ -52,21 +66,31 @@ export default function LinksSection({ links }: LinksSectionProps) {
                         <LinkRow
                             key={link.linkId}
                             link={link}
-                            onEdit={() => {}}
+                            onEdit={() => openPanel({ mode: "edit", link })}
                             onDelete={() => setLinkToDelete(link)}
                         />
                     ))}
                 </ul>
             )}
 
-            <Button
-                type="button"
-                variant="outline"
-                className="w-full border-dashed text-muted-foreground"
-            >
-                <Plus />
-                Dodaj kolejny link
-            </Button>
+            {panel.mode === "closed" ? (
+                <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full border-dashed text-muted-foreground"
+                    onClick={() => openPanel({ mode: "add" })}
+                >
+                    <Plus />
+                    Dodaj kolejny link
+                </Button>
+            ) : (
+                <LinkPanel
+                    key={panel.mode === "edit" ? panel.link.linkId : "new"}
+                    link={panel.mode === "edit" ? panel.link : undefined}
+                    onDone={finishPanel}
+                    onCancel={() => setPanel({ mode: "closed" })}
+                />
+            )}
 
             <p role="status" className="text-sm text-muted-foreground">
                 {message}
