@@ -82,6 +82,8 @@ export async function updateProfile(
         contactEmail: email.email,
         bioPln: { paragraphs: splitParagraphs(readText(formData, "bioPln")) },
         bioEng: { paragraphs: splitParagraphs(readText(formData, "bioEng")) },
+        contactPln: { paragraphs: splitParagraphs(readText(formData, "contactPln")) },
+        contactEng: { paragraphs: splitParagraphs(readText(formData, "contactEng")) },
         ...image.columns,
     }
 

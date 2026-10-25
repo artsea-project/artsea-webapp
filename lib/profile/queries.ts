@@ -2,7 +2,7 @@ import { asc } from "drizzle-orm"
 
 import { db } from "@/db"
 import { links } from "@/db/schema"
-import type { BioContent } from "@/types/profile"
+import type { BioContent, ContactContent } from "@/types/profile"
 
 export type ProfileLink = {
     linkId: string
@@ -15,11 +15,13 @@ export type EditableProfile = {
     contactEmail: string | null
     bioPln: string[]
     bioEng: string[]
+    contactPln: string[]
+    contactEng: string[]
     imageHash: string | null
 }
 
-function paragraphsOf(bio: BioContent | null): string[] {
-    return Array.isArray(bio?.paragraphs) ? bio.paragraphs : []
+function paragraphsOf(content: BioContent | ContactContent | null): string[] {
+    return Array.isArray(content?.paragraphs) ? content.paragraphs : []
 }
 
 export async function getOrderedLinks(): Promise<ProfileLink[]> {
@@ -36,6 +38,8 @@ export async function getEditableProfile(): Promise<EditableProfile | null> {
             contactEmail: true,
             bioPln: true,
             bioEng: true,
+            contactPln: true,
+            contactEng: true,
             profileImageContentHash: true,
         },
     })
@@ -47,6 +51,8 @@ export async function getEditableProfile(): Promise<EditableProfile | null> {
         contactEmail: profile.contactEmail,
         bioPln: paragraphsOf(profile.bioPln),
         bioEng: paragraphsOf(profile.bioEng),
+        contactPln: paragraphsOf(profile.contactPln),
+        contactEng: paragraphsOf(profile.contactEng),
         imageHash: profile.profileImageContentHash,
     }
 }
