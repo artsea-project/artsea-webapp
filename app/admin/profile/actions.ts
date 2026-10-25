@@ -135,9 +135,14 @@ export async function updateLink(
     const link = readLink(formData)
     if (!link.values) return failed(link.fieldErrors)
 
-    await db.update(links).set(link.values).where(eq(links.linkId, linkId))
+    const updated = await db
+        .update(links)
+        .set(link.values)
+        .where(eq(links.linkId, linkId))
+        .returning({ linkId: links.linkId })
 
     refresh()
+    if (updated.length === 0) return failed<LinkField>({ name: "Ten link został już usunięty." })
     return succeeded()
 }
 

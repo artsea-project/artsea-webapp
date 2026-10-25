@@ -45,6 +45,7 @@ export default function LinksSection({ links }: LinksSectionProps) {
         if (!linkToDelete) return
 
         const { linkId } = linkToDelete
+        if (panel.mode === "edit" && panel.link.linkId === linkId) setPanel({ mode: "closed" })
         startDeleting(async () => {
             await deleteLink(linkId)
             setMessage("Usunięto link.")
