@@ -21,6 +21,10 @@ export function profileImagePath(hash: string): string {
     return `/profile-image/${hash}`
 }
 
+export function isProfileImageHash(value: string): boolean {
+    return HASH_PATTERN.test(value)
+}
+
 function notFound() {
     return new NextResponse(null, { status: 404 })
 }
@@ -31,7 +35,7 @@ export async function profileImageResponse({
     stored,
     loadContent,
 }: ProfileImageRequest): Promise<NextResponse> {
-    if (!HASH_PATTERN.test(requestedHash) || stored?.contentHash !== requestedHash) {
+    if (!isProfileImageHash(requestedHash) || stored?.contentHash !== requestedHash) {
         return notFound()
     }
 
