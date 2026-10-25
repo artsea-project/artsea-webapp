@@ -46,7 +46,7 @@ export default function AdminSidebarNav() {
 
             <nav
                 aria-label="Konto"
-                className="mt-auto flex shrink-0 flex-col gap-2 border-t border-border pt-4"
+                className="mt-auto flex shrink-0 flex-col gap-2 border-t border-muted pt-4"
             >
                 <SidebarLink
                     {...PORTFOLIO_PREVIEW_ROUTE}
