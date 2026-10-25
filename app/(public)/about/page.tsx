@@ -106,12 +106,6 @@ interface ContactSectionProps {
 }
 
 function ContactSection({ email, socialLinks, paragraphs }: ContactSectionProps) {
-    const defaultParagraphs = [
-        "Jeśli podoba Ci się moje podejście do designu, napisz do mnie.",
-        "Zawsze jestem otwarta na nowe, interesujące wyzwania.",
-    ]
-    const displayParagraphs = paragraphs.length > 0 ? paragraphs : defaultParagraphs
-
     return (
         <section id="contact" className="max-w-[1440px] mx-auto px-10 md:px-32 pt-16 pb-32">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 items-start">
@@ -119,11 +113,13 @@ function ContactSection({ email, socialLinks, paragraphs }: ContactSectionProps)
                     <h2 className="font-primary text-[40px] md:text-[56px] leading-[1.1] font-normal text-foreground">
                         Skontaktuj się ze mną.
                     </h2>
-                    <div className="text-muted-foreground font-body text-lg leading-relaxed flex flex-col gap-1">
-                        {displayParagraphs.map((paragraph, idx) => (
-                            <p key={idx}>{paragraph}</p>
-                        ))}
-                    </div>
+                    {paragraphs.length > 0 && (
+                        <div className="text-muted-foreground font-body text-lg leading-relaxed flex flex-col gap-1">
+                            {paragraphs.map((paragraph, idx) => (
+                                <p key={idx}>{paragraph}</p>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 <div className="md:col-span-6 md:col-start-7 flex flex-col gap-12 pt-2 md:pt-4">
