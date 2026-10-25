@@ -4,6 +4,7 @@ import { useActionState, useRef, useState } from "react"
 
 import { updateProfile } from "@/app/admin/profile/actions"
 import BioField, { type BioLanguage } from "@/components/admin-profile/BioField"
+import { useLeaveGuard } from "@/components/admin-profile/LeaveGuard"
 import ProfilePhotoField from "@/components/admin-profile/ProfilePhotoField"
 import { Button } from "@/components/ui/button"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
@@ -67,6 +68,7 @@ export default function ProfileForm({ saved }: ProfileFormProps) {
     )
 
     const isDirty = photo !== null || differsFromSaved(draft, savedDraft)
+    const leaveDialog = useLeaveGuard(isDirty)
     const savedPhotoSrc = saved?.imageHash ? profileImagePath(saved.imageHash) : null
 
     function cancelChanges() {
@@ -136,6 +138,8 @@ export default function ProfileForm({ saved }: ProfileFormProps) {
                     {state.status === "success" && !isDirty ? "Zapisano zmiany." : ""}
                 </p>
             </div>
+
+            {leaveDialog}
         </form>
     )
 }
