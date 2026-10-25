@@ -1,7 +1,9 @@
 import { Suspense } from "react"
 
+import LinksSection from "@/components/admin-profile/LinksSection"
 import ProfileForm from "@/components/admin-profile/ProfileForm"
-import { getEditableProfile } from "@/lib/profile/queries"
+import { Separator } from "@/components/ui/separator"
+import { getEditableProfile, getOrderedLinks } from "@/lib/profile/queries"
 
 export default function AdminProfilePage() {
     return (
@@ -12,7 +14,7 @@ export default function AdminProfilePage() {
 }
 
 async function ProfileContent() {
-    const profile = await getEditableProfile()
+    const [profile, links] = await Promise.all([getEditableProfile(), getOrderedLinks()])
 
     return (
         <div data-leave-guard-root className="px-16 py-9 font-secondary">
@@ -26,6 +28,8 @@ async function ProfileContent() {
                 </header>
 
                 <ProfileForm saved={profile} />
+                <Separator className="bg-muted" />
+                <LinksSection links={links} />
             </div>
         </div>
     )
