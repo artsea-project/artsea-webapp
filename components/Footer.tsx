@@ -1,4 +1,4 @@
-import { db } from "@/db"
+import { getContactEmail, getOrderedLinks, type ProfileLink } from "@/lib/profile/queries"
 
 interface ContactSectionProps {
     email?: string | null
@@ -24,14 +24,8 @@ function ContactSection({ email }: ContactSectionProps) {
     )
 }
 
-interface SocialLink {
-    id: string
-    name: string
-    url: string
-}
-
 interface SocialsSectionProps {
-    socialLinks: SocialLink[]
+    socialLinks: ProfileLink[]
 }
 
 function SocialsSection({ socialLinks }: SocialsSectionProps) {
@@ -41,7 +35,7 @@ function SocialsSection({ socialLinks }: SocialsSectionProps) {
             <div className="flex flex-wrap gap-6 text-xs font-semibold uppercase tracking-widest text-background transition-all hover:brightness-125 md:gap-8">
                 {socialLinks.map((link) => (
                     <a
-                        key={link.id}
+                        key={link.linkId}
                         href={link.url}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -56,12 +50,7 @@ function SocialsSection({ socialLinks }: SocialsSectionProps) {
 }
 
 export default async function Footer() {
-    const user = await db.query.users.findFirst()
-    const linksList = await db.query.links.findMany()
-
-    const email = user?.email || undefined
-
-    const socialLinks = linksList.map((l) => ({ name: l.name, url: l.url, id: l.linkId }))
+    const [email, socialLinks] = await Promise.all([getContactEmail(), getOrderedLinks()])
 
     return (
         <footer className="font-body border-t border-primary bg-foreground px-6 py-16 text-background transition-colors duration-300 md:px-16 md:py-24">
