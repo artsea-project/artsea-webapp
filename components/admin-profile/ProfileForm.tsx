@@ -81,6 +81,7 @@ export default function ProfileForm({ saved }: ProfileFormProps) {
 
     const [state, formAction, isSaving] = useActionState(
         async (previous: ProfileFormState, formData: FormData) => {
+            if (photo) formData.set("profileImage", photo.file)
             const result = await updateProfile(previous, formData)
             if (result.status === "success") replacePhoto(null)
             return result
