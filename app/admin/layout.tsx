@@ -15,7 +15,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Suspense fallback={null}>
                 <AdminSidebar />
             </Suspense>
-            <main className="min-w-0 flex-1 overflow-y-auto">
+            <main className="min-w-0 flex-1 overflow-y-auto bg-surface">
                 <AdminPageHeader />
                 {children}
             </main>
