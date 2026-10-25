@@ -1,5 +1,8 @@
+import { eq } from "drizzle-orm"
+
 import { db } from "@/db"
-import { profileImageResponse } from "@/lib/profile/image"
+import { profiles } from "@/db/schema"
+import { isProfileImageHash, profileImageResponse } from "@/lib/profile/image"
 
 async function loadStoredImage() {
     const profile = await db.query.profiles.findFirst({
@@ -11,9 +14,10 @@ async function loadStoredImage() {
     return { contentHash: profile.profileImageContentHash, fileType: profile.profileImageFileType }
 }
 
-async function loadImageContent() {
+async function loadImageContent(hash: string) {
     const profile = await db.query.profiles.findFirst({
         columns: { profileImageContent: true },
+        where: eq(profiles.profileImageContentHash, hash),
     })
 
     return profile?.profileImageContent ?? null
@@ -25,7 +29,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ hash
     return profileImageResponse({
         requestedHash: hash,
         ifNoneMatch: request.headers.get("if-none-match"),
-        stored: await loadStoredImage(),
-        loadContent: loadImageContent,
+        stored: isProfileImageHash(hash) ? await loadStoredImage() : null,
+        loadContent: () => loadImageContent(hash),
     })
 }
