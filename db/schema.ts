@@ -46,6 +46,7 @@ export const profiles = pgTable(
     {
         profileId: uuid("profile_id").primaryKey().defaultRandom(),
         fullName: text("full_name").notNull(),
+        contactEmail: text("contact_email"),
         bioPln: jsonb("bio_pln").$type<BioContent>(),
         bioEng: jsonb("bio_eng").$type<BioContent>(),
         contactPln: jsonb("contact_pln").$type<ContactContent>(),
@@ -72,6 +73,7 @@ export const links = pgTable("links", {
     linkId: uuid("link_id").primaryKey().defaultRandom(),
     name: text("name").notNull(),
     url: text("url").notNull(),
+    position: integer("position").generatedAlwaysAsIdentity(),
 })
 
 // Category Table
