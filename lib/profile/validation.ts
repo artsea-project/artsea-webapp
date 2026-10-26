@@ -26,7 +26,8 @@ export function checkProfileImageFile(file: { size: number; type: string }): str
 
 export function splitParagraphs(text: string): string[] {
     return text
-        .split(/\r?\n\s*\r?\n/)
+        .replace(/\r\n?/g, "\n")
+        .split(/\n\s*\n/)
         .map((paragraph) => paragraph.trim())
         .filter(Boolean)
 }
