@@ -23,6 +23,7 @@ test.describe("bio paragraphs", () => {
 
     test("accepts Windows line endings and empty text", () => {
         expect(splitParagraphs("Jeden.\r\n\r\nDwa.")).toEqual(["Jeden.", "Dwa."])
+        expect(splitParagraphs("Tytuł\r\nciąg dalszy.")).toEqual(["Tytuł\nciąg dalszy."])
         expect(splitParagraphs("   ")).toEqual([])
     })
 

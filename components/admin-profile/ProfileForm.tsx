@@ -47,10 +47,14 @@ function draftFromSaved(saved: EditableProfile | null): Draft {
     }
 }
 
+function normalizeText(text: string) {
+    return joinParagraphs(splitParagraphs(text))
+}
+
 function textsDiffer(draft: BilingualTexts, saved: BilingualTexts) {
     const languages: Language[] = ["pln", "eng"]
     return languages.some(
-        (language) => joinParagraphs(splitParagraphs(draft[language])) !== saved[language]
+        (language) => normalizeText(draft[language]) !== normalizeText(saved[language])
     )
 }
 
