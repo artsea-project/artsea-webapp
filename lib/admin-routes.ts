@@ -12,6 +12,7 @@ export interface AdminRoute {
     label: string
     href: string
     icon: LucideIcon
+    previewHref?: string
 }
 
 /** Main sidebar navigation. Labels double as the page header title for each section. */
@@ -20,7 +21,7 @@ export const ADMIN_NAV_ROUTES: readonly AdminRoute[] = [
     { label: "Prace", href: "/admin/works", icon: ImageIcon },
     { label: "Kategorie", href: "/admin/categories", icon: Folder },
     { label: "Układ i Personalizacja", href: "/admin/appearance", icon: LayoutDashboard },
-    { label: "Profil", href: "/admin/profile", icon: User },
+    { label: "Profil", href: "/admin/profile", icon: User, previewHref: "/about" },
 ]
 
 /** Link out of the dashboard back to the public site. */
@@ -37,6 +38,13 @@ export function isRouteActive(href: string, pathname: string): boolean {
     }
 
     return pathname === href || pathname.startsWith(`${href}/`)
+}
+
+export function getPortfolioPreviewHref(pathname: string): string {
+    const section = ADMIN_NAV_ROUTES.find(
+        (route) => route.previewHref && isRouteActive(route.href, pathname)
+    )
+    return section?.previewHref ?? PORTFOLIO_PREVIEW_ROUTE.href
 }
 
 /**

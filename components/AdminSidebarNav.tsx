@@ -8,6 +8,7 @@ import { logout } from "@/app/admin/actions"
 import {
     ADMIN_NAV_ROUTES,
     PORTFOLIO_PREVIEW_ROUTE,
+    getPortfolioPreviewHref,
     isRouteActive,
     type AdminRoute,
 } from "@/lib/admin-routes"
@@ -50,7 +51,8 @@ export default function AdminSidebarNav() {
             >
                 <SidebarLink
                     {...PORTFOLIO_PREVIEW_ROUTE}
-                    active={isRouteActive(PORTFOLIO_PREVIEW_ROUTE.href, pathname)}
+                    href={getPortfolioPreviewHref(pathname)}
+                    active={false}
                 />
 
                 <form action={logout}>
