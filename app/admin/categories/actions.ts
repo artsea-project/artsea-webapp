@@ -140,7 +140,11 @@ export async function updateCategory(
 
     refreshViews()
     if (updated.length === 0) {
-        return failed<CategoryField>({ namePln: "Ta kategoria została już usunięta." })
+        return {
+            status: "error",
+            fieldErrors: {},
+            formError: "Ta kategoria została już usunięta.",
+        }
     }
     return succeeded()
 }

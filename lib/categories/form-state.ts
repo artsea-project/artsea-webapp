@@ -5,6 +5,7 @@ export type CategoryField = "namePln" | "nameEng"
 export type CategoryFormState = {
     status: FormStatus
     fieldErrors: Partial<Record<CategoryField, string>>
+    formError?: string
     savedAt?: number
 }
 
