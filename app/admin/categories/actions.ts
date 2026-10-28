@@ -1,6 +1,6 @@
 "use server"
 
-import { count, eq } from "drizzle-orm"
+import { and, count, eq, ne, sql, type AnyColumn } from "drizzle-orm"
 import { revalidatePath, revalidateTag } from "next/cache"
 
 import { db } from "@/db"
@@ -29,6 +29,10 @@ export type DeleteCategoryResult = { status: "success" } | { status: "error"; er
 function readText(formData: FormData, name: string): string {
     const value = formData.get(name)
     return typeof value === "string" ? value : ""
+}
+
+function equalsIgnoreCase(column: AnyColumn, value: string) {
+    return sql`lower(${column}) = lower(${value})`
 }
 
 function failed<Field extends string>(fieldErrors: FieldErrors<Field>) {
@@ -78,18 +82,14 @@ async function findCategoryConflicts(
     nameEng: string,
     excludeId?: string
 ): Promise<FieldErrors<CategoryField>> {
+    const notSelf = excludeId ? ne(categories.categoryId, excludeId) : undefined
+
     const [existingPln, existingEng] = await Promise.all([
         db.query.categories.findFirst({
-            where: (fields, { and, ilike, ne }) =>
-                excludeId
-                    ? and(ilike(fields.namePln, namePln), ne(fields.categoryId, excludeId))
-                    : ilike(fields.namePln, namePln),
+            where: and(equalsIgnoreCase(categories.namePln, namePln), notSelf),
         }),
         db.query.categories.findFirst({
-            where: (fields, { and, ilike, ne }) =>
-                excludeId
-                    ? and(ilike(fields.nameEng, nameEng), ne(fields.categoryId, excludeId))
-                    : ilike(fields.nameEng, nameEng),
+            where: and(equalsIgnoreCase(categories.nameEng, nameEng), notSelf),
         }),
     ])
 
@@ -199,10 +199,10 @@ export async function createTag(
 
     const [existingPln, existingEng] = await Promise.all([
         db.query.tags.findFirst({
-            where: (fields, { ilike }) => ilike(fields.namePln, tag.values.namePln),
+            where: equalsIgnoreCase(tags.namePln, tag.values.namePln),
         }),
         db.query.tags.findFirst({
-            where: (fields, { ilike }) => ilike(fields.nameEng, tag.values.nameEng),
+            where: equalsIgnoreCase(tags.nameEng, tag.values.nameEng),
         }),
     ])
 
