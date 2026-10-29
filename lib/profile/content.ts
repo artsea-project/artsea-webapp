@@ -1,5 +1,7 @@
 import type { BioContent } from "@/types/profile"
 
+export const DEFAULT_ABOUT_HEADING = { pln: "O mnie", eng: "About me" }
+
 function stringsOf(value: unknown): string[] {
     return Array.isArray(value)
         ? value.filter((item): item is string => typeof item === "string")
@@ -22,6 +24,7 @@ export function parseBio(value: unknown): BioContent {
     if ("paragraphs" in content) {
         const paragraphs = stringsOf(content.paragraphs)
         return {
+            heading: "",
             intro: paragraphs.slice(0, 1),
             highlight: paragraphs.slice(1, 2),
             body: paragraphs.slice(2),
@@ -29,6 +32,7 @@ export function parseBio(value: unknown): BioContent {
     }
 
     return {
+        heading: typeof content.heading === "string" ? content.heading : "",
         intro: stringsOf(content.intro),
         highlight: stringsOf(content.highlight),
         body: stringsOf(content.body),

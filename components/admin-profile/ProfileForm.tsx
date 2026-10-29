@@ -11,6 +11,7 @@ import BilingualTextField, {
 import { useLeaveGuard } from "@/components/admin-profile/LeaveGuard"
 import {
     bioBodyFieldCopy,
+    bioHeadingFieldCopy,
     bioHighlightFieldCopy,
     bioIntroFieldCopy,
     contactFieldCopy,
@@ -32,7 +33,7 @@ import { profileImagePath } from "@/lib/profile/image"
 import type { EditableProfile } from "@/lib/profile/queries"
 import { joinParagraphs, splitParagraphs } from "@/lib/profile/validation"
 
-type TextFieldKey = "bioIntro" | "bioHighlight" | "bioBody" | "contact"
+type TextFieldKey = "bioHeading" | "bioIntro" | "bioHighlight" | "bioBody" | "contact"
 
 type Draft = {
     fullName: string
@@ -42,6 +43,7 @@ type Draft = {
 type TextField = { key: TextFieldKey; copy: BilingualFieldCopy }
 
 const BIO_FIELDS = [
+    { key: "bioHeading", copy: bioHeadingFieldCopy },
     { key: "bioIntro", copy: bioIntroFieldCopy },
     { key: "bioHighlight", copy: bioHighlightFieldCopy },
     { key: "bioBody", copy: bioBodyFieldCopy },
@@ -61,6 +63,10 @@ function draftFromSaved(saved: EditableProfile | null): Draft {
     return {
         fullName: saved?.fullName ?? "",
         contactEmail: saved?.contactEmail ?? "",
+        bioHeading: {
+            pln: saved?.bioPln.heading ?? "",
+            eng: saved?.bioEng.heading ?? "",
+        },
         bioIntro: textsFrom(saved?.bioPln.intro, saved?.bioEng.intro),
         bioHighlight: textsFrom(saved?.bioPln.highlight, saved?.bioEng.highlight),
         bioBody: textsFrom(saved?.bioPln.body, saved?.bioEng.body),

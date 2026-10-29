@@ -3,6 +3,7 @@
 import { useState } from "react"
 
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 
@@ -16,7 +17,8 @@ export interface BilingualFieldCopy {
     inputNames: Record<Language, string>
     placeholders: BilingualTexts
     description: string
-    rows: number
+    // Without rows the field is a single-line input.
+    rows?: number
 }
 
 const LANGUAGES: { value: Language; label: string }[] = [
@@ -32,6 +34,11 @@ interface BilingualTextFieldProps {
 
 export default function BilingualTextField({ copy, texts, onChange }: BilingualTextFieldProps) {
     const [language, setLanguage] = useState<Language>("pln")
+    const control = {
+        id: copy.id,
+        value: texts[language],
+        placeholder: copy.placeholders[language],
+    }
 
     return (
         <Field>
@@ -45,13 +52,15 @@ export default function BilingualTextField({ copy, texts, onChange }: BilingualT
                     ))}
                 </TabsList>
             </Tabs>
-            <Textarea
-                id={copy.id}
-                rows={copy.rows}
-                value={texts[language]}
-                placeholder={copy.placeholders[language]}
-                onChange={(event) => onChange(language, event.target.value)}
-            />
+            {copy.rows ? (
+                <Textarea
+                    {...control}
+                    rows={copy.rows}
+                    onChange={(event) => onChange(language, event.target.value)}
+                />
+            ) : (
+                <Input {...control} onChange={(event) => onChange(language, event.target.value)} />
+            )}
             {LANGUAGES.map(({ value }) => (
                 <input
                     key={value}

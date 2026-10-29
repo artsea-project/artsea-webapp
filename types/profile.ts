@@ -1,4 +1,5 @@
 export interface BioContent {
+    heading: string
     intro: string[]
     highlight: string[]
     body: string[]

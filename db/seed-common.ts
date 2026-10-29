@@ -29,6 +29,7 @@ export const sharedProfile = {
     fullName: "Anna",
     contactEmail: seedArtist.email,
     bioPln: {
+        heading: "",
         intro: [
             "Tworzę ilustracje i identyfikacje wizualne, łącząc organiczne formy z minimalistyczną precyzją. Działam w Gdańsku, inspirując się naturą i surową architekturą.",
         ],
@@ -41,6 +42,7 @@ export const sharedProfile = {
         ],
     },
     bioEng: {
+        heading: "",
         intro: [
             "I create illustrations and visual identities, combining organic forms with minimalist precision. I work in Gdańsk, drawing inspiration from nature and raw architecture.",
         ],

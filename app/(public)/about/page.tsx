@@ -3,17 +3,18 @@ import { db } from "@/db"
 import { notFound } from "next/navigation"
 import { ArrowUpRight } from "lucide-react"
 import Image from "next/image"
-import { parseBio, parseParagraphs } from "@/lib/profile/content"
+import { DEFAULT_ABOUT_HEADING, parseBio, parseParagraphs } from "@/lib/profile/content"
 import { profileImagePath } from "@/lib/profile/image"
 import { getOrderedLinks, type ProfileLink } from "@/lib/profile/queries"
 
 interface HeroSectionProps {
     fullName: string
+    heading: string
     intro: string[]
     profileImageSrc: string | null
 }
 
-function HeroSection({ fullName, intro, profileImageSrc }: HeroSectionProps) {
+function HeroSection({ fullName, heading, intro, profileImageSrc }: HeroSectionProps) {
     return (
         <section className="max-w-[1440px] mx-auto px-10 md:px-32 pt-24 pb-32">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
@@ -23,7 +24,7 @@ function HeroSection({ fullName, intro, profileImageSrc }: HeroSectionProps) {
                             {fullName}
                         </h1>
                         <h2 className="font-primary text-[96px] leading-[1] font-normal tracking-tight text-muted-foreground italic">
-                            O mnie
+                            {heading}
                         </h2>
                     </div>
 
@@ -224,6 +225,7 @@ async function AboutContent() {
         <div className="w-full">
             <HeroSection
                 fullName={profile.fullName}
+                heading={bio.heading || DEFAULT_ABOUT_HEADING.pln}
                 intro={bio.intro}
                 profileImageSrc={profileImageSrc}
             />
