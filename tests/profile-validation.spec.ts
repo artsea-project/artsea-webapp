@@ -34,7 +34,7 @@ test.describe("bio paragraphs", () => {
 
 test.describe("personal data", () => {
     test("requires a full name", () => {
-        expect(checkFullName("  ")).toBe("Podaj imię i nazwisko.")
+        expect(checkFullName("  ")).toBe("Podaj imię lub pseudonim artystyczny.")
         expect(checkFullName("Élise Roux")).toBeNull()
     })
 

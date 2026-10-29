@@ -37,7 +37,7 @@ export function joinParagraphs(paragraphs: string[]): string {
 }
 
 export function checkFullName(value: string): string | null {
-    return value.trim() ? null : "Podaj imię i nazwisko."
+    return value.trim() ? null : "Podaj imię lub pseudonim artystyczny."
 }
 
 export function normalizeContactEmail(value: string): { email: string | null } | { error: string } {
