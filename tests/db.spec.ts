@@ -40,8 +40,8 @@ test.describe("Database Config & Relations Integration Test", () => {
             .insert(profiles)
             .values({
                 fullName: "Playwright Artist Test",
-                bioPln: { intro: ["Polski opis Playwright"], highlight: [], body: [] },
-                bioEng: { intro: ["English bio Playwright"], highlight: [], body: [] },
+                bioPln: { heading: "", intro: ["Polski opis Playwright"], highlight: [], body: [] },
+                bioEng: { heading: "", intro: ["English bio Playwright"], highlight: [], body: [] },
                 contactPln: { paragraphs: ["Kontakt Playwright"] },
                 contactEng: { paragraphs: ["Contact Playwright"] },
             })
@@ -240,11 +240,13 @@ test.describe("Database Config & Relations Integration Test", () => {
             .update(profiles)
             .set({
                 bioPln: {
+                    heading: "Kim jestem",
                     intro: ["Paragraph PL 1"],
                     highlight: ["Paragraph PL 2"],
                     body: ["Paragraph PL 3", "Paragraph PL 4"],
                 },
                 bioEng: {
+                    heading: "",
                     intro: ["Paragraph EN 1"],
                     highlight: ["Paragraph EN 2"],
                     body: ["Paragraph EN 3"],
@@ -272,6 +274,7 @@ test.describe("Database Config & Relations Integration Test", () => {
         const contactEng = retrieved!.contactEng as { paragraphs: string[] }
 
         expect(bioPln).toEqual({
+            heading: "Kim jestem",
             intro: ["Paragraph PL 1"],
             highlight: ["Paragraph PL 2"],
             body: ["Paragraph PL 3", "Paragraph PL 4"],
