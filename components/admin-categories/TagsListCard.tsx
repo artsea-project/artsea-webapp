@@ -14,10 +14,18 @@ const COLLAPSED_LIMIT = 16
 interface TagsListCardProps {
     tags: AdminTag[]
     isDeleting?: boolean
+    selectedTagId?: string
+    onEdit: (tag: AdminTag) => void
     onDelete: (tag: AdminTag) => void
 }
 
-export default function TagsListCard({ tags, isDeleting = false, onDelete }: TagsListCardProps) {
+export default function TagsListCard({
+    tags,
+    isDeleting = false,
+    selectedTagId,
+    onEdit,
+    onDelete,
+}: TagsListCardProps) {
     const [searchQuery, setSearchQuery] = useState("")
     const [expanded, setExpanded] = useState(false)
     const listId = useId()
@@ -70,7 +78,9 @@ export default function TagsListCard({ tags, isDeleting = false, onDelete }: Tag
                                 key={tag.tagId}
                                 namePln={tag.namePln}
                                 nameEng={tag.nameEng}
+                                isSelected={tag.tagId === selectedTagId}
                                 disabled={isDeleting}
+                                onSelect={() => onEdit(tag)}
                                 onDelete={() => onDelete(tag)}
                             />
                         ))}
