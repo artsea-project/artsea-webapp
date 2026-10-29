@@ -8,12 +8,14 @@ import { refresh } from "next/cache"
 import { db } from "@/db"
 import { links, profiles } from "@/db/schema"
 import type {
+    BilingualField,
     LinkField,
     LinkFormState,
     ProfileField,
     ProfileFormState,
 } from "@/lib/profile/form-state"
 import {
+    checkBilingualText,
     checkFullName,
     checkLinkName,
     checkProfileImageFile,
@@ -25,6 +27,14 @@ import {
 import type { BioContent } from "@/types/profile"
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+// The heading falls back to a default text, so it may stay empty in one language.
+const BILINGUAL_REQUIRED_FIELDS = [
+    "bioIntro",
+    "bioHighlight",
+    "bioBody",
+    "contact",
+] as const satisfies BilingualField[]
 
 type FieldErrors<Field extends string> = Partial<Record<Field, string>>
 
@@ -48,6 +58,18 @@ function readBio(formData: FormData, language: "Pln" | "Eng"): BioContent {
         highlight: splitParagraphs(readText(formData, `bioHighlight${language}`)),
         body: splitParagraphs(readText(formData, `bioBody${language}`)),
     }
+}
+
+function checkBilingualFields(formData: FormData): FieldErrors<ProfileField> {
+    const fieldErrors: FieldErrors<ProfileField> = {}
+    for (const field of BILINGUAL_REQUIRED_FIELDS) {
+        const error = checkBilingualText(
+            readText(formData, `${field}Pln`),
+            readText(formData, `${field}Eng`)
+        )
+        if (error) fieldErrors[field] = error
+    }
+    return fieldErrors
 }
 
 async function readProfileImage(formData: FormData) {
@@ -79,11 +101,14 @@ export async function updateProfile(
     const image = await readProfileImage(formData)
 
     const fullNameError = checkFullName(fullName)
-    if (fullNameError || "error" in email || "error" in image) {
+    const textErrors = checkBilingualFields(formData)
+    const hasTextErrors = Object.keys(textErrors).length > 0
+    if (fullNameError || "error" in email || "error" in image || hasTextErrors) {
         return failed<ProfileField>({
             fullName: fullNameError ?? undefined,
             contactEmail: "error" in email ? email.error : undefined,
             profileImage: "error" in image ? image.error : undefined,
+            ...textErrors,
         })
     }
 

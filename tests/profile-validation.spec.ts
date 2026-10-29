@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test"
 
 import {
     MAX_PROFILE_IMAGE_BYTES,
+    checkBilingualText,
     checkFullName,
     checkLinkName,
     checkProfileImageFile,
@@ -12,6 +13,18 @@ import {
     normalizeLinkUrl,
     splitParagraphs,
 } from "../lib/profile/validation"
+
+test.describe("bilingual text", () => {
+    test("accepts both languages filled or both empty", () => {
+        expect(checkBilingualText("Tekst.", "Text.")).toBeNull()
+        expect(checkBilingualText(" ", "\n\n")).toBeNull()
+    })
+
+    test("asks for the missing language", () => {
+        expect(checkBilingualText("Tekst.", "  ")).toBe("Uzupełnij też wersję angielską.")
+        expect(checkBilingualText("", "Text.")).toBe("Uzupełnij też wersję polską.")
+    })
+})
 
 test.describe("bio paragraphs", () => {
     test("splits on blank lines and drops empty paragraphs", () => {
