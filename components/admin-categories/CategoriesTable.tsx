@@ -11,6 +11,7 @@ const COLLAPSED_LIMIT = 6
 interface CategoriesTableProps {
     categories: AdminCategory[]
     isDeleting?: boolean
+    selectedCategoryId?: string
     onEdit: (category: AdminCategory) => void
     onDelete: (category: AdminCategory) => void
 }
@@ -18,6 +19,7 @@ interface CategoriesTableProps {
 export default function CategoriesTable({
     categories,
     isDeleting = false,
+    selectedCategoryId,
     onEdit,
     onDelete,
 }: CategoriesTableProps) {
@@ -59,6 +61,7 @@ export default function CategoriesTable({
                                 <CategoryRow
                                     key={category.categoryId}
                                     category={category}
+                                    isSelected={category.categoryId === selectedCategoryId}
                                     isDeleting={isDeleting}
                                     onEdit={() => onEdit(category)}
                                     onDelete={() => onDelete(category)}
