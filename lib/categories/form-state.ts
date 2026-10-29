@@ -19,6 +19,7 @@ export type TagField = "namePln" | "nameEng"
 export type TagFormState = {
     status: FormStatus
     fieldErrors: Partial<Record<TagField, string>>
+    formError?: string
     savedAt?: number
 }
 
