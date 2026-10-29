@@ -3,24 +3,17 @@ import { db } from "@/db"
 import { notFound } from "next/navigation"
 import { ArrowUpRight } from "lucide-react"
 import Image from "next/image"
+import { parseBio, parseParagraphs } from "@/lib/profile/content"
 import { profileImagePath } from "@/lib/profile/image"
 import { getOrderedLinks, type ProfileLink } from "@/lib/profile/queries"
 
-function parseParagraphs(value: unknown): string[] {
-    if (!value || typeof value !== "object") return []
-    const obj = value as Record<string, unknown>
-    return Array.isArray(obj.paragraphs)
-        ? obj.paragraphs.filter((p): p is string => typeof p === "string")
-        : []
-}
-
 interface HeroSectionProps {
     fullName: string
-    shortIntro: string
+    intro: string[]
     profileImageSrc: string | null
 }
 
-function HeroSection({ fullName, shortIntro, profileImageSrc }: HeroSectionProps) {
+function HeroSection({ fullName, intro, profileImageSrc }: HeroSectionProps) {
     return (
         <section className="max-w-[1440px] mx-auto px-10 md:px-32 pt-24 pb-32">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
@@ -34,10 +27,15 @@ function HeroSection({ fullName, shortIntro, profileImageSrc }: HeroSectionProps
                         </h2>
                     </div>
 
-                    <div className="max-w-md">
-                        <p className="font-body text-lg leading-relaxed text-foreground">
-                            {shortIntro}
-                        </p>
+                    <div className="max-w-md flex flex-col gap-4">
+                        {intro.map((paragraph, idx) => (
+                            <p
+                                key={idx}
+                                className="font-body text-lg leading-relaxed text-foreground whitespace-pre-line"
+                            >
+                                {paragraph}
+                            </p>
+                        ))}
                     </div>
                 </div>
 
@@ -70,25 +68,34 @@ function HeroSection({ fullName, shortIntro, profileImageSrc }: HeroSectionProps
 }
 
 interface DetailedBioSectionProps {
-    paragraphs: string[]
+    highlight: string[]
+    body: string[]
 }
 
-function DetailedBioSection({ paragraphs }: DetailedBioSectionProps) {
-    if (paragraphs.length <= 1) return null
+function DetailedBioSection({ highlight, body }: DetailedBioSectionProps) {
+    if (highlight.length === 0 && body.length === 0) return null
 
     return (
         <section className="max-w-[1440px] mx-auto px-10 md:px-32 pt-32 pb-32">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 items-start">
-                <div className="md:col-span-5 text-foreground">
-                    <p className="font-primary text-[32px] leading-tight font-normal">
-                        {paragraphs[1]}
-                    </p>
+                <div className="md:col-span-5 text-foreground flex flex-col gap-6">
+                    {highlight.map((paragraph, idx) => (
+                        <p
+                            key={idx}
+                            className="font-primary text-[32px] leading-tight font-normal whitespace-pre-line"
+                        >
+                            {paragraph}
+                        </p>
+                    ))}
                 </div>
 
-                {paragraphs.length > 2 && (
+                {body.length > 0 && (
                     <div className="md:col-span-6 md:col-start-7 text-foreground flex flex-col gap-6">
-                        {paragraphs.slice(2).map((paragraph, idx) => (
-                            <p key={idx} className="font-body text-lg leading-relaxed">
+                        {body.map((paragraph, idx) => (
+                            <p
+                                key={idx}
+                                className="font-body text-lg leading-relaxed whitespace-pre-line"
+                            >
                                 {paragraph}
                             </p>
                         ))}
@@ -116,7 +123,9 @@ function ContactSection({ email, socialLinks, paragraphs }: ContactSectionProps)
                     {paragraphs.length > 0 && (
                         <div className="text-muted-foreground font-body text-lg leading-relaxed flex flex-col gap-1">
                             {paragraphs.map((paragraph, idx) => (
-                                <p key={idx}>{paragraph}</p>
+                                <p key={idx} className="whitespace-pre-line">
+                                    {paragraph}
+                                </p>
                             ))}
                         </div>
                     )}
@@ -204,9 +213,8 @@ async function AboutContent() {
         notFound()
     }
 
-    const bioParagraphs = parseParagraphs(profile.bioPln)
+    const bio = parseBio(profile.bioPln)
     const contactParagraphs = parseParagraphs(profile.contactPln)
-    const shortIntro = bioParagraphs.length > 0 ? bioParagraphs[0] : ""
 
     const profileImageSrc = profile.profileImageContentHash
         ? profileImagePath(profile.profileImageContentHash)
@@ -216,7 +224,7 @@ async function AboutContent() {
         <div className="w-full">
             <HeroSection
                 fullName={profile.fullName}
-                shortIntro={shortIntro}
+                intro={bio.intro}
                 profileImageSrc={profileImageSrc}
             />
 
@@ -228,7 +236,7 @@ async function AboutContent() {
                 </div>
             </div>
 
-            <DetailedBioSection paragraphs={bioParagraphs} />
+            <DetailedBioSection highlight={bio.highlight} body={bio.body} />
 
             <div className="max-w-[1440px] mx-auto px-10 md:px-32">
                 <div className="w-full h-px bg-border" />

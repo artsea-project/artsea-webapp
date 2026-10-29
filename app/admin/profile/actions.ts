@@ -22,6 +22,7 @@ import {
     normalizeLinkUrl,
     splitParagraphs,
 } from "@/lib/profile/validation"
+import type { BioContent } from "@/types/profile"
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
@@ -38,6 +39,14 @@ function failed<Field extends string>(fieldErrors: FieldErrors<Field>) {
 
 function succeeded() {
     return { status: "success" as const, fieldErrors: {}, savedAt: Date.now() }
+}
+
+function readBio(formData: FormData, language: "Pln" | "Eng"): BioContent {
+    return {
+        intro: splitParagraphs(readText(formData, `bioIntro${language}`)),
+        highlight: splitParagraphs(readText(formData, `bioHighlight${language}`)),
+        body: splitParagraphs(readText(formData, `bioBody${language}`)),
+    }
 }
 
 async function readProfileImage(formData: FormData) {
@@ -80,8 +89,8 @@ export async function updateProfile(
     const values = {
         fullName: fullName.trim(),
         contactEmail: email.email,
-        bioPln: { paragraphs: splitParagraphs(readText(formData, "bioPln")) },
-        bioEng: { paragraphs: splitParagraphs(readText(formData, "bioEng")) },
+        bioPln: readBio(formData, "Pln"),
+        bioEng: readBio(formData, "Eng"),
         contactPln: { paragraphs: splitParagraphs(readText(formData, "contactPln")) },
         contactEng: { paragraphs: splitParagraphs(readText(formData, "contactEng")) },
         ...image.columns,
