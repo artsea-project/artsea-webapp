@@ -23,9 +23,15 @@ interface TagsSectionProps {
 }
 
 export default function TagsSection({ tags }: TagsSectionProps) {
+    const [editingTag, setEditingTag] = useState<AdminTag | undefined>(undefined)
     const [notice, setNotice] = useState<StatusNotice | null>(null)
     const [tagToDelete, setTagToDelete] = useState<AdminTag | null>(null)
     const [isDeleting, startDeleting] = useTransition()
+
+    function finishPanel(doneMessage: string) {
+        setEditingTag(undefined)
+        setNotice({ text: doneMessage, isError: false })
+    }
 
     function confirmDelete() {
         if (!tagToDelete || isDeleting) return
@@ -39,6 +45,8 @@ export default function TagsSection({ tags }: TagsSectionProps) {
                 setNotice({ text: "Nie udało się usunąć tagu. Spróbuj ponownie.", isError: true })
                 return
             }
+
+            setEditingTag((current) => (current?.tagId === tagId ? undefined : current))
             setNotice({ text: "Usunięto tag.", isError: false })
         })
     }
@@ -52,10 +60,20 @@ export default function TagsSection({ tags }: TagsSectionProps) {
             />
 
             <div className="grid items-start gap-6 lg:grid-cols-[11fr_14fr]">
-                <TagFormCard onDone={(text) => setNotice({ text, isError: false })} />
+                <TagFormCard
+                    key={editingTag?.tagId ?? "new"}
+                    tag={editingTag}
+                    onDone={finishPanel}
+                    onCancel={() => setEditingTag(undefined)}
+                />
                 <TagsListCard
                     tags={tags}
                     isDeleting={isDeleting}
+                    selectedTagId={editingTag?.tagId}
+                    onEdit={(tag) => {
+                        setNotice(null)
+                        setEditingTag(tag)
+                    }}
                     onDelete={(tag) => {
                         setNotice(null)
                         setTagToDelete(tag)

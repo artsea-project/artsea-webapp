@@ -227,6 +227,69 @@ export async function createTag(
     return succeeded()
 }
 
+export async function updateTag(
+    _previous: TagFormState,
+    formData: FormData
+): Promise<TagFormState> {
+    const tagId = readText(formData, "tagId")
+    if (!UUID_PATTERN.test(tagId)) {
+        return {
+            status: "error",
+            fieldErrors: {},
+            formError: "Nieprawidłowy identyfikator tagu.",
+        }
+    }
+
+    const tag = readTag(formData)
+    if (!tag.values) {
+        return {
+            status: "error",
+            fieldErrors: {},
+            formError: tag.formError,
+        }
+    }
+
+    const notSelf = ne(tags.tagId, tagId)
+    const [existingPln, existingEng] = await Promise.all([
+        tag.values.namePln
+            ? db.query.tags.findFirst({
+                  where: and(equalsIgnoreCase(tags.namePln, tag.values.namePln), notSelf),
+              })
+            : Promise.resolve(undefined),
+        tag.values.nameEng
+            ? db.query.tags.findFirst({
+                  where: and(equalsIgnoreCase(tags.nameEng, tag.values.nameEng), notSelf),
+              })
+            : Promise.resolve(undefined),
+    ])
+
+    if (existingPln || existingEng) {
+        return {
+            status: "error",
+            fieldErrors: {
+                namePln: existingPln ? "Tag o takiej nazwie już istnieje." : undefined,
+                nameEng: existingEng ? "Tag o takiej nazwie już istnieje." : undefined,
+            },
+        }
+    }
+
+    const updated = await db
+        .update(tags)
+        .set(tag.values)
+        .where(eq(tags.tagId, tagId))
+        .returning({ tagId: tags.tagId })
+
+    refreshViews()
+    if (updated.length === 0) {
+        return {
+            status: "error",
+            fieldErrors: {},
+            formError: "Ten tag został już usunięty.",
+        }
+    }
+    return succeeded()
+}
+
 export async function deleteTag(tagId: string): Promise<void> {
     if (!UUID_PATTERN.test(tagId)) return
 
