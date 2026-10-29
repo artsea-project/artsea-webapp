@@ -1,26 +1,45 @@
 import type { BilingualFieldCopy } from "@/components/admin-profile/BilingualTextField"
 
-export const bioFieldCopy: BilingualFieldCopy = {
-    id: "bio",
-    label: "O mnie / About me",
-    inputNames: { pln: "bioPln", eng: "bioEng" },
+export const bioIntroFieldCopy: BilingualFieldCopy = {
+    id: "bioIntro",
+    label: "Wprowadzenie / Introduction",
+    inputNames: { pln: "bioIntroPln", eng: "bioIntroEng" },
+    placeholders: {
+        pln: "Krótko o sobie, np. czym się zajmujesz i skąd jesteś.",
+        eng: "A few words about yourself, e.g. what you do and where you are from.",
+    },
+    description: "Pojawi się na górze strony O mnie, obok zdjęcia.",
+    rows: 3,
+}
+
+export const bioHighlightFieldCopy: BilingualFieldCopy = {
+    id: "bioHighlight",
+    label: "Wyróżniony fragment / Highlight",
+    inputNames: { pln: "bioHighlightPln", eng: "bioHighlightEng" },
+    placeholders: {
+        pln: "Myśl, która najlepiej opisuje Twoją twórczość.",
+        eng: "A thought that best describes your work.",
+    },
+    description: "Otwiera kolejną sekcję strony, większą czcionką.",
+    rows: 3,
+}
+
+export const bioBodyFieldCopy: BilingualFieldCopy = {
+    id: "bioBody",
+    label: "Dalsza część / Full story",
+    inputNames: { pln: "bioBodyPln", eng: "bioBodyEng" },
     placeholders: {
         pln: [
-            "Pierwszy akapit to krótkie wprowadzenie. Pojawi się na górze strony O mnie, obok zdjęcia.",
-            "Drugi akapit rozwija temat. Na stronie będzie wyróżniony większą czcionką.",
-            "Kolejne akapity to dalsza część biogramu, np. o Twojej drodze, technikach i współpracach.",
+            "Dalsza część biogramu, np. o Twojej drodze, technikach i współpracach.",
             "Akapity oddzielaj pustą linią, jak w tym przykładzie.",
         ].join("\n\n"),
         eng: [
-            "The first paragraph is a short introduction. It appears at the top of the About page, next to the photo.",
-            "The second paragraph expands on it. It is shown in a larger font.",
-            "Further paragraphs continue the bio, e.g. your path, techniques and collaborations.",
+            "The rest of your bio, e.g. your path, techniques and collaborations.",
             "Separate paragraphs with a blank line, as in this example.",
         ].join("\n\n"),
     },
-    description:
-        "Pierwszy akapit pojawi się jako wprowadzenie na stronie O mnie. Akapity oddziel pustą linią.",
-    rows: 6,
+    description: "Pojawi się obok wyróżnionego fragmentu.",
+    rows: 8,
 }
 
 export const contactFieldCopy: BilingualFieldCopy = {

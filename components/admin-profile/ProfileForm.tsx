@@ -4,33 +4,52 @@ import { useActionState, useRef, useState } from "react"
 
 import { updateProfile } from "@/app/admin/profile/actions"
 import BilingualTextField, {
+    type BilingualFieldCopy,
     type BilingualTexts,
     type Language,
 } from "@/components/admin-profile/BilingualTextField"
 import { useLeaveGuard } from "@/components/admin-profile/LeaveGuard"
-import { bioFieldCopy, contactFieldCopy } from "@/components/admin-profile/profile-text-fields"
+import {
+    bioBodyFieldCopy,
+    bioHighlightFieldCopy,
+    bioIntroFieldCopy,
+    contactFieldCopy,
+} from "@/components/admin-profile/profile-text-fields"
 import ProfilePhotoField from "@/components/admin-profile/ProfilePhotoField"
 import { Button } from "@/components/ui/button"
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
+import {
+    Field,
+    FieldDescription,
+    FieldError,
+    FieldGroup,
+    FieldLabel,
+    FieldLegend,
+    FieldSet,
+} from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { initialProfileFormState, type ProfileFormState } from "@/lib/profile/form-state"
 import { profileImagePath } from "@/lib/profile/image"
 import type { EditableProfile } from "@/lib/profile/queries"
 import { joinParagraphs, splitParagraphs } from "@/lib/profile/validation"
 
+type TextFieldKey = "bioIntro" | "bioHighlight" | "bioBody" | "contact"
+
 type Draft = {
     fullName: string
     contactEmail: string
-    bio: BilingualTexts
-    contact: BilingualTexts
-}
+} & Record<TextFieldKey, BilingualTexts>
 
-type TextFieldKey = "bio" | "contact"
+type TextField = { key: TextFieldKey; copy: BilingualFieldCopy }
 
-const TEXT_FIELDS = [
-    { key: "bio", copy: bioFieldCopy },
-    { key: "contact", copy: contactFieldCopy },
-] as const satisfies { key: TextFieldKey; copy: typeof bioFieldCopy }[]
+const BIO_FIELDS = [
+    { key: "bioIntro", copy: bioIntroFieldCopy },
+    { key: "bioHighlight", copy: bioHighlightFieldCopy },
+    { key: "bioBody", copy: bioBodyFieldCopy },
+] as const satisfies TextField[]
+
+const CONTACT_FIELD = { key: "contact", copy: contactFieldCopy } as const satisfies TextField
+
+const TEXT_FIELDS = [...BIO_FIELDS, CONTACT_FIELD]
 
 type PickedPhoto = { file: File; previewUrl: string }
 
@@ -42,7 +61,9 @@ function draftFromSaved(saved: EditableProfile | null): Draft {
     return {
         fullName: saved?.fullName ?? "",
         contactEmail: saved?.contactEmail ?? "",
-        bio: textsFrom(saved?.bioPln, saved?.bioEng),
+        bioIntro: textsFrom(saved?.bioPln.intro, saved?.bioEng.intro),
+        bioHighlight: textsFrom(saved?.bioPln.highlight, saved?.bioEng.highlight),
+        bioBody: textsFrom(saved?.bioPln.body, saved?.bioEng.body),
         contact: textsFrom(saved?.contactPln, saved?.contactEng),
     }
 }
@@ -97,6 +118,19 @@ export default function ProfileForm({ saved }: ProfileFormProps) {
     const leaveDialog = useLeaveGuard(isDirty)
     const savedPhotoSrc = saved?.imageHash ? profileImagePath(saved.imageHash) : null
 
+    function renderTextField({ key, copy }: TextField) {
+        return (
+            <BilingualTextField
+                key={key}
+                copy={copy}
+                texts={draft[key]}
+                onChange={(language, text) =>
+                    setDraft({ ...draft, [key]: { ...draft[key], [language]: text } })
+                }
+            />
+        )
+    }
+
     function cancelChanges() {
         setDraft(savedDraft)
         replacePhoto(null)
@@ -141,16 +175,16 @@ export default function ProfileForm({ saved }: ProfileFormProps) {
                     <FieldError>{state.fieldErrors.contactEmail}</FieldError>
                 </Field>
 
-                {TEXT_FIELDS.map(({ key, copy }) => (
-                    <BilingualTextField
-                        key={key}
-                        copy={copy}
-                        texts={draft[key]}
-                        onChange={(language, text) =>
-                            setDraft({ ...draft, [key]: { ...draft[key], [language]: text } })
-                        }
-                    />
-                ))}
+                <FieldSet>
+                    <FieldLegend>O mnie / About me</FieldLegend>
+                    <FieldDescription>
+                        Każde pole to osobna sekcja strony O mnie. Wewnątrz pola akapity oddziel
+                        pustą linią.
+                    </FieldDescription>
+                    {BIO_FIELDS.map(renderTextField)}
+                </FieldSet>
+
+                {renderTextField(CONTACT_FIELD)}
             </FieldGroup>
 
             <div className="flex flex-wrap items-center gap-3">
