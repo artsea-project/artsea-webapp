@@ -83,6 +83,7 @@ export default function CategoriesSection({ categories }: CategoriesSectionProps
                 <CategoriesTable
                     categories={categories}
                     isDeleting={isDeleting}
+                    selectedCategoryId={editingCategory?.categoryId}
                     onEdit={(category) => {
                         setNotice(null)
                         setEditingCategory(category)
