@@ -9,7 +9,8 @@ interface TagPillProps {
 
 export default function TagPill({ namePln, nameEng, disabled = false, onDelete }: TagPillProps) {
     const primaryLabel = namePln || nameEng || ""
-    const secondaryLabel = namePln && nameEng ? nameEng : null
+    const secondaryLabel =
+        namePln && nameEng && namePln.toLowerCase() !== nameEng.toLowerCase() ? nameEng : null
 
     return (
         <span className="inline-flex h-14 items-center gap-2 rounded-full border border-border bg-muted px-4.5 py-2.5 text-foreground">
