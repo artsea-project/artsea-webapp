@@ -40,6 +40,12 @@ export function checkFullName(value: string): string | null {
     return value.trim() ? null : "Podaj imię lub pseudonim artystyczny."
 }
 
+export function checkBilingualText(pln: string, eng: string): string | null {
+    if (pln.trim() && !eng.trim()) return "Uzupełnij też wersję angielską."
+    if (eng.trim() && !pln.trim()) return "Uzupełnij też wersję polską."
+    return null
+}
+
 export function normalizeContactEmail(value: string): { email: string | null } | { error: string } {
     const email = value.trim()
     if (!email) return { email: null }

@@ -28,19 +28,21 @@ import {
     FieldSet,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { initialProfileFormState, type ProfileFormState } from "@/lib/profile/form-state"
+import {
+    initialProfileFormState,
+    type BilingualField,
+    type ProfileFormState,
+} from "@/lib/profile/form-state"
 import { profileImagePath } from "@/lib/profile/image"
 import type { EditableProfile } from "@/lib/profile/queries"
 import { joinParagraphs, splitParagraphs } from "@/lib/profile/validation"
 
-type TextFieldKey = "bioHeading" | "bioIntro" | "bioHighlight" | "bioBody" | "contact"
-
 type Draft = {
     fullName: string
     contactEmail: string
-} & Record<TextFieldKey, BilingualTexts>
+} & Record<BilingualField, BilingualTexts>
 
-type TextField = { key: TextFieldKey; copy: BilingualFieldCopy }
+type TextField = { key: BilingualField; copy: BilingualFieldCopy }
 
 const BIO_FIELDS = [
     { key: "bioHeading", copy: bioHeadingFieldCopy },
@@ -130,6 +132,7 @@ export default function ProfileForm({ saved }: ProfileFormProps) {
                 key={key}
                 copy={copy}
                 texts={draft[key]}
+                error={state.fieldErrors[key]}
                 onChange={(language, text) =>
                     setDraft({ ...draft, [key]: { ...draft[key], [language]: text } })
                 }

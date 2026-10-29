@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
@@ -29,19 +29,26 @@ const LANGUAGES: { value: Language; label: string }[] = [
 interface BilingualTextFieldProps {
     copy: BilingualFieldCopy
     texts: BilingualTexts
+    error?: string
     onChange: (language: Language, text: string) => void
 }
 
-export default function BilingualTextField({ copy, texts, onChange }: BilingualTextFieldProps) {
+export default function BilingualTextField({
+    copy,
+    texts,
+    error,
+    onChange,
+}: BilingualTextFieldProps) {
     const [language, setLanguage] = useState<Language>("pln")
     const control = {
         id: copy.id,
         value: texts[language],
         placeholder: copy.placeholders[language],
+        "aria-invalid": Boolean(error),
     }
 
     return (
-        <Field>
+        <Field data-invalid={Boolean(error)}>
             <FieldLabel htmlFor={copy.id}>{copy.label}</FieldLabel>
             <Tabs value={language} onValueChange={(value) => setLanguage(value as Language)}>
                 <TabsList>
@@ -70,6 +77,7 @@ export default function BilingualTextField({ copy, texts, onChange }: BilingualT
                 />
             ))}
             <FieldDescription>{copy.description}</FieldDescription>
+            <FieldError>{error}</FieldError>
         </Field>
     )
 }
