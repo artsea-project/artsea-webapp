@@ -40,6 +40,13 @@ export default function BilingualTextField({
     onChange,
 }: BilingualTextFieldProps) {
     const [language, setLanguage] = useState<Language>("pln")
+    const [shownError, setShownError] = useState(error)
+
+    if (error !== shownError) {
+        setShownError(error)
+        const missing = LANGUAGES.find(({ value }) => !texts[value].trim())
+        if (error && missing) setLanguage(missing.value)
+    }
     const control = {
         id: copy.id,
         value: texts[language],

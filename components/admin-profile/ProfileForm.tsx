@@ -1,6 +1,6 @@
 "use client"
 
-import { useActionState, useRef, useState } from "react"
+import { useActionState, useEffect, useRef, useState } from "react"
 
 import { updateProfile } from "@/app/admin/profile/actions"
 import BilingualTextField, {
@@ -87,6 +87,17 @@ function textsDiffer(draft: BilingualTexts, saved: BilingualTexts) {
     )
 }
 
+function revealFirstError(form: HTMLFormElement | null) {
+    const error = form?.querySelector('[data-slot="field-error"]')
+    if (!error) return
+
+    const field = error.closest('[data-slot="field"]') ?? error
+    field.scrollIntoView({ behavior: "smooth", block: "center" })
+    field
+        .querySelector<HTMLElement>("input:not([type=hidden]), textarea")
+        ?.focus({ preventScroll: true })
+}
+
 function differsFromSaved(draft: Draft, saved: Draft) {
     return (
         draft.fullName.trim() !== saved.fullName ||
@@ -104,6 +115,7 @@ export default function ProfileForm({ saved }: ProfileFormProps) {
     const [draft, setDraft] = useState(savedDraft)
     const [photo, setPhoto] = useState<PickedPhoto | null>(null)
     const photoInputRef = useRef<HTMLInputElement>(null)
+    const formRef = useRef<HTMLFormElement>(null)
 
     function replacePhoto(next: PickedPhoto | null) {
         setPhoto((current) => {
@@ -121,6 +133,10 @@ export default function ProfileForm({ saved }: ProfileFormProps) {
         },
         initialProfileFormState
     )
+
+    useEffect(() => {
+        if (state.status === "error") revealFirstError(formRef.current)
+    }, [state])
 
     const isDirty = photo !== null || differsFromSaved(draft, savedDraft)
     const leaveDialog = useLeaveGuard(isDirty)
@@ -147,7 +163,7 @@ export default function ProfileForm({ saved }: ProfileFormProps) {
     }
 
     return (
-        <form action={formAction} noValidate className="flex flex-col gap-6">
+        <form ref={formRef} action={formAction} noValidate className="flex flex-col gap-6">
             <ProfilePhotoField
                 previewSrc={photo?.previewUrl ?? savedPhotoSrc}
                 alt={draft.fullName}
