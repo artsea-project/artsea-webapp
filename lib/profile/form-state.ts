@@ -1,6 +1,8 @@
 export type FormStatus = "idle" | "success" | "error"
 
-export type ProfileField = "fullName" | "contactEmail" | "profileImage"
+export type BilingualField = "bioHeading" | "bioIntro" | "bioHighlight" | "bioBody" | "contact"
+
+export type ProfileField = "fullName" | "contactEmail" | "profileImage" | BilingualField
 
 export type ProfileFormState = {
     status: FormStatus
