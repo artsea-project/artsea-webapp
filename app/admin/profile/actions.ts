@@ -43,6 +43,7 @@ function succeeded() {
 
 function readBio(formData: FormData, language: "Pln" | "Eng"): BioContent {
     return {
+        heading: readText(formData, `bioHeading${language}`).trim(),
         intro: splitParagraphs(readText(formData, `bioIntro${language}`)),
         highlight: splitParagraphs(readText(formData, `bioHighlight${language}`)),
         body: splitParagraphs(readText(formData, `bioBody${language}`)),

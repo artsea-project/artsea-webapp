@@ -1,4 +1,13 @@
 import type { BilingualFieldCopy } from "@/components/admin-profile/BilingualTextField"
+import { DEFAULT_ABOUT_HEADING } from "@/lib/profile/content"
+
+export const bioHeadingFieldCopy: BilingualFieldCopy = {
+    id: "bioHeading",
+    label: "Nagłówek / Heading",
+    inputNames: { pln: "bioHeadingPln", eng: "bioHeadingEng" },
+    placeholders: DEFAULT_ABOUT_HEADING,
+    description: `Pojawi się pod imieniem, nad wprowadzeniem. Puste pole pokaże „${DEFAULT_ABOUT_HEADING.pln}”.`,
+}
 
 export const bioIntroFieldCopy: BilingualFieldCopy = {
     id: "bioIntro",
