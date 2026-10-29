@@ -6,17 +6,11 @@ import { revalidatePath, revalidateTag } from "next/cache"
 import { db } from "@/db"
 import { artPieces, categories, tags } from "@/db/schema"
 import { BENTO_CACHE_TAG } from "@/lib/bento"
-import type {
-    CategoryField,
-    CategoryFormState,
-    TagField,
-    TagFormState,
-} from "@/lib/categories/form-state"
+import type { CategoryField, CategoryFormState, TagFormState } from "@/lib/categories/form-state"
 import {
     checkCategoryNameEng,
     checkCategoryNamePln,
-    checkTagNameEng,
-    checkTagNamePln,
+    checkTagNames,
     normalizeTagName,
 } from "@/lib/categories/validation"
 
@@ -175,21 +169,18 @@ function readTag(formData: FormData) {
     const rawPln = readText(formData, "namePln")
     const rawEng = readText(formData, "nameEng")
 
-    const plnError = checkTagNamePln(rawPln)
-    const engError = checkTagNameEng(rawEng)
-
-    if (plnError || engError) {
-        const fieldErrors: FieldErrors<TagField> = {
-            namePln: plnError ?? undefined,
-            nameEng: engError ?? undefined,
-        }
-        return { fieldErrors }
+    const validationError = checkTagNames(rawPln, rawEng)
+    if (validationError) {
+        return { formError: validationError }
     }
+
+    const normalizedPln = normalizeTagName(rawPln)
+    const normalizedEng = normalizeTagName(rawEng)
 
     return {
         values: {
-            namePln: normalizeTagName(rawPln),
-            nameEng: normalizeTagName(rawEng),
+            namePln: normalizedPln || null,
+            nameEng: normalizedEng || null,
         },
     }
 }
@@ -199,22 +190,35 @@ export async function createTag(
     formData: FormData
 ): Promise<TagFormState> {
     const tag = readTag(formData)
-    if (!tag.values) return failed(tag.fieldErrors)
+    if (!tag.values) {
+        return {
+            status: "error",
+            fieldErrors: {},
+            formError: tag.formError,
+        }
+    }
 
     const [existingPln, existingEng] = await Promise.all([
-        db.query.tags.findFirst({
-            where: equalsIgnoreCase(tags.namePln, tag.values.namePln),
-        }),
-        db.query.tags.findFirst({
-            where: equalsIgnoreCase(tags.nameEng, tag.values.nameEng),
-        }),
+        tag.values.namePln
+            ? db.query.tags.findFirst({
+                  where: equalsIgnoreCase(tags.namePln, tag.values.namePln),
+              })
+            : Promise.resolve(undefined),
+        tag.values.nameEng
+            ? db.query.tags.findFirst({
+                  where: equalsIgnoreCase(tags.nameEng, tag.values.nameEng),
+              })
+            : Promise.resolve(undefined),
     ])
 
     if (existingPln || existingEng) {
-        return failed<TagField>({
-            namePln: existingPln ? "Tag o takiej nazwie już istnieje." : undefined,
-            nameEng: existingEng ? "Tag o takiej nazwie już istnieje." : undefined,
-        })
+        return {
+            status: "error",
+            fieldErrors: {
+                namePln: existingPln ? "Tag o takiej nazwie już istnieje." : undefined,
+                nameEng: existingEng ? "Tag o takiej nazwie już istnieje." : undefined,
+            },
+        }
     }
 
     await db.insert(tags).values(tag.values)

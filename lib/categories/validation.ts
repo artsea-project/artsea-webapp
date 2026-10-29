@@ -18,6 +18,12 @@ export function checkTagNameEng(value: string): string | null {
     return normalizeTagName(value) ? null : "Podaj nazwę tagu po angielsku."
 }
 
+export function checkTagNames(rawPln: string, rawEng: string): string | null {
+    const pln = normalizeTagName(rawPln)
+    const eng = normalizeTagName(rawEng)
+    return pln || eng ? null : "Podaj nazwę tagu w przynajmniej jednym języku."
+}
+
 export function formatWorksCount(count: number): string {
     if (count === 1) return "1 praca"
     const mod10 = count % 10
