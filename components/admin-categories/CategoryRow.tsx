@@ -3,9 +3,11 @@ import { Pencil, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { AdminCategory } from "@/lib/categories/queries"
 import { formatWorksCount } from "@/lib/categories/validation"
+import { cn } from "@/lib/utils"
 
 interface CategoryRowProps {
     category: AdminCategory
+    isSelected?: boolean
     isDeleting?: boolean
     onEdit: () => void
     onDelete: () => void
@@ -13,12 +15,18 @@ interface CategoryRowProps {
 
 export default function CategoryRow({
     category,
+    isSelected = false,
     isDeleting = false,
     onEdit,
     onDelete,
 }: CategoryRowProps) {
     return (
-        <tr className="h-18 transition-colors hover:bg-muted/40">
+        <tr
+            className={cn(
+                "h-18 transition-colors hover:bg-muted/40",
+                isSelected && "relative z-10 outline outline-1 -outline-offset-1 outline-[#0284c7]"
+            )}
+        >
             <td className="px-6 py-3">
                 <div className="flex flex-col gap-0.5">
                     <span className="text-sm font-normal text-foreground">{category.namePln}</span>
