@@ -29,13 +29,13 @@ export const bioHighlightFieldCopy: BilingualFieldCopy = {
         pln: "Myśl, która najlepiej opisuje Twoją twórczość.",
         eng: "A thought that best describes your work.",
     },
-    description: "Otwiera kolejną sekcję strony, większą czcionką.",
+    description: "Pojawi się pod wprowadzeniem, na początku kolejnej sekcji, większą czcionką.",
     rows: 3,
 }
 
 export const bioBodyFieldCopy: BilingualFieldCopy = {
     id: "bioBody",
-    label: "Dalsza część / Full story",
+    label: "Dalsza część / More about me",
     inputNames: { pln: "bioBodyPln", eng: "bioBodyEng" },
     placeholders: {
         pln: [
@@ -57,14 +57,15 @@ export const contactFieldCopy: BilingualFieldCopy = {
     inputNames: { pln: "contactPln", eng: "contactEng" },
     placeholders: {
         pln: [
-            "Krótka zachęta do kontaktu, np. w jakich projektach chętnie pomożesz.",
-            "Akapity oddzielaj pustą linią. Puste pole ukryje ten tekst na stronie.",
+            "Krótka zachęta do kontaktu, np. czy przyjmujesz zamówienia albo o czym chętnie porozmawiasz.",
+            "Akapity oddzielaj pustą linią.",
         ].join("\n\n"),
         eng: [
-            "A short invitation to get in touch, e.g. which projects you are happy to help with.",
-            "Separate paragraphs with a blank line. An empty field hides this text on the page.",
+            "A short invitation to get in touch, e.g. whether you take commissions or what you are happy to talk about.",
+            "Separate paragraphs with a blank line.",
         ].join("\n\n"),
     },
-    description: "Pojawi się na stronie O mnie pod nagłówkiem „Skontaktuj się ze mną”.",
+    description:
+        "Pojawi się na stronie O mnie pod nagłówkiem „Skontaktuj się ze mną”. Puste pole ukryje tylko ten tekst, nagłówek, e-mail i linki zostaną.",
     rows: 4,
 }

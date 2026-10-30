@@ -98,7 +98,9 @@ test.describe("links", () => {
     })
 
     test("rejects empty links and schemes other than http and https", () => {
-        const schemeError = { error: "Link musi zaczynać się od http:// albo https://." }
+        const schemeError = {
+            error: "Podaj adres strony internetowej, np. instagram.com/twoj-profil.",
+        }
 
         expect(normalizeLinkUrl("")).toEqual({ error: "Podaj link." })
         expect(normalizeLinkUrl("javascript:alert(1)")).toEqual(schemeError)

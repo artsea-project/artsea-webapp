@@ -61,7 +61,7 @@ export function normalizeLinkUrl(value: string): { url: string } | { error: stri
     if (!trimmed) return { error: "Podaj link." }
 
     const withScheme = URL_SCHEME_PATTERN.test(trimmed) ? trimmed : `https://${trimmed}`
-    const invalid = { error: "Link musi zaczynać się od http:// albo https://." }
+    const invalid = { error: "Podaj adres strony internetowej, np. instagram.com/twoj-profil." }
 
     try {
         const { protocol } = new URL(withScheme)

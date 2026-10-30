@@ -94,7 +94,7 @@ export function useLeaveGuard(enabled: boolean): ReactNode {
                 <AlertDialogHeader>
                     <AlertDialogTitle>Masz niezapisane zmiany</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Jeśli wyjdziesz, zmiany w danych osobowych przepadną.
+                        Jeśli wyjdziesz, niezapisane zmiany w profilu przepadną.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
