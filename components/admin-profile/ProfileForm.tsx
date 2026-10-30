@@ -31,6 +31,7 @@ import { Input } from "@/components/ui/input"
 import {
     initialProfileFormState,
     type BilingualField,
+    type ProfileField,
     type ProfileFormState,
 } from "@/lib/profile/form-state"
 import { profileImagePath } from "@/lib/profile/image"
@@ -138,6 +139,21 @@ export default function ProfileForm({ saved }: ProfileFormProps) {
         if (state.status === "error") revealFirstError(formRef.current)
     }, [state])
 
+    const [errorsState, setErrorsState] = useState(state)
+    const [editedFields, setEditedFields] = useState<ReadonlySet<ProfileField>>(new Set())
+    if (state !== errorsState) {
+        setErrorsState(state)
+        setEditedFields(new Set())
+    }
+
+    function fieldError(field: ProfileField) {
+        return editedFields.has(field) ? undefined : state.fieldErrors[field]
+    }
+
+    function markEdited(field: ProfileField) {
+        if (!editedFields.has(field)) setEditedFields(new Set(editedFields).add(field))
+    }
+
     const isDirty = photo !== null || differsFromSaved(draft, savedDraft)
     const leaveDialog = useLeaveGuard(isDirty)
     const savedPhotoSrc = saved?.imageHash ? profileImagePath(saved.imageHash) : null
@@ -148,16 +164,18 @@ export default function ProfileForm({ saved }: ProfileFormProps) {
                 key={key}
                 copy={copy}
                 texts={draft[key]}
-                error={state.fieldErrors[key]}
-                onChange={(language, text) =>
+                error={fieldError(key)}
+                onChange={(language, text) => {
                     setDraft({ ...draft, [key]: { ...draft[key], [language]: text } })
-                }
+                    markEdited(key)
+                }}
             />
         )
     }
 
     function cancelChanges() {
         setDraft(savedDraft)
+        setEditedFields(new Set(Object.keys(state.fieldErrors) as ProfileField[]))
         replacePhoto(null)
         if (photoInputRef.current) photoInputRef.current.value = ""
     }
@@ -168,36 +186,43 @@ export default function ProfileForm({ saved }: ProfileFormProps) {
                 previewSrc={photo?.previewUrl ?? savedPhotoSrc}
                 alt={draft.fullName}
                 inputRef={photoInputRef}
-                serverError={state.fieldErrors.profileImage}
-                onPick={(file) => replacePhoto({ file, previewUrl: URL.createObjectURL(file) })}
+                serverError={fieldError("profileImage")}
+                onPick={(file) => {
+                    replacePhoto({ file, previewUrl: URL.createObjectURL(file) })
+                    markEdited("profileImage")
+                }}
             />
 
             <FieldGroup>
-                <Field data-invalid={Boolean(state.fieldErrors.fullName)}>
+                <Field data-invalid={Boolean(fieldError("fullName"))}>
                     <FieldLabel htmlFor="fullName">Imię lub pseudonim artystyczny</FieldLabel>
                     <Input
                         id="fullName"
                         name="fullName"
                         value={draft.fullName}
-                        aria-invalid={Boolean(state.fieldErrors.fullName)}
-                        onChange={(event) => setDraft({ ...draft, fullName: event.target.value })}
+                        aria-invalid={Boolean(fieldError("fullName"))}
+                        onChange={(event) => {
+                            setDraft({ ...draft, fullName: event.target.value })
+                            markEdited("fullName")
+                        }}
                     />
-                    <FieldError>{state.fieldErrors.fullName}</FieldError>
+                    <FieldError>{fieldError("fullName")}</FieldError>
                 </Field>
 
-                <Field data-invalid={Boolean(state.fieldErrors.contactEmail)}>
+                <Field data-invalid={Boolean(fieldError("contactEmail"))}>
                     <FieldLabel htmlFor="contactEmail">Adres e-mail</FieldLabel>
                     <Input
                         id="contactEmail"
                         name="contactEmail"
                         type="email"
                         value={draft.contactEmail}
-                        aria-invalid={Boolean(state.fieldErrors.contactEmail)}
-                        onChange={(event) =>
+                        aria-invalid={Boolean(fieldError("contactEmail"))}
+                        onChange={(event) => {
                             setDraft({ ...draft, contactEmail: event.target.value })
-                        }
+                            markEdited("contactEmail")
+                        }}
                     />
-                    <FieldError>{state.fieldErrors.contactEmail}</FieldError>
+                    <FieldError>{fieldError("contactEmail")}</FieldError>
                 </Field>
 
                 <FieldSet>
