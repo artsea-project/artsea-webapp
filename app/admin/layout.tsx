@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { Suspense } from "react"
 
 import AdminPageHeader from "@/components/AdminPageHeader"
-import AdminSidebar from "@/components/AdminSidebar"
+import AdminSidebar, { AdminSidebarContent } from "@/components/AdminSidebar"
 
 export const metadata: Metadata = {
     title: "Artsea Panel",
@@ -15,8 +15,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Suspense fallback={null}>
                 <AdminSidebar />
             </Suspense>
-            <main className="min-w-0 flex-1 overflow-y-auto">
-                <AdminPageHeader />
+            <main className="min-w-0 flex-1 overflow-y-auto bg-surface">
+                <AdminPageHeader
+                    menu={
+                        <Suspense fallback={null}>
+                            <AdminSidebarContent />
+                        </Suspense>
+                    }
+                />
                 {children}
             </main>
         </div>

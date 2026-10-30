@@ -40,8 +40,8 @@ test.describe("Database Config & Relations Integration Test", () => {
             .insert(profiles)
             .values({
                 fullName: "Playwright Artist Test",
-                bioPln: { paragraphs: ["Polski opis Playwright"] },
-                bioEng: { paragraphs: ["English bio Playwright"] },
+                bioPln: { heading: "", intro: ["Polski opis Playwright"], highlight: [], body: [] },
+                bioEng: { heading: "", intro: ["English bio Playwright"], highlight: [], body: [] },
                 contactPln: { paragraphs: ["Kontakt Playwright"] },
                 contactEng: { paragraphs: ["Contact Playwright"] },
             })
@@ -114,7 +114,7 @@ test.describe("Database Config & Relations Integration Test", () => {
 
         expect(queriedProfile).toBeDefined()
         expect(queriedProfile!.fullName).toBe("Playwright Artist Test")
-        expect((queriedProfile!.bioPln as BioContent).paragraphs[0]).toBe("Polski opis Playwright")
+        expect((queriedProfile!.bioPln as BioContent).intro[0]).toBe("Polski opis Playwright")
         expect((queriedProfile!.contactPln as ContactContent).paragraphs[0]).toBe(
             "Kontakt Playwright"
         )
@@ -240,10 +240,16 @@ test.describe("Database Config & Relations Integration Test", () => {
             .update(profiles)
             .set({
                 bioPln: {
-                    paragraphs: ["Paragraph PL 1", "Paragraph PL 2", "Paragraph PL 3"],
+                    heading: "Kim jestem",
+                    intro: ["Paragraph PL 1"],
+                    highlight: ["Paragraph PL 2"],
+                    body: ["Paragraph PL 3", "Paragraph PL 4"],
                 },
                 bioEng: {
-                    paragraphs: ["Paragraph EN 1", "Paragraph EN 2", "Paragraph EN 3"],
+                    heading: "",
+                    intro: ["Paragraph EN 1"],
+                    highlight: ["Paragraph EN 2"],
+                    body: ["Paragraph EN 3"],
                 },
                 contactPln: {
                     paragraphs: ["Contact PL 1", "Contact PL 2"],
@@ -262,18 +268,19 @@ test.describe("Database Config & Relations Integration Test", () => {
         // 3. Verify
         expect(retrieved).toBeDefined()
 
-        const bioPln = retrieved!.bioPln as { paragraphs: string[] }
-        const bioEng = retrieved!.bioEng as { paragraphs: string[] }
+        const bioPln = retrieved!.bioPln as BioContent
+        const bioEng = retrieved!.bioEng as BioContent
         const contactPln = retrieved!.contactPln as { paragraphs: string[] }
         const contactEng = retrieved!.contactEng as { paragraphs: string[] }
 
-        expect(bioPln.paragraphs.length).toBe(3)
-        expect(bioPln.paragraphs[0]).toBe("Paragraph PL 1")
-        expect(bioPln.paragraphs[1]).toBe("Paragraph PL 2")
-        expect(bioPln.paragraphs[2]).toBe("Paragraph PL 3")
+        expect(bioPln).toEqual({
+            heading: "Kim jestem",
+            intro: ["Paragraph PL 1"],
+            highlight: ["Paragraph PL 2"],
+            body: ["Paragraph PL 3", "Paragraph PL 4"],
+        })
 
-        expect(bioEng.paragraphs.length).toBe(3)
-        expect(bioEng.paragraphs[0]).toBe("Paragraph EN 1")
+        expect(bioEng.body).toEqual(["Paragraph EN 3"])
 
         expect(contactPln.paragraphs.length).toBe(2)
         expect(contactPln.paragraphs[0]).toBe("Contact PL 1")

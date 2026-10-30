@@ -8,6 +8,7 @@ import { logout } from "@/app/admin/actions"
 import {
     ADMIN_NAV_ROUTES,
     PORTFOLIO_PREVIEW_ROUTE,
+    getPortfolioPreviewHref,
     isRouteActive,
     type AdminRoute,
 } from "@/lib/admin-routes"
@@ -46,11 +47,12 @@ export default function AdminSidebarNav() {
 
             <nav
                 aria-label="Konto"
-                className="mt-auto flex shrink-0 flex-col gap-2 border-t border-border pt-4"
+                className="mt-auto flex shrink-0 flex-col gap-2 border-t border-muted pt-4"
             >
                 <SidebarLink
                     {...PORTFOLIO_PREVIEW_ROUTE}
-                    active={isRouteActive(PORTFOLIO_PREVIEW_ROUTE.href, pathname)}
+                    href={getPortfolioPreviewHref(pathname)}
+                    active={false}
                 />
 
                 <form action={logout}>

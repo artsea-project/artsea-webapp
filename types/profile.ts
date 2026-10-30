@@ -1,5 +1,8 @@
 export interface BioContent {
-    paragraphs: string[]
+    heading: string
+    intro: string[]
+    highlight: string[]
+    body: string[]
 }
 
 export interface ContactContent {

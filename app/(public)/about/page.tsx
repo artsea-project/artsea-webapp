@@ -3,22 +3,18 @@ import { db } from "@/db"
 import { notFound } from "next/navigation"
 import { ArrowUpRight } from "lucide-react"
 import Image from "next/image"
-
-function parseParagraphs(value: unknown): string[] {
-    if (!value || typeof value !== "object") return []
-    const obj = value as Record<string, unknown>
-    return Array.isArray(obj.paragraphs)
-        ? obj.paragraphs.filter((p): p is string => typeof p === "string")
-        : []
-}
+import { DEFAULT_ABOUT_HEADING, parseBio, parseParagraphs } from "@/lib/profile/content"
+import { profileImagePath } from "@/lib/profile/image"
+import { getOrderedLinks, type ProfileLink } from "@/lib/profile/queries"
 
 interface HeroSectionProps {
     fullName: string
-    shortIntro: string
+    heading: string
+    intro: string[]
     profileImageSrc: string | null
 }
 
-function HeroSection({ fullName, shortIntro, profileImageSrc }: HeroSectionProps) {
+function HeroSection({ fullName, heading, intro, profileImageSrc }: HeroSectionProps) {
     return (
         <section className="max-w-[1440px] mx-auto px-10 md:px-32 pt-24 pb-32">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
@@ -28,14 +24,19 @@ function HeroSection({ fullName, shortIntro, profileImageSrc }: HeroSectionProps
                             {fullName}
                         </h1>
                         <h2 className="font-primary text-[96px] leading-[1] font-normal tracking-tight text-muted-foreground italic">
-                            O mnie
+                            {heading}
                         </h2>
                     </div>
 
-                    <div className="max-w-md">
-                        <p className="font-body text-lg leading-relaxed text-foreground">
-                            {shortIntro}
-                        </p>
+                    <div className="max-w-md flex flex-col gap-4">
+                        {intro.map((paragraph, idx) => (
+                            <p
+                                key={idx}
+                                className="font-body text-lg leading-relaxed text-foreground whitespace-pre-line"
+                            >
+                                {paragraph}
+                            </p>
+                        ))}
                     </div>
                 </div>
 
@@ -68,25 +69,34 @@ function HeroSection({ fullName, shortIntro, profileImageSrc }: HeroSectionProps
 }
 
 interface DetailedBioSectionProps {
-    paragraphs: string[]
+    highlight: string[]
+    body: string[]
 }
 
-function DetailedBioSection({ paragraphs }: DetailedBioSectionProps) {
-    if (paragraphs.length <= 1) return null
+function DetailedBioSection({ highlight, body }: DetailedBioSectionProps) {
+    if (highlight.length === 0 && body.length === 0) return null
 
     return (
         <section className="max-w-[1440px] mx-auto px-10 md:px-32 pt-32 pb-32">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 items-start">
-                <div className="md:col-span-5 text-foreground">
-                    <p className="font-primary text-[32px] leading-tight font-normal">
-                        {paragraphs[1]}
-                    </p>
+                <div className="md:col-span-5 text-foreground flex flex-col gap-6">
+                    {highlight.map((paragraph, idx) => (
+                        <p
+                            key={idx}
+                            className="font-primary text-[32px] leading-tight font-normal whitespace-pre-line"
+                        >
+                            {paragraph}
+                        </p>
+                    ))}
                 </div>
 
-                {paragraphs.length > 2 && (
+                {body.length > 0 && (
                     <div className="md:col-span-6 md:col-start-7 text-foreground flex flex-col gap-6">
-                        {paragraphs.slice(2).map((paragraph, idx) => (
-                            <p key={idx} className="font-body text-lg leading-relaxed">
+                        {body.map((paragraph, idx) => (
+                            <p
+                                key={idx}
+                                className="font-body text-lg leading-relaxed whitespace-pre-line"
+                            >
                                 {paragraph}
                             </p>
                         ))}
@@ -97,25 +107,13 @@ function DetailedBioSection({ paragraphs }: DetailedBioSectionProps) {
     )
 }
 
-interface SocialLink {
-    linkId: string
-    name: string
-    url: string
-}
-
 interface ContactSectionProps {
     email?: string | null
-    socialLinks: SocialLink[]
+    socialLinks: ProfileLink[]
     paragraphs: string[]
 }
 
 function ContactSection({ email, socialLinks, paragraphs }: ContactSectionProps) {
-    const defaultParagraphs = [
-        "Jeśli podoba Ci się moje podejście do designu, napisz do mnie.",
-        "Zawsze jestem otwarta na nowe, interesujące wyzwania.",
-    ]
-    const displayParagraphs = paragraphs.length > 0 ? paragraphs : defaultParagraphs
-
     return (
         <section id="contact" className="max-w-[1440px] mx-auto px-10 md:px-32 pt-16 pb-32">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 items-start">
@@ -123,11 +121,15 @@ function ContactSection({ email, socialLinks, paragraphs }: ContactSectionProps)
                     <h2 className="font-primary text-[40px] md:text-[56px] leading-[1.1] font-normal text-foreground">
                         Skontaktuj się ze mną.
                     </h2>
-                    <div className="text-muted-foreground font-body text-lg leading-relaxed flex flex-col gap-1">
-                        {displayParagraphs.map((paragraph, idx) => (
-                            <p key={idx}>{paragraph}</p>
-                        ))}
-                    </div>
+                    {paragraphs.length > 0 && (
+                        <div className="text-muted-foreground font-body text-lg leading-relaxed flex flex-col gap-1">
+                            {paragraphs.map((paragraph, idx) => (
+                                <p key={idx} className="whitespace-pre-line">
+                                    {paragraph}
+                                </p>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 <div className="md:col-span-6 md:col-start-7 flex flex-col gap-12 pt-2 md:pt-4">
@@ -156,7 +158,7 @@ function ContactSection({ email, socialLinks, paragraphs }: ContactSectionProps)
                                         rel="noopener noreferrer"
                                         className="flex items-center gap-1 font-body text-[16px] text-foreground hover:text-primary transition-colors"
                                     >
-                                        {link.name.charAt(0).toUpperCase() + link.name.slice(1)}
+                                        {link.name}
                                         <ArrowUpRight size={18} />
                                     </a>
                                 ))}
@@ -198,13 +200,12 @@ export default function AboutPage() {
 
 async function AboutContent() {
     let profile = null
-    let socialLinksDb: SocialLink[] = []
-    let email: string | null = null
+    let socialLinksDb: ProfileLink[] = []
     try {
-        profile = await db.query.profiles.findFirst()
-        socialLinksDb = await db.query.links.findMany()
-        const user = await db.query.users.findFirst()
-        email = user?.email || null
+        profile = await db.query.profiles.findFirst({
+            columns: { profileImageContent: false },
+        })
+        socialLinksDb = await getOrderedLinks()
     } catch (error) {
         console.error("Failed to fetch data:", error)
     }
@@ -213,20 +214,19 @@ async function AboutContent() {
         notFound()
     }
 
-    const bioParagraphs = parseParagraphs(profile.bioPln)
+    const bio = parseBio(profile.bioPln)
     const contactParagraphs = parseParagraphs(profile.contactPln)
-    const shortIntro = bioParagraphs.length > 0 ? bioParagraphs[0] : ""
 
-    const profileImageSrc =
-        profile.profileImageContent && profile.profileImageFileType
-            ? `data:image/${profile.profileImageFileType};base64,${profile.profileImageContent.toString("base64")}`
-            : null
+    const profileImageSrc = profile.profileImageContentHash
+        ? profileImagePath(profile.profileImageContentHash)
+        : null
 
     return (
         <div className="w-full">
             <HeroSection
                 fullName={profile.fullName}
-                shortIntro={shortIntro}
+                heading={bio.heading || DEFAULT_ABOUT_HEADING.pln}
+                intro={bio.intro}
                 profileImageSrc={profileImageSrc}
             />
 
@@ -238,14 +238,14 @@ async function AboutContent() {
                 </div>
             </div>
 
-            <DetailedBioSection paragraphs={bioParagraphs} />
+            <DetailedBioSection highlight={bio.highlight} body={bio.body} />
 
             <div className="max-w-[1440px] mx-auto px-10 md:px-32">
                 <div className="w-full h-px bg-border" />
             </div>
 
             <ContactSection
-                email={email}
+                email={profile.contactEmail}
                 socialLinks={socialLinksDb}
                 paragraphs={contactParagraphs}
             />

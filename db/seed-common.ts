@@ -27,18 +27,29 @@ export const siteSettingsId = "a7f3bc01-0000-4000-8000-000000000004"
 export const sharedProfile = {
     profileId,
     fullName: "Anna",
+    contactEmail: seedArtist.email,
     bioPln: {
-        paragraphs: [
+        heading: "",
+        intro: [
             "Tworzę ilustracje i identyfikacje wizualne, łącząc organiczne formy z minimalistyczną precyzją. Działam w Gdańsku, inspirując się naturą i surową architekturą.",
+        ],
+        highlight: [
             "Cześć! Nazywam się Anna i jestem niezależną ilustratorką z Gdańska. Od ponad siedmiu lat pomagam markom tworzyć czystą, przemyślaną identyfikację.",
+        ],
+        body: [
             "Moja przygoda ze sztuką zaczęła się od tradycyjnego malarstwa, które nauczyło mnie szacunku do światła i barwy. Szybko jednak odkryłam, że cyfrowe płótno daje równie wielkie możliwości wyrazu. Dziś specjalizuję się w łączeniu geometrycznego rygoru z ciepłem organicznych kształtów.",
             "Współpracowałam z wieloma instytucjami kultury, wydawnictwami i niezależnymi twórcami. Najbardziej cenię sobie projekty, które wymagają nieszablonowego myślenia oraz głębokiego wejścia w kontekst tworzonej opowieści.",
         ],
     },
     bioEng: {
-        paragraphs: [
+        heading: "",
+        intro: [
             "I create illustrations and visual identities, combining organic forms with minimalist precision. I work in Gdańsk, drawing inspiration from nature and raw architecture.",
+        ],
+        highlight: [
             "Hi! My name is Anna and I am an independent illustrator based in Gdańsk. For over seven years I have been helping brands create clean, thoughtful identities.",
+        ],
+        body: [
             "My adventure with art began with traditional painting, which taught me respect for light and color. However, I quickly discovered that the digital canvas offers equally great possibilities of expression. Today, I specialize in combining geometric rigor with the warmth of organic shapes.",
             "I have collaborated with many cultural institutions, publishing houses, and independent creators. I value projects that require out-of-the-box thinking and a deep dive into the context of the story being created.",
         ],
@@ -58,8 +69,8 @@ export const sharedProfile = {
 }
 
 export const sharedSocialLinks = [
-    { name: "instagram", url: "https://instagram.com/anna" },
-    { name: "behance", url: "https://behance.net/anna" },
+    { name: "Instagram", url: "https://instagram.com/anna" },
+    { name: "Behance", url: "https://behance.net/anna" },
 ]
 
 export const defaultTheme: SiteTheme = defaultSiteTheme

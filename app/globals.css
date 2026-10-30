@@ -34,6 +34,7 @@
     --color-accent: var(--accent);
     --color-muted-foreground: var(--muted-foreground);
     --color-muted: var(--muted);
+    --color-surface: var(--surface);
     --color-secondary-foreground: var(--secondary-foreground);
     --color-secondary: var(--secondary);
     --color-primary-foreground: var(--primary-foreground);
@@ -80,7 +81,8 @@
     --secondary: var(--muted);
     --secondary-foreground: var(--foreground);
     --muted: color-mix(in oklab, var(--background), var(--foreground) 5%);
-    --border: color-mix(in oklab, var(--background), var(--foreground) 20%);
+    --surface: color-mix(in oklab, var(--background), var(--foreground) 2%);
+    --border: color-mix(in oklab, var(--background), var(--foreground) 12%);
     --input: var(--border);
     --ring: var(--primary);
     --destructive: #dc2626;
