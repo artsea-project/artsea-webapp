@@ -222,14 +222,17 @@ export default function ProfileForm({ saved }: ProfileFormProps) {
                             markEdited("contactEmail")
                         }}
                     />
+                    <FieldDescription>
+                        Pokaże się na stronie O mnie jako link do kontaktu. Puste pole go ukryje.
+                    </FieldDescription>
                     <FieldError>{fieldError("contactEmail")}</FieldError>
                 </Field>
 
                 <FieldSet>
                     <FieldLegend>O mnie / About me</FieldLegend>
                     <FieldDescription>
-                        Każde pole to osobna sekcja strony O mnie. Wewnątrz pola akapity oddziel
-                        pustą linią.
+                        Każde pole odpowiada innemu miejscu na stronie O mnie. Wypełnij je w obu
+                        językach albo zostaw puste. W dłuższych polach akapity oddziel pustą linią.
                     </FieldDescription>
                     {BIO_FIELDS.map(renderTextField)}
                 </FieldSet>
@@ -246,7 +249,7 @@ export default function ProfileForm({ saved }: ProfileFormProps) {
                     Zapisz zmiany
                 </Button>
                 <Button type="button" variant="outline" onClick={cancelChanges}>
-                    Anuluj
+                    Cofnij zmiany
                 </Button>
                 <p role="status" className="text-sm text-muted-foreground">
                     {state.status === "success" && !isDirty ? "Zapisano zmiany." : ""}

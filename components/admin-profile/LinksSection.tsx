@@ -82,7 +82,7 @@ export default function LinksSection({ links }: LinksSectionProps) {
                     onClick={() => openPanel({ mode: "add" })}
                 >
                     <Plus />
-                    Dodaj kolejny link
+                    {links.length > 0 ? "Dodaj kolejny link" : "Dodaj link"}
                 </Button>
             ) : (
                 <LinkPanel
