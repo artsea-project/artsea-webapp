@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 
 import AdminShell from "@/components/AdminShell"
+import HtmlShell from "@/components/HtmlShell"
 
 export const metadata: Metadata = {
     title: "Artsea Panel",
@@ -8,5 +9,9 @@ export const metadata: Metadata = {
 }
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-    return <AdminShell>{children}</AdminShell>
+    return (
+        <HtmlShell lang="pl">
+            <AdminShell>{children}</AdminShell>
+        </HtmlShell>
+    )
 }
