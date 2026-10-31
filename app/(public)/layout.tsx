@@ -3,6 +3,7 @@ import { Suspense, type ReactNode } from "react"
 
 import Footer from "@/components/Footer"
 import Header from "@/components/Header"
+import HtmlShell from "@/components/HtmlShell"
 
 export const metadata: Metadata = {
     title: "Artsea Portfolio",
@@ -11,14 +12,16 @@ export const metadata: Metadata = {
 
 export default function PublicLayout({ children }: Readonly<{ children: ReactNode }>) {
     return (
-        <div className="flex min-h-screen flex-col justify-between">
-            <Suspense fallback={null}>
-                <Header />
-            </Suspense>
-            <main className="flex-grow">{children}</main>
-            <Suspense fallback={null}>
-                <Footer />
-            </Suspense>
-        </div>
+        <HtmlShell lang="pl">
+            <div className="flex min-h-screen flex-col justify-between">
+                <Suspense fallback={null}>
+                    <Header />
+                </Suspense>
+                <main className="flex-grow">{children}</main>
+                <Suspense fallback={null}>
+                    <Footer />
+                </Suspense>
+            </div>
+        </HtmlShell>
     )
 }
