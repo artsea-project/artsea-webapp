@@ -3,7 +3,7 @@ import path from "node:path"
 import tailwindcss from "@tailwindcss/postcss"
 import { expect, test } from "@playwright/test"
 import postcss from "postcss"
-import AdminLayout from "@/app/admin/layout"
+import AdminShell from "@/components/AdminShell"
 import { resolveThemeColors } from "@/lib/theme/colors"
 
 const adminPalette = {
@@ -54,7 +54,7 @@ test("admin uses the shared formulas with a fixed palette independent of public 
     const { css } = await postcss([tailwindcss()]).process(await readFile(stylesheet, "utf8"), {
         from: stylesheet,
     })
-    const layout = AdminLayout({ children: null })
+    const layout = AdminShell({ children: null })
     await page.setContent(`
         <style>${css}</style>
         <div id="public"></div>
