@@ -94,15 +94,18 @@ Scripts run with `npm run <script>`; type-check with `npx tsc --noEmit`.
 | `dev`, `build`, `start`     | Dev server, production build, serve the build                 |
 | `lint`                      | ESLint (fails on any warning)                                 |
 | `format`, `format:check`    | Format with Prettier, or only check formatting                |
-| `test`                      | Playwright tests                                              |
+| `test`                      | Playwright tests (all except end-to-end)                      |
+| `test:e2e`                  | End-to-end tests in Chromium against the built app            |
 | `db:up`, `db:down`          | Start or stop the database container (data stays in a volume) |
 | `db:push`                   | Sync the database schema with `db/schema.ts`                  |
 | `db:generate`, `db:migrate` | Generate or apply migrations in `drizzle/`                    |
 | `db:studio`, `db:logs`      | Browse the database in Drizzle Studio, follow its logs        |
 | `db:seed`                   | Insert sample data (`-- --reset` replaces existing data)      |
 
-Tests run against the database from `.env.local` and overwrite its data; run `npm run db:seed`
-afterwards to get the sample data back. To start from an empty database, run
+`test` runs against the database from `.env.local` and overwrites its data; run `npm run db:seed`
+afterwards to get the sample data back. `test:e2e` builds the app and serves it on port `3000`
+(reusing a server already running there, such as `npm run dev`); it only reads the database and
+expects the sample data from `npm run db:seed`. To start from an empty database, run
 `docker compose -f docker-compose.dev.yml down --volumes` and repeat steps 3-5.
 
 > **Windows:** `format:check` needs a POSIX shell and fails on CRLF line endings, so run it as:
