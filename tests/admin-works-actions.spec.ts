@@ -8,6 +8,7 @@ import { db } from "../db"
 import { artPieces, artPieceTags, categories, tags } from "../db/schema"
 import { initialWorkFormState } from "../lib/works/form-state"
 import { getWorkForEdit } from "../lib/works/queries"
+import { COVER_MEDIA_TYPE_ERROR } from "../lib/works/validation"
 
 const suffix = randomUUID().slice(0, 8)
 const marker = `acttest${suffix}`
@@ -262,18 +263,22 @@ test.describe("works server actions", () => {
             titlePln: `${marker} z plikami`,
             categoryId,
             mediaOrderSubmitted: "1",
-            mediaOrder: [`existing:${secondMediaId}`, "new:0"],
+            mediaOrder: [`existing:${secondMediaId}`, "new:0", "new:1"],
         })
         updateForm.append(
             "newMedia",
             new File([Buffer.from("gif!")], "c.gif", { type: "image/gif" })
+        )
+        updateForm.append(
+            "newMedia",
+            new File([Buffer.from("mp4-video")], "d.mp4", { type: "video/mp4" })
         )
 
         const updated = await updateWork(initialWorkFormState, updateForm)
         expect(updated.status).toBe("success")
 
         const afterReorder = await getWorkForEdit(workId)
-        expect(afterReorder?.media).toHaveLength(2)
+        expect(afterReorder?.media).toHaveLength(3)
         expect(afterReorder?.media[0]).toMatchObject({
             mediaId: secondMediaId,
             fileType: "jpg",
@@ -283,6 +288,41 @@ test.describe("works server actions", () => {
             fileType: "gif",
             orderIndex: 1,
             sizeBytes: 4,
+        })
+        expect(afterReorder?.media[2]).toMatchObject({
+            fileType: "mp4",
+            orderIndex: 2,
+            sizeBytes: 9,
+        })
+
+        const mp4MediaId = afterReorder!.media[2].mediaId
+        const invalidExistingCoverForm = makeFormData({
+            artPieceId: workId,
+            titlePln: `${marker} z plikami`,
+            categoryId,
+            mediaOrderSubmitted: "1",
+            mediaOrder: [`existing:${mp4MediaId}`, `existing:${secondMediaId}`],
+        })
+        expect(await updateWork(initialWorkFormState, invalidExistingCoverForm)).toEqual({
+            status: "error",
+            fieldErrors: {},
+            formError: COVER_MEDIA_TYPE_ERROR,
+        })
+
+        const invalidNewCoverForm = makeFormData({
+            titlePln: `${marker} mp4 cover`,
+            categoryId,
+            mediaOrderSubmitted: "1",
+            mediaOrder: ["new:0"],
+        })
+        invalidNewCoverForm.append(
+            "newMedia",
+            new File([Buffer.from("mp4-video")], "only.mp4", { type: "video/mp4" })
+        )
+        expect(await createWork(initialWorkFormState, invalidNewCoverForm)).toEqual({
+            status: "error",
+            fieldErrors: {},
+            formError: COVER_MEDIA_TYPE_ERROR,
         })
     })
 })

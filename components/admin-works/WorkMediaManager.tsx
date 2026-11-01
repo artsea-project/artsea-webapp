@@ -8,7 +8,12 @@ import { Button } from "@/components/ui/button"
 import { FieldError } from "@/components/ui/field"
 import { cn } from "@/lib/utils"
 import type { WorkMediaItem } from "@/lib/works/queries"
-import { checkWorkMediaFile, formatFileSize, resolveUploadedFileType } from "@/lib/works/validation"
+import {
+    checkCoverMediaType,
+    checkWorkMediaFile,
+    formatFileSize,
+    resolveUploadedFileType,
+} from "@/lib/works/validation"
 
 export type EditableMediaItem =
     | {
@@ -29,6 +34,18 @@ export type EditableMediaItem =
           sizeBytes: number
           previewUrl: string
       }
+
+function promoteFirstImageAsCover(items: EditableMediaItem[]): EditableMediaItem[] {
+    if (items[0]?.fileType !== "mp4") return items
+
+    const firstImageIndex = items.findIndex((item) => item.fileType !== "mp4")
+    if (firstImageIndex <= 0) return items
+
+    const reordered = [...items]
+    const [cover] = reordered.splice(firstImageIndex, 1)
+    reordered.unshift(cover)
+    return reordered
+}
 
 export function toInitialMediaItems(items: WorkMediaItem[]): EditableMediaItem[] {
     return items.map((item, index) => ({
@@ -80,10 +97,16 @@ export default function WorkMediaManager({ items, onChange }: WorkMediaManagerPr
             })
         }
 
+        const orderedItems = promoteFirstImageAsCover(nextItems)
+        const coverError = orderedItems[0] ? checkCoverMediaType(orderedItems[0].fileType) : null
+        if (coverError && !errors.includes(coverError)) {
+            errors.push(coverError)
+        }
+
         if (errors.length > 0) {
             setUploadError(errors.join(" "))
         }
-        onChange(nextItems)
+        onChange(orderedItems)
         if (fileInputRef.current) fileInputRef.current.value = ""
     }
 
@@ -92,7 +115,12 @@ export default function WorkMediaManager({ items, onChange }: WorkMediaManagerPr
         if (removed?.kind === "new") {
             URL.revokeObjectURL(removed.previewUrl)
         }
-        onChange(items.filter((_, itemIndex) => itemIndex !== index))
+        const nextItems = promoteFirstImageAsCover(
+            items.filter((_, itemIndex) => itemIndex !== index)
+        )
+        const coverError = nextItems[0] ? checkCoverMediaType(nextItems[0].fileType) : null
+        setUploadError(coverError)
+        onChange(nextItems)
     }
 
     function handleRowDragStart(event: DragEvent<HTMLLIElement>, index: number, key: string) {
@@ -118,6 +146,14 @@ export default function WorkMediaManager({ items, onChange }: WorkMediaManagerPr
         const [moved] = reordered.splice(draggedIndex, 1)
         reordered.splice(targetIndex, 0, moved)
         setDraggedIndex(null)
+
+        const coverError = reordered[0] ? checkCoverMediaType(reordered[0].fileType) : null
+        if (coverError) {
+            setUploadError(coverError)
+            return
+        }
+
+        setUploadError(null)
         onChange(reordered)
     }
 
@@ -199,7 +235,7 @@ export default function WorkMediaManager({ items, onChange }: WorkMediaManagerPr
 
                     <ul className="flex flex-col gap-2.5">
                         {items.map((item, index) => {
-                            const isCover = index === 0
+                            const isCover = index === 0 && item.fileType !== "mp4"
                             return (
                                 <li
                                     key={item.key}

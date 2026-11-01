@@ -6,10 +6,12 @@ import {
     readWorkDescription,
 } from "../lib/works/description"
 import {
+    checkCoverMediaType,
     checkWorkCategory,
     checkWorkMediaFile,
     checkWorkTitles,
     checkYearOfExecution,
+    COVER_MEDIA_TYPE_ERROR,
     escapeLikePattern,
     MAX_MEDIA_FILE_BYTES,
     normalizeSearchQuery,
@@ -82,6 +84,13 @@ test.describe("work validation helpers", () => {
                 type: "application/pdf",
             })
         ).toBe("Obsługiwane formaty plików to PNG, JPG, GIF oraz MP4.")
+    })
+
+    test("rejects mp4 as cover media type", () => {
+        expect(checkCoverMediaType("png")).toBeNull()
+        expect(checkCoverMediaType("jpg")).toBeNull()
+        expect(checkCoverMediaType("gif")).toBeNull()
+        expect(checkCoverMediaType("mp4")).toBe(COVER_MEDIA_TYPE_ERROR)
     })
 
     test("normalizes search query and page number", () => {
