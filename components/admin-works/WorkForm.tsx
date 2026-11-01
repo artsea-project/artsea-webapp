@@ -234,7 +234,7 @@ export default function WorkForm({ work, categories, tags }: WorkFormProps) {
     }
 
     return (
-        <section className="flex max-w-196 flex-col gap-6">
+        <section className="relative flex max-w-196 flex-col gap-6">
             <header>
                 <h2 className="text-2xl font-bold text-foreground">
                     {work ? "Edytuj pracę" : "Dodaj pracę"}
