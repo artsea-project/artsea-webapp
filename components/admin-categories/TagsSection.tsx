@@ -39,10 +39,16 @@ export default function TagsSection({ tags }: TagsSectionProps) {
         const { tagId } = tagToDelete
 
         startDeleting(async () => {
+            let result: Awaited<ReturnType<typeof deleteTag>>
             try {
-                await deleteTag(tagId)
+                result = await deleteTag(tagId)
             } catch {
                 setNotice({ text: "Nie udało się usunąć tagu. Spróbuj ponownie.", isError: true })
+                return
+            }
+
+            if (result.status === "error") {
+                setNotice({ text: result.error, isError: true })
                 return
             }
 
