@@ -74,7 +74,7 @@ export default function WorkCard({
                         <span
                             className={cn(
                                 "size-4 rounded-full bg-background shadow-xs transition-transform",
-                                work.isVisible ? "translate-x-0" : "translate-x-4"
+                                work.isVisible ? "translate-x-4" : "translate-x-0"
                             )}
                         />
                     </span>
