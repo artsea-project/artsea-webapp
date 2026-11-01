@@ -1,6 +1,10 @@
 {
     "Artwork": {
-        "untitled": "Untitled"
+        "untitled": "Untitled",
+        "technique": "Technique and materials",
+        "description": "About the project",
+        "next": "See next",
+        "photoAlt": "{title} - photo {number}"
     },
     "Footer": {
         "heading": "Let's talk about art."

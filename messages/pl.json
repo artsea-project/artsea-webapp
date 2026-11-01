@@ -1,6 +1,10 @@
 {
     "Artwork": {
-        "untitled": "Bez tytułu"
+        "untitled": "Bez tytułu",
+        "technique": "Technika i materiały",
+        "description": "O projekcie",
+        "next": "Zobacz kolejny",
+        "photoAlt": "{title} - zdjęcie {number}"
     },
     "Footer": {
         "heading": "Porozmawiajmy o sztuce."
