@@ -80,7 +80,7 @@ test.describe("category and tag validation helpers", () => {
 })
 
 test.describe("category and tag server actions", () => {
-    test("returns validation errors when category or tag inputs are empty", async () => {
+    test("returns validation errors when category or tag inputs are empty or IDs are invalid", async () => {
         const categoryState = await createCategory(
             initialCategoryFormState,
             makeFormData({ namePln: "   ", nameEng: "" })
@@ -93,6 +93,22 @@ test.describe("category and tag server actions", () => {
             },
         })
 
+        const invalidCategoryUpdate = await updateCategory(
+            initialCategoryFormState,
+            makeFormData({ categoryId: "not-a-uuid", namePln: "Malarstwo", nameEng: "Painting" })
+        )
+        expect(invalidCategoryUpdate).toEqual({
+            status: "error",
+            fieldErrors: {},
+            formError: "Nieprawidłowy identyfikator kategorii.",
+        })
+
+        const invalidCategoryDelete = await deleteCategory("not-a-uuid")
+        expect(invalidCategoryDelete).toEqual({
+            status: "error",
+            error: "Nieprawidłowy identyfikator kategorii.",
+        })
+
         const tagState = await createTag(
             initialTagFormState,
             makeFormData({ namePln: "###", nameEng: "  " })
@@ -101,6 +117,22 @@ test.describe("category and tag server actions", () => {
             status: "error",
             fieldErrors: {},
             formError: "Podaj nazwę tagu w przynajmniej jednym języku.",
+        })
+
+        const invalidTagUpdate = await updateTag(
+            initialTagFormState,
+            makeFormData({ tagId: "not-a-uuid", namePln: "grafika", nameEng: "graphics" })
+        )
+        expect(invalidTagUpdate).toEqual({
+            status: "error",
+            fieldErrors: {},
+            formError: "Nieprawidłowy identyfikator tagu.",
+        })
+
+        const invalidTagDelete = await deleteTag("not-a-uuid")
+        expect(invalidTagDelete).toEqual({
+            status: "error",
+            error: "Nieprawidłowy identyfikator tagu.",
         })
     })
 
@@ -256,8 +288,8 @@ test.describe("category and tag server actions", () => {
             },
         })
 
-        await deleteTag(savedTag!.tagId)
-        await deleteTag(savedSingleTag!.tagId)
+        expect(await deleteTag(savedTag!.tagId)).toEqual({ status: "success" })
+        expect(await deleteTag(savedSingleTag!.tagId)).toEqual({ status: "success" })
 
         const afterDelete = await db.query.tags.findFirst({
             where: eq(tags.tagId, savedTag!.tagId),

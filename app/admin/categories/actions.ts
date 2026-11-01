@@ -19,6 +19,7 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3
 type FieldErrors<Field extends string> = Partial<Record<Field, string>>
 
 export type DeleteCategoryResult = { status: "success" } | { status: "error"; error: string }
+export type DeleteTagResult = { status: "success" } | { status: "error"; error: string }
 
 function readText(formData: FormData, name: string): string {
     const value = formData.get(name)
@@ -29,12 +30,21 @@ function equalsIgnoreCase(column: AnyColumn, value: string) {
     return sql`lower(${column}) = lower(${value})`
 }
 
-function failed<Field extends string>(fieldErrors: FieldErrors<Field>) {
-    return { status: "error" as const, fieldErrors }
+function failed<Field extends string>(fieldErrors: FieldErrors<Field>, formError?: string) {
+    return formError
+        ? { status: "error" as const, fieldErrors, formError }
+        : { status: "error" as const, fieldErrors }
 }
 
 function succeeded() {
     return { status: "success" as const, fieldErrors: {}, savedAt: Date.now() }
+}
+
+function getPostgresErrorCode(error: unknown): string | undefined {
+    if (!error || typeof error !== "object") return undefined
+    if ("code" in error && typeof error.code === "string") return error.code
+    if ("cause" in error) return getPostgresErrorCode(error.cause)
+    return undefined
 }
 
 function refreshViews() {
@@ -103,7 +113,18 @@ export async function createCategory(
     const conflicts = await findCategoryConflicts(category.values.namePln, category.values.nameEng)
     if (conflicts.namePln || conflicts.nameEng) return failed(conflicts)
 
-    await db.insert(categories).values(category.values)
+    try {
+        await db.insert(categories).values(category.values)
+    } catch (error) {
+        if (getPostgresErrorCode(error) === "23505") {
+            const raceConflicts = await findCategoryConflicts(
+                category.values.namePln,
+                category.values.nameEng
+            )
+            return failed(raceConflicts)
+        }
+        throw error
+    }
 
     refreshViews()
     return succeeded()
@@ -114,7 +135,9 @@ export async function updateCategory(
     formData: FormData
 ): Promise<CategoryFormState> {
     const categoryId = readText(formData, "categoryId")
-    if (!UUID_PATTERN.test(categoryId)) return failed({})
+    if (!UUID_PATTERN.test(categoryId)) {
+        return failed({}, "Nieprawidłowy identyfikator kategorii.")
+    }
 
     const category = readCategory(formData)
     if (!category.values) return failed(category.fieldErrors)
@@ -126,19 +149,28 @@ export async function updateCategory(
     )
     if (conflicts.namePln || conflicts.nameEng) return failed(conflicts)
 
-    const updated = await db
-        .update(categories)
-        .set(category.values)
-        .where(eq(categories.categoryId, categoryId))
-        .returning({ categoryId: categories.categoryId })
+    let updated: { categoryId: string }[]
+    try {
+        updated = await db
+            .update(categories)
+            .set(category.values)
+            .where(eq(categories.categoryId, categoryId))
+            .returning({ categoryId: categories.categoryId })
+    } catch (error) {
+        if (getPostgresErrorCode(error) === "23505") {
+            const raceConflicts = await findCategoryConflicts(
+                category.values.namePln,
+                category.values.nameEng,
+                categoryId
+            )
+            return failed(raceConflicts)
+        }
+        throw error
+    }
 
     refreshViews()
     if (updated.length === 0) {
-        return {
-            status: "error",
-            fieldErrors: {},
-            formError: "Ta kategoria została już usunięta.",
-        }
+        return failed({}, "Ta kategoria została już usunięta.")
     }
     return succeeded()
 }
@@ -160,7 +192,18 @@ export async function deleteCategory(categoryId: string): Promise<DeleteCategory
         }
     }
 
-    await db.delete(categories).where(eq(categories.categoryId, categoryId))
+    try {
+        await db.delete(categories).where(eq(categories.categoryId, categoryId))
+    } catch (error) {
+        if (getPostgresErrorCode(error) === "23503") {
+            return {
+                status: "error",
+                error: "Nie można usunąć kategorii, do której są przypisane prace.",
+            }
+        }
+        throw error
+    }
+
     refreshViews()
     return { status: "success" }
 }
@@ -191,11 +234,7 @@ export async function createTag(
 ): Promise<TagFormState> {
     const tag = readTag(formData)
     if (!tag.values) {
-        return {
-            status: "error",
-            fieldErrors: {},
-            formError: tag.formError,
-        }
+        return failed({}, tag.formError)
     }
 
     const [existingPln, existingEng] = await Promise.all([
@@ -212,13 +251,10 @@ export async function createTag(
     ])
 
     if (existingPln || existingEng) {
-        return {
-            status: "error",
-            fieldErrors: {
-                namePln: existingPln ? "Tag o takiej nazwie już istnieje." : undefined,
-                nameEng: existingEng ? "Tag o takiej nazwie już istnieje." : undefined,
-            },
-        }
+        return failed({
+            namePln: existingPln ? "Tag o takiej nazwie już istnieje." : undefined,
+            nameEng: existingEng ? "Tag o takiej nazwie już istnieje." : undefined,
+        })
     }
 
     await db.insert(tags).values(tag.values)
@@ -233,20 +269,12 @@ export async function updateTag(
 ): Promise<TagFormState> {
     const tagId = readText(formData, "tagId")
     if (!UUID_PATTERN.test(tagId)) {
-        return {
-            status: "error",
-            fieldErrors: {},
-            formError: "Nieprawidłowy identyfikator tagu.",
-        }
+        return failed({}, "Nieprawidłowy identyfikator tagu.")
     }
 
     const tag = readTag(formData)
     if (!tag.values) {
-        return {
-            status: "error",
-            fieldErrors: {},
-            formError: tag.formError,
-        }
+        return failed({}, tag.formError)
     }
 
     const notSelf = ne(tags.tagId, tagId)
@@ -264,13 +292,10 @@ export async function updateTag(
     ])
 
     if (existingPln || existingEng) {
-        return {
-            status: "error",
-            fieldErrors: {
-                namePln: existingPln ? "Tag o takiej nazwie już istnieje." : undefined,
-                nameEng: existingEng ? "Tag o takiej nazwie już istnieje." : undefined,
-            },
-        }
+        return failed({
+            namePln: existingPln ? "Tag o takiej nazwie już istnieje." : undefined,
+            nameEng: existingEng ? "Tag o takiej nazwie już istnieje." : undefined,
+        })
     }
 
     const updated = await db
@@ -281,18 +306,17 @@ export async function updateTag(
 
     refreshViews()
     if (updated.length === 0) {
-        return {
-            status: "error",
-            fieldErrors: {},
-            formError: "Ten tag został już usunięty.",
-        }
+        return failed({}, "Ten tag został już usunięty.")
     }
     return succeeded()
 }
 
-export async function deleteTag(tagId: string): Promise<void> {
-    if (!UUID_PATTERN.test(tagId)) return
+export async function deleteTag(tagId: string): Promise<DeleteTagResult> {
+    if (!UUID_PATTERN.test(tagId)) {
+        return { status: "error", error: "Nieprawidłowy identyfikator tagu." }
+    }
 
     await db.delete(tags).where(eq(tags.tagId, tagId))
     refreshViews()
+    return { status: "success" }
 }
