@@ -7,7 +7,12 @@
         "about": "O MNIE",
         "portfolio": "PORTFOLIO",
         "contact": "KONTAKT",
-        "toggleMenu": "Otwórz lub zamknij menu"
+        "toggleMenu": "Otwórz lub zamknij menu",
+        "switchLanguage": "Zmień język na {language}",
+        "languages": {
+            "pl": "polski",
+            "en": "angielski"
+        }
     },
     "NotFound": {
         "title": "Nie znaleziono strony",
