@@ -152,7 +152,7 @@ test.describe("category and tag server actions", () => {
 
         const duplicateResult = await createCategory(
             initialCategoryFormState,
-            makeFormData({ namePln, nameEng: `Other ${suffix}` })
+            makeFormData({ namePln: namePln.toLowerCase(), nameEng: `Other ${suffix}` })
         )
         expect(duplicateResult).toEqual({
             status: "error",
