@@ -9,6 +9,12 @@ import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui
 import { Input } from "@/components/ui/input"
 import { initialLinkFormState, type LinkField, type LinkFormState } from "@/lib/profile/form-state"
 import type { ProfileLink } from "@/lib/profile/queries"
+import { normalizeLinkUrl } from "@/lib/profile/validation"
+
+function differsFromSaved(name: string, url: string, saved: ProfileLink) {
+    const normalized = normalizeLinkUrl(url)
+    return name.trim() !== saved.name || "error" in normalized || normalized.url !== saved.url
+}
 
 interface LinkPanelProps {
     link?: ProfileLink
@@ -94,7 +100,13 @@ export default function LinkPanel({ link, onDone, onCancel }: LinkPanelProps) {
             </div>
 
             <div className="flex items-center gap-3">
-                <Button type="submit" variant="outline" disabled={isSaving}>
+                <Button
+                    type="submit"
+                    variant="outline"
+                    disabled={
+                        isSaving || (link !== undefined && !differsFromSaved(name, url, link))
+                    }
+                >
                     {link ? (
                         "Zapisz link"
                     ) : (
