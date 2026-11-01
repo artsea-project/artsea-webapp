@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { hasLocale, NextIntlClientProvider } from "next-intl"
+import { getTranslations } from "next-intl/server"
 import { notFound } from "next/navigation"
 import { Suspense } from "react"
 
@@ -8,9 +9,9 @@ import Header from "@/components/Header"
 import HtmlShell from "@/components/HtmlShell"
 import { routing } from "@/i18n/routing"
 
-export const metadata: Metadata = {
-    title: "Artsea Portfolio",
-    description: "Artsea Web Application",
+export async function generateMetadata(): Promise<Metadata> {
+    const t = await getTranslations("Metadata")
+    return { title: t("title"), description: t("description") }
 }
 
 export function generateStaticParams() {
