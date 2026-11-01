@@ -1,6 +1,6 @@
-import Link from "next/link"
 import { db } from "@/db"
 import NavLinks from "@/components/NavLinks"
+import { Link } from "@/i18n/navigation"
 
 export default async function Header() {
     let profile = null
