@@ -1,29 +1,23 @@
 export type FormStatus = "idle" | "success" | "error"
 
-export type CategoryField = "namePln" | "nameEng"
+export type BilingualNameField = "namePln" | "nameEng"
 
-export type CategoryFormState = {
+export type BilingualNameFormState = {
     status: FormStatus
-    fieldErrors: Partial<Record<CategoryField, string>>
+    fieldErrors: Partial<Record<BilingualNameField, string>>
     formError?: string
     savedAt?: number
 }
 
-export const initialCategoryFormState: CategoryFormState = {
+export const initialBilingualNameFormState: BilingualNameFormState = {
     status: "idle",
     fieldErrors: {},
 }
 
-export type TagField = "namePln" | "nameEng"
+export type CategoryField = BilingualNameField
+export type CategoryFormState = BilingualNameFormState
+export const initialCategoryFormState: CategoryFormState = initialBilingualNameFormState
 
-export type TagFormState = {
-    status: FormStatus
-    fieldErrors: Partial<Record<TagField, string>>
-    formError?: string
-    savedAt?: number
-}
-
-export const initialTagFormState: TagFormState = {
-    status: "idle",
-    fieldErrors: {},
-}
+export type TagField = BilingualNameField
+export type TagFormState = BilingualNameFormState
+export const initialTagFormState: TagFormState = initialBilingualNameFormState

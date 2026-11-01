@@ -1,12 +1,18 @@
 "use server"
 
-import { and, count, eq, ne, sql, type AnyColumn } from "drizzle-orm"
+import { and, count, eq, ne, sql, type AnyColumn, type SQL } from "drizzle-orm"
 import { revalidatePath, revalidateTag } from "next/cache"
 
 import { db } from "@/db"
 import { artPieces, categories, tags } from "@/db/schema"
 import { BENTO_CACHE_TAG } from "@/lib/bento"
-import type { CategoryField, CategoryFormState, TagFormState } from "@/lib/categories/form-state"
+import type {
+    BilingualNameField,
+    CategoryField,
+    CategoryFormState,
+    TagField,
+    TagFormState,
+} from "@/lib/categories/form-state"
 import {
     checkCategoryNameEng,
     checkCategoryNamePln,
@@ -18,8 +24,9 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3
 
 type FieldErrors<Field extends string> = Partial<Record<Field, string>>
 
-export type DeleteCategoryResult = { status: "success" } | { status: "error"; error: string }
-export type DeleteTagResult = { status: "success" } | { status: "error"; error: string }
+export type DeleteResult = { status: "success" } | { status: "error"; error: string }
+export type DeleteCategoryResult = DeleteResult
+export type DeleteTagResult = DeleteResult
 
 function readText(formData: FormData, name: string): string {
     const value = formData.get(name)
@@ -58,6 +65,70 @@ function refreshViews() {
     }
 }
 
+async function hasMatchingRow(
+    table: typeof categories | typeof tags,
+    condition: SQL | undefined
+): Promise<boolean> {
+    const rows = await db
+        .select({ one: sql`1` })
+        .from(table)
+        .where(condition)
+        .limit(1)
+    return rows.length > 0
+}
+
+interface ConflictCheckConfig {
+    table: typeof categories | typeof tags
+    idColumn: AnyColumn
+    namePlnColumn: AnyColumn
+    nameEngColumn: AnyColumn
+    duplicateMessage: string
+}
+
+async function findNameConflicts(
+    config: ConflictCheckConfig,
+    values: { namePln: string | null; nameEng: string | null },
+    excludeId?: string
+): Promise<FieldErrors<BilingualNameField>> {
+    const notSelf = excludeId ? ne(config.idColumn, excludeId) : undefined
+
+    const [existingPln, existingEng] = await Promise.all([
+        values.namePln
+            ? hasMatchingRow(
+                  config.table,
+                  and(equalsIgnoreCase(config.namePlnColumn, values.namePln), notSelf)
+              )
+            : false,
+        values.nameEng
+            ? hasMatchingRow(
+                  config.table,
+                  and(equalsIgnoreCase(config.nameEngColumn, values.nameEng), notSelf)
+              )
+            : false,
+    ])
+
+    const fieldErrors: FieldErrors<BilingualNameField> = {}
+    if (existingPln) fieldErrors.namePln = config.duplicateMessage
+    if (existingEng) fieldErrors.nameEng = config.duplicateMessage
+    return fieldErrors
+}
+
+const categoryConflictConfig: ConflictCheckConfig = {
+    table: categories,
+    idColumn: categories.categoryId,
+    namePlnColumn: categories.namePln,
+    nameEngColumn: categories.nameEng,
+    duplicateMessage: "Kategoria o takiej nazwie już istnieje.",
+}
+
+const tagConflictConfig: ConflictCheckConfig = {
+    table: tags,
+    idColumn: tags.tagId,
+    namePlnColumn: tags.namePln,
+    nameEngColumn: tags.nameEng,
+    duplicateMessage: "Tag o takiej nazwie już istnieje.",
+}
+
 function readCategory(formData: FormData) {
     const namePln = readText(formData, "namePln")
     const nameEng = readText(formData, "nameEng")
@@ -86,21 +157,7 @@ async function findCategoryConflicts(
     nameEng: string,
     excludeId?: string
 ): Promise<FieldErrors<CategoryField>> {
-    const notSelf = excludeId ? ne(categories.categoryId, excludeId) : undefined
-
-    const [existingPln, existingEng] = await Promise.all([
-        db.query.categories.findFirst({
-            where: and(equalsIgnoreCase(categories.namePln, namePln), notSelf),
-        }),
-        db.query.categories.findFirst({
-            where: and(equalsIgnoreCase(categories.nameEng, nameEng), notSelf),
-        }),
-    ])
-
-    const fieldErrors: FieldErrors<CategoryField> = {}
-    if (existingPln) fieldErrors.namePln = "Kategoria o takiej nazwie już istnieje."
-    if (existingEng) fieldErrors.nameEng = "Kategoria o takiej nazwie już istnieje."
-    return fieldErrors
+    return findNameConflicts(categoryConflictConfig, { namePln, nameEng }, excludeId)
 }
 
 export async function createCategory(
@@ -231,26 +288,8 @@ function readTag(formData: FormData) {
 async function findTagConflicts(
     values: { namePln: string | null; nameEng: string | null },
     excludeId?: string
-): Promise<FieldErrors<CategoryField>> {
-    const notSelf = excludeId ? ne(tags.tagId, excludeId) : undefined
-
-    const [existingPln, existingEng] = await Promise.all([
-        values.namePln
-            ? db.query.tags.findFirst({
-                  where: and(equalsIgnoreCase(tags.namePln, values.namePln), notSelf),
-              })
-            : Promise.resolve(undefined),
-        values.nameEng
-            ? db.query.tags.findFirst({
-                  where: and(equalsIgnoreCase(tags.nameEng, values.nameEng), notSelf),
-              })
-            : Promise.resolve(undefined),
-    ])
-
-    const fieldErrors: FieldErrors<CategoryField> = {}
-    if (existingPln) fieldErrors.namePln = "Tag o takiej nazwie już istnieje."
-    if (existingEng) fieldErrors.nameEng = "Tag o takiej nazwie już istnieje."
-    return fieldErrors
+): Promise<FieldErrors<TagField>> {
+    return findNameConflicts(tagConflictConfig, values, excludeId)
 }
 
 export async function createTag(
