@@ -95,8 +95,22 @@ export default function WorkMediaManager({ items, onChange }: WorkMediaManagerPr
         onChange(items.filter((_, itemIndex) => itemIndex !== index))
     }
 
-    function handleRowDrop(targetIndex: number) {
-        if (draggedIndex === null || draggedIndex === targetIndex) {
+    function handleRowDragStart(event: DragEvent<HTMLLIElement>, index: number, key: string) {
+        event.dataTransfer.effectAllowed = "move"
+        event.dataTransfer.setData("text/plain", key)
+        setDraggedIndex(index)
+    }
+
+    function handleRowDragOver(event: DragEvent<HTMLLIElement>) {
+        if (draggedIndex === null) return
+        event.preventDefault()
+        event.dataTransfer.dropEffect = "move"
+    }
+
+    function handleRowDrop(event: DragEvent<HTMLLIElement>, targetIndex: number) {
+        if (draggedIndex === null) return
+        event.preventDefault()
+        if (draggedIndex === targetIndex) {
             setDraggedIndex(null)
             return
         }
@@ -107,7 +121,24 @@ export default function WorkMediaManager({ items, onChange }: WorkMediaManagerPr
         onChange(reordered)
     }
 
+    function handleZoneDragOver(event: DragEvent<HTMLDivElement>) {
+        if (draggedIndex !== null) return
+        event.preventDefault()
+        setIsDropActive(true)
+    }
+
+    function handleZoneDragLeave(event: DragEvent<HTMLDivElement>) {
+        if (
+            event.relatedTarget instanceof Node &&
+            event.currentTarget.contains(event.relatedTarget)
+        ) {
+            return
+        }
+        setIsDropActive(false)
+    }
+
     function handleZoneDrop(event: DragEvent<HTMLDivElement>) {
+        if (draggedIndex !== null) return
         event.preventDefault()
         setIsDropActive(false)
         addFiles(event.dataTransfer.files)
@@ -119,11 +150,8 @@ export default function WorkMediaManager({ items, onChange }: WorkMediaManagerPr
                 <span className="text-sm font-bold text-foreground">Zdjęcia pracy</span>
 
                 <div
-                    onDragOver={(event) => {
-                        event.preventDefault()
-                        setIsDropActive(true)
-                    }}
-                    onDragLeave={() => setIsDropActive(false)}
+                    onDragOver={handleZoneDragOver}
+                    onDragLeave={handleZoneDragLeave}
                     onDrop={handleZoneDrop}
                     className={cn(
                         "flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed bg-muted/30 px-6 py-8 text-center transition-colors",
@@ -176,15 +204,18 @@ export default function WorkMediaManager({ items, onChange }: WorkMediaManagerPr
                                 <li
                                     key={item.key}
                                     draggable
-                                    onDragStart={() => setDraggedIndex(index)}
-                                    onDragOver={(event) => event.preventDefault()}
-                                    onDrop={() => handleRowDrop(index)}
+                                    onDragStart={(event) =>
+                                        handleRowDragStart(event, index, item.key)
+                                    }
+                                    onDragOver={handleRowDragOver}
+                                    onDrop={(event) => handleRowDrop(event, index)}
                                     onDragEnd={() => setDraggedIndex(null)}
                                     className={cn(
                                         "flex items-center justify-between gap-3 rounded-xl border px-3 py-2.5 transition-colors",
                                         isCover
                                             ? "border-primary bg-primary/5"
-                                            : "border-border bg-background"
+                                            : "border-border bg-background",
+                                        draggedIndex === index && "opacity-50"
                                     )}
                                 >
                                     <div className="flex min-w-0 items-center gap-3">
@@ -214,6 +245,7 @@ export default function WorkMediaManager({ items, onChange }: WorkMediaManagerPr
                                                     <img
                                                         src={item.previewUrl}
                                                         alt={item.fileName}
+                                                        draggable={false}
                                                         className="size-full object-cover"
                                                     />
                                                 )}
