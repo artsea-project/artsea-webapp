@@ -27,20 +27,22 @@ export default function CategoryRow({
                 isSelected && "relative z-10 outline outline-1 -outline-offset-1 outline-primary"
             )}
         >
-            <td className="px-6 py-3">
-                <div className="flex flex-col gap-0.5">
-                    <span className="text-sm font-normal text-foreground">{category.namePln}</span>
-                    <span className="text-[11px] font-normal text-foreground/60">
+            <td className="max-w-0 w-full py-3 pr-2 pl-4 sm:px-6">
+                <div className="flex min-w-0 flex-col gap-0.5">
+                    <span className="truncate text-sm font-normal text-foreground">
+                        {category.namePln}
+                    </span>
+                    <span className="truncate text-[11px] font-normal text-foreground/60">
                         {category.nameEng}
                     </span>
                 </div>
             </td>
-            <td className="px-6 py-3">
+            <td className="px-2 py-3 whitespace-nowrap sm:px-6">
                 <span className="inline-flex h-7 items-center rounded-md bg-muted px-3 text-xs font-normal text-muted-foreground">
                     {formatWorksCount(category.worksCount)}
                 </span>
             </td>
-            <td className="px-6 py-3 text-right">
+            <td className="py-3 pr-2 pl-2 text-right whitespace-nowrap sm:px-6">
                 <div className="inline-flex items-center justify-end gap-1">
                     <Button
                         type="button"

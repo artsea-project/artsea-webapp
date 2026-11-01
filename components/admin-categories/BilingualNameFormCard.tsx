@@ -139,7 +139,7 @@ export default function BilingualNameFormCard({
                     </p>
                 )}
 
-                <div className="flex items-center gap-3 pt-1">
+                <div className="flex flex-wrap items-center gap-3 pt-1">
                     <Button
                         type="submit"
                         disabled={isSaving}
