@@ -1,6 +1,6 @@
 export const WORKS_PER_PAGE = 6
 export const MIN_YEAR_OF_EXECUTION = 1000
-export const MAX_MEDIA_FILE_BYTES = 10 * 1024 * 1024
+export const MAX_MEDIA_FILE_BYTES = 2 * 1024 * 1024
 
 const MIME_TO_FILE_TYPE: Record<string, "png" | "jpg" | "gif" | "mp4"> = {
     "image/png": "png",
@@ -34,6 +34,23 @@ export function resolveUploadedFileType(
     }
     const extension = fileName.split(".").pop()?.trim().toLowerCase() ?? ""
     return EXTENSION_TO_FILE_TYPE[extension] ?? null
+}
+
+export function checkWorkMediaFile(file: {
+    name: string
+    size: number
+    type: string
+}): string | null {
+    if (!resolveUploadedFileType(file.type, file.name)) {
+        return "Obsługiwane formaty plików to PNG, JPG, GIF oraz MP4."
+    }
+    if (file.size === 0) {
+        return "Przesyłany plik jest pusty."
+    }
+    if (file.size > MAX_MEDIA_FILE_BYTES) {
+        return `Plik „${file.name}” jest większy niż 2 MB.`
+    }
+    return null
 }
 
 export function formatFileSize(bytes: number): string {

@@ -12,10 +12,10 @@ import { buildWorkDescription } from "@/lib/works/description"
 import type { WorkField, WorkFormState } from "@/lib/works/form-state"
 import {
     checkWorkCategory,
+    checkWorkMediaFile,
     checkWorkTitles,
     checkYearOfExecution,
     isUuid,
-    MAX_MEDIA_FILE_BYTES,
     parseTagIds,
     parseYearOfExecution,
     resolveUploadedFileType,
@@ -167,18 +167,12 @@ async function readMediaOrder(
             }
             seenNew.add(fileIndex)
 
-            if (file.size === 0) {
-                return { error: "Przesyłany plik jest pusty." }
-            }
-            if (file.size > MAX_MEDIA_FILE_BYTES) {
-                return { error: "Każdy plik może mieć maksymalnie 10 MB." }
+            const fileError = checkWorkMediaFile(file)
+            if (fileError) {
+                return { error: fileError }
             }
 
-            const fileType = resolveUploadedFileType(file.type, file.name)
-            if (!fileType) {
-                return { error: "Obsługiwane formaty plików to PNG, JPG, GIF oraz MP4." }
-            }
-
+            const fileType = resolveUploadedFileType(file.type, file.name)!
             const content = Buffer.from(await file.arrayBuffer())
             const contentHash = createHash("sha256").update(content).digest("hex")
             items.push({ kind: "new", content, contentHash, fileType, orderIndex })

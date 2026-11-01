@@ -5,13 +5,10 @@ import { useRef, useState, type DragEvent } from "react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { FieldError } from "@/components/ui/field"
 import { cn } from "@/lib/utils"
 import type { WorkMediaItem } from "@/lib/works/queries"
-import {
-    formatFileSize,
-    MAX_MEDIA_FILE_BYTES,
-    resolveUploadedFileType,
-} from "@/lib/works/validation"
+import { checkWorkMediaFile, formatFileSize, resolveUploadedFileType } from "@/lib/works/validation"
 
 export type EditableMediaItem =
     | {
@@ -61,16 +58,16 @@ export default function WorkMediaManager({ items, onChange }: WorkMediaManagerPr
         setUploadError(null)
 
         const nextItems = [...items]
+        const errors: string[] = []
         for (const file of Array.from(fileList)) {
+            const error = checkWorkMediaFile(file)
+            if (error) {
+                errors.push(error)
+                continue
+            }
+
             const fileType = resolveUploadedFileType(file.type, file.name)
-            if (!fileType) {
-                setUploadError("Obsługiwane formaty plików to PNG, JPG, GIF oraz MP4.")
-                continue
-            }
-            if (file.size === 0 || file.size > MAX_MEDIA_FILE_BYTES) {
-                setUploadError("Każdy plik musi mieć rozmiar od 1 B do 10 MB.")
-                continue
-            }
+            if (!fileType) continue
 
             nextItems.push({
                 key: `new:${crypto.randomUUID()}`,
@@ -83,6 +80,9 @@ export default function WorkMediaManager({ items, onChange }: WorkMediaManagerPr
             })
         }
 
+        if (errors.length > 0) {
+            setUploadError(errors.join(" "))
+        }
         onChange(nextItems)
         if (fileInputRef.current) fileInputRef.current.value = ""
     }
@@ -141,6 +141,9 @@ export default function WorkMediaManager({ items, onChange }: WorkMediaManagerPr
                             przeglądaj pliki
                         </button>
                     </p>
+                    <p className="text-[11px] text-muted-foreground">
+                        PNG, JPG, GIF, MP4. Maks. 2 MB.
+                    </p>
                     <input
                         ref={fileInputRef}
                         type="file"
@@ -151,11 +154,7 @@ export default function WorkMediaManager({ items, onChange }: WorkMediaManagerPr
                     />
                 </div>
 
-                {uploadError && (
-                    <p role="alert" className="text-xs font-medium text-destructive">
-                        {uploadError}
-                    </p>
-                )}
+                <FieldError>{uploadError}</FieldError>
             </div>
 
             {items.length > 0 && (
