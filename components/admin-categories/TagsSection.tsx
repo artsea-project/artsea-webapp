@@ -23,12 +23,13 @@ export default function TagsSection({ tags }: TagsSectionProps) {
             deleteDialogDescription={(tag) =>
                 `Tag #${tag.namePln} zniknie z listy dostępnych tagów i zostanie odpięty od wszystkich prac.`
             }
-            renderForm={({ editingItem, onDone, onCancel }) => (
+            renderForm={({ editingItem, onDone, onCancel, onSavingChange }) => (
                 <TagFormCard
                     key={editingItem?.tagId ?? "new"}
                     tag={editingItem}
                     onDone={onDone}
                     onCancel={onCancel}
+                    onSavingChange={onSavingChange}
                 />
             )}
             renderList={({ isDeleting, selectedId, onEdit, onDelete }) => (

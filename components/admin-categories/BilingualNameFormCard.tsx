@@ -1,6 +1,6 @@
 "use client"
 
-import { useActionState, useState, type ReactNode } from "react"
+import { useActionState, useEffect, useState, type ReactNode } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
@@ -44,6 +44,7 @@ interface BilingualNameFormCardProps {
     updateAction: BilingualNameAction
     onDone: (message: string) => void
     onCancel?: () => void
+    onSavingChange?: (isSaving: boolean) => void
     footer?: ReactNode
 }
 
@@ -54,6 +55,7 @@ export default function BilingualNameFormCard({
     updateAction,
     onDone,
     onCancel,
+    onSavingChange,
     footer,
 }: BilingualNameFormCardProps) {
     const [namePln, setNamePln] = useState(item?.namePln ?? "")
@@ -86,6 +88,11 @@ export default function BilingualNameFormCard({
         },
         initialBilingualNameFormState
     )
+
+    useEffect(() => {
+        onSavingChange?.(isSaving)
+        return () => onSavingChange?.(false)
+    }, [isSaving, onSavingChange])
 
     const plnInputId = `${copy.idPrefix}NamePln`
     const engInputId = `${copy.idPrefix}NameEng`

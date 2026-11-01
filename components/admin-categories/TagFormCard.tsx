@@ -28,9 +28,10 @@ interface TagFormCardProps {
     tag?: AdminTag
     onDone: (message: string) => void
     onCancel?: () => void
+    onSavingChange?: (isSaving: boolean) => void
 }
 
-export default function TagFormCard({ tag, onDone, onCancel }: TagFormCardProps) {
+export default function TagFormCard({ tag, onDone, onCancel, onSavingChange }: TagFormCardProps) {
     return (
         <BilingualNameFormCard
             item={
@@ -47,6 +48,7 @@ export default function TagFormCard({ tag, onDone, onCancel }: TagFormCardProps)
             updateAction={updateTag}
             onDone={onDone}
             onCancel={onCancel}
+            onSavingChange={onSavingChange}
             footer={
                 <div className="mt-1 flex items-start gap-3 rounded-lg border border-border bg-surface p-3.5 text-[13px] leading-tight text-muted-foreground">
                     <Info className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
