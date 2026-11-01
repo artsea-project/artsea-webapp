@@ -228,6 +228,31 @@ function readTag(formData: FormData) {
     }
 }
 
+async function findTagConflicts(
+    values: { namePln: string | null; nameEng: string | null },
+    excludeId?: string
+): Promise<FieldErrors<CategoryField>> {
+    const notSelf = excludeId ? ne(tags.tagId, excludeId) : undefined
+
+    const [existingPln, existingEng] = await Promise.all([
+        values.namePln
+            ? db.query.tags.findFirst({
+                  where: and(equalsIgnoreCase(tags.namePln, values.namePln), notSelf),
+              })
+            : Promise.resolve(undefined),
+        values.nameEng
+            ? db.query.tags.findFirst({
+                  where: and(equalsIgnoreCase(tags.nameEng, values.nameEng), notSelf),
+              })
+            : Promise.resolve(undefined),
+    ])
+
+    const fieldErrors: FieldErrors<CategoryField> = {}
+    if (existingPln) fieldErrors.namePln = "Tag o takiej nazwie już istnieje."
+    if (existingEng) fieldErrors.nameEng = "Tag o takiej nazwie już istnieje."
+    return fieldErrors
+}
+
 export async function createTag(
     _previous: TagFormState,
     formData: FormData
@@ -237,27 +262,17 @@ export async function createTag(
         return failed({}, tag.formError)
     }
 
-    const [existingPln, existingEng] = await Promise.all([
-        tag.values.namePln
-            ? db.query.tags.findFirst({
-                  where: equalsIgnoreCase(tags.namePln, tag.values.namePln),
-              })
-            : Promise.resolve(undefined),
-        tag.values.nameEng
-            ? db.query.tags.findFirst({
-                  where: equalsIgnoreCase(tags.nameEng, tag.values.nameEng),
-              })
-            : Promise.resolve(undefined),
-    ])
+    const conflicts = await findTagConflicts(tag.values)
+    if (conflicts.namePln || conflicts.nameEng) return failed(conflicts)
 
-    if (existingPln || existingEng) {
-        return failed({
-            namePln: existingPln ? "Tag o takiej nazwie już istnieje." : undefined,
-            nameEng: existingEng ? "Tag o takiej nazwie już istnieje." : undefined,
-        })
+    try {
+        await db.insert(tags).values(tag.values)
+    } catch (error) {
+        if (getPostgresErrorCode(error) === "23505") {
+            return failed(await findTagConflicts(tag.values))
+        }
+        throw error
     }
-
-    await db.insert(tags).values(tag.values)
 
     refreshViews()
     return succeeded()
@@ -277,32 +292,22 @@ export async function updateTag(
         return failed({}, tag.formError)
     }
 
-    const notSelf = ne(tags.tagId, tagId)
-    const [existingPln, existingEng] = await Promise.all([
-        tag.values.namePln
-            ? db.query.tags.findFirst({
-                  where: and(equalsIgnoreCase(tags.namePln, tag.values.namePln), notSelf),
-              })
-            : Promise.resolve(undefined),
-        tag.values.nameEng
-            ? db.query.tags.findFirst({
-                  where: and(equalsIgnoreCase(tags.nameEng, tag.values.nameEng), notSelf),
-              })
-            : Promise.resolve(undefined),
-    ])
+    const conflicts = await findTagConflicts(tag.values, tagId)
+    if (conflicts.namePln || conflicts.nameEng) return failed(conflicts)
 
-    if (existingPln || existingEng) {
-        return failed({
-            namePln: existingPln ? "Tag o takiej nazwie już istnieje." : undefined,
-            nameEng: existingEng ? "Tag o takiej nazwie już istnieje." : undefined,
-        })
+    let updated: { tagId: string }[]
+    try {
+        updated = await db
+            .update(tags)
+            .set(tag.values)
+            .where(eq(tags.tagId, tagId))
+            .returning({ tagId: tags.tagId })
+    } catch (error) {
+        if (getPostgresErrorCode(error) === "23505") {
+            return failed(await findTagConflicts(tag.values, tagId))
+        }
+        throw error
     }
-
-    const updated = await db
-        .update(tags)
-        .set(tag.values)
-        .where(eq(tags.tagId, tagId))
-        .returning({ tagId: tags.tagId })
 
     refreshViews()
     if (updated.length === 0) {
