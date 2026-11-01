@@ -1,5 +1,6 @@
 import { X } from "lucide-react"
 
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 interface TagPillProps {
@@ -44,15 +45,17 @@ export default function TagPill({
                     </span>
                 )}
             </button>
-            <button
+            <Button
                 type="button"
+                variant="ghost"
+                size="icon"
                 disabled={disabled}
                 aria-label={`Usuń tag ${namePln}`}
                 onClick={onDelete}
-                className="inline-flex shrink-0 items-center justify-center rounded-xs text-muted-foreground transition-colors hover:text-destructive focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+                className="text-muted-foreground hover:text-destructive"
             >
-                <X className="size-3.5" />
-            </button>
+                <X />
+            </Button>
         </span>
     )
 }
