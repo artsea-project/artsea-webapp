@@ -1,4 +1,4 @@
-import { asc, count, eq } from "drizzle-orm"
+import { asc, count, eq, sql } from "drizzle-orm"
 
 import { db } from "@/db"
 import { artPieces, categories, tags } from "@/db/schema"
@@ -43,5 +43,5 @@ export async function getOrderedTags(): Promise<AdminTag[]> {
             nameEng: tags.nameEng,
         })
         .from(tags)
-        .orderBy(asc(tags.namePln))
+        .orderBy(asc(sql`lower(coalesce(${tags.namePln}, ${tags.nameEng}))`))
 }
