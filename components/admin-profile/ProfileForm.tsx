@@ -253,7 +253,12 @@ export default function ProfileForm({ saved }: ProfileFormProps) {
                 >
                     Zapisz zmiany
                 </Button>
-                <Button type="button" variant="outline" onClick={cancelChanges}>
+                <Button
+                    type="button"
+                    variant="outline"
+                    disabled={isSaving || !isDirty}
+                    onClick={cancelChanges}
+                >
                     Cofnij zmiany
                 </Button>
                 <p role="status" className="text-sm text-muted-foreground">
