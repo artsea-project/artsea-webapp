@@ -36,6 +36,7 @@ export interface WorkForEdit {
     isVisible: boolean
     titlePln: string
     titleEng: string
+    dimensions: string
     yearOfExecution: number | null
     descriptionPln: WorkDescription
     descriptionEng: WorkDescription
@@ -173,6 +174,7 @@ export async function getWorkForEdit(artPieceId: string): Promise<WorkForEdit | 
         isVisible: work.isVisible,
         titlePln: work.titlePln ?? "",
         titleEng: work.titleEng ?? "",
+        dimensions: work.dimensions ?? "",
         yearOfExecution: work.yearOfExecution,
         descriptionPln: readWorkDescription(work.descriptionPln),
         descriptionEng: readWorkDescription(work.descriptionEng),

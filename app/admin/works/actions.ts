@@ -1,22 +1,24 @@
 "use server"
 
-import { eq } from "drizzle-orm"
+import { createHash } from "node:crypto"
+
+import { and, eq, notInArray } from "drizzle-orm"
 import { revalidatePath, revalidateTag } from "next/cache"
 
 import { db } from "@/db"
-import { artPieces, artPieceTags } from "@/db/schema"
+import { artPieces, artPieceTags, media } from "@/db/schema"
 import { BENTO_CACHE_TAG } from "@/lib/bento"
 import { buildWorkDescription } from "@/lib/works/description"
 import type { WorkField, WorkFormState } from "@/lib/works/form-state"
 import {
-    checkDescription,
-    checkTechnique,
     checkWorkCategory,
     checkWorkTitles,
     checkYearOfExecution,
     isUuid,
+    MAX_MEDIA_FILE_BYTES,
     parseTagIds,
     parseYearOfExecution,
+    resolveUploadedFileType,
 } from "@/lib/works/validation"
 
 type FieldErrors<Field extends string> = Partial<Record<Field, string>>
@@ -72,6 +74,7 @@ function refreshViews(artPieceId?: string) {
 function readWork(formData: FormData) {
     const rawTitlePln = readText(formData, "titlePln")
     const rawTitleEng = readText(formData, "titleEng")
+    const rawDimensions = readText(formData, "dimensions")
     const rawYear = readText(formData, "yearOfExecution")
     const rawTechniquePln = readText(formData, "techniquePln")
     const rawTechniqueEng = readText(formData, "techniqueEng")
@@ -83,20 +86,12 @@ function readWork(formData: FormData) {
     const titleError = checkWorkTitles(rawTitlePln, rawTitleEng)
     const yearError = checkYearOfExecution(rawYear)
     const categoryError = checkWorkCategory(categoryId)
-    const techniquePlnError = checkTechnique(rawTechniquePln)
-    const techniqueEngError = checkTechnique(rawTechniqueEng)
-    const descriptionPlnError = checkDescription(rawDescriptionPln)
-    const descriptionEngError = checkDescription(rawDescriptionEng)
     const parsedTags = parseTagIds(rawTagIds)
 
     const fieldErrors: FieldErrors<WorkField> = {
         ...(titleError ? { titlePln: titleError } : {}),
         ...(yearError ? { yearOfExecution: yearError } : {}),
         ...(categoryError ? { categoryId: categoryError } : {}),
-        ...(techniquePlnError ? { techniquePln: techniquePlnError } : {}),
-        ...(techniqueEngError ? { techniqueEng: techniqueEngError } : {}),
-        ...(descriptionPlnError ? { descriptionPln: descriptionPlnError } : {}),
-        ...(descriptionEngError ? { descriptionEng: descriptionEngError } : {}),
     }
 
     const formError = "error" in parsedTags ? parsedTags.error : undefined
@@ -106,18 +101,94 @@ function readWork(formData: FormData) {
 
     const titlePln = rawTitlePln.trim() || null
     const titleEng = rawTitleEng.trim() || null
+    const dimensions = rawDimensions.trim() || null
 
     return {
         values: {
             categoryId,
             titlePln,
             titleEng,
+            dimensions,
             yearOfExecution: parseYearOfExecution(rawYear),
             descriptionPln: buildWorkDescription(rawTechniquePln, rawDescriptionPln),
             descriptionEng: buildWorkDescription(rawTechniqueEng, rawDescriptionEng),
         },
         tagIds: "tagIds" in parsedTags ? parsedTags.tagIds : [],
     }
+}
+
+type PreparedMediaOrder =
+    | { kind: "existing"; mediaId: string; orderIndex: number }
+    | {
+          kind: "new"
+          content: Buffer
+          contentHash: string
+          fileType: "png" | "jpg" | "gif" | "mp4"
+          orderIndex: number
+      }
+
+async function readMediaOrder(
+    formData: FormData,
+    allowExisting: boolean
+): Promise<{ items: PreparedMediaOrder[]; hasOrderField: boolean } | { error: string }> {
+    const rawOrder = readTextList(formData, "mediaOrder")
+    const uploadedFiles = formData
+        .getAll("newMedia")
+        .filter((entry): entry is File => typeof File !== "undefined" && entry instanceof File)
+
+    if (rawOrder.length === 0 && uploadedFiles.length === 0) {
+        return { items: [], hasOrderField: formData.has("mediaOrderSubmitted") }
+    }
+
+    const orderTokens =
+        rawOrder.length > 0 ? rawOrder : uploadedFiles.map((_, index) => `new:${index}`)
+
+    const items: PreparedMediaOrder[] = []
+    const seenExisting = new Set<string>()
+    const seenNew = new Set<number>()
+
+    for (let orderIndex = 0; orderIndex < orderTokens.length; orderIndex += 1) {
+        const token = orderTokens[orderIndex]
+        if (token.startsWith("existing:")) {
+            const mediaId = token.slice("existing:".length)
+            if (!allowExisting || !isUuid(mediaId) || seenExisting.has(mediaId)) {
+                return { error: "Nieprawidłowy identyfikator pliku." }
+            }
+            seenExisting.add(mediaId)
+            items.push({ kind: "existing", mediaId, orderIndex })
+            continue
+        }
+
+        if (token.startsWith("new:")) {
+            const fileIndex = Number(token.slice("new:".length))
+            const file = Number.isInteger(fileIndex) ? uploadedFiles[fileIndex] : undefined
+            if (!file || seenNew.has(fileIndex)) {
+                return { error: "Brakuje przesyłanego pliku." }
+            }
+            seenNew.add(fileIndex)
+
+            if (file.size === 0) {
+                return { error: "Przesyłany plik jest pusty." }
+            }
+            if (file.size > MAX_MEDIA_FILE_BYTES) {
+                return { error: "Każdy plik może mieć maksymalnie 10 MB." }
+            }
+
+            const fileType = resolveUploadedFileType(file.type, file.name)
+            if (!fileType) {
+                return { error: "Obsługiwane formaty plików to PNG, JPG, GIF oraz MP4." }
+            }
+
+            const content = Buffer.from(await file.arrayBuffer())
+            const contentHash = createHash("sha256").update(content).digest("hex")
+            items.push({ kind: "new", content, contentHash, fileType, orderIndex })
+            continue
+        }
+
+        return { error: "Nieprawidłowa kolejność plików." }
+    }
+
+    return { items, hasOrderField: true }
 }
 
 function handleForeignKeyFailure(error: unknown): WorkFormState {
@@ -138,6 +209,9 @@ export async function createWork(
     const work = readWork(formData)
     if (!work.values) return failed(work.fieldErrors, work.formError)
 
+    const mediaResult = await readMediaOrder(formData, false)
+    if ("error" in mediaResult) return failed({}, mediaResult.error)
+
     let createdId: string
     try {
         createdId = await db.transaction(async (tx) => {
@@ -150,6 +224,23 @@ export async function createWork(
                 await tx
                     .insert(artPieceTags)
                     .values(work.tagIds.map((tagId) => ({ artPieceId: created.artPieceId, tagId })))
+            }
+
+            const newMediaRows = mediaResult.items
+                .filter(
+                    (item): item is Extract<PreparedMediaOrder, { kind: "new" }> =>
+                        item.kind === "new"
+                )
+                .map((item) => ({
+                    artPieceId: created.artPieceId,
+                    content: item.content,
+                    contentHash: item.contentHash,
+                    fileType: item.fileType,
+                    orderIndex: item.orderIndex,
+                }))
+
+            if (newMediaRows.length > 0) {
+                await tx.insert(media).values(newMediaRows)
             }
 
             return created.artPieceId
@@ -177,6 +268,9 @@ export async function updateWork(
     const work = readWork(formData)
     if (!work.values) return failed(work.fieldErrors, work.formError)
 
+    const mediaResult = await readMediaOrder(formData, true)
+    if ("error" in mediaResult) return failed({}, mediaResult.error)
+
     let updatedCount: number
     try {
         updatedCount = await db.transaction(async (tx) => {
@@ -193,6 +287,53 @@ export async function updateWork(
                 await tx
                     .insert(artPieceTags)
                     .values(work.tagIds.map((tagId) => ({ artPieceId, tagId })))
+            }
+
+            if (mediaResult.hasOrderField) {
+                const existingItems = mediaResult.items.filter(
+                    (item): item is Extract<PreparedMediaOrder, { kind: "existing" }> =>
+                        item.kind === "existing"
+                )
+                const retainedIds = existingItems.map((item) => item.mediaId)
+
+                if (retainedIds.length === 0) {
+                    await tx.delete(media).where(eq(media.artPieceId, artPieceId))
+                } else {
+                    await tx
+                        .delete(media)
+                        .where(
+                            and(
+                                eq(media.artPieceId, artPieceId),
+                                notInArray(media.mediaId, retainedIds)
+                            )
+                        )
+                }
+
+                for (const item of existingItems) {
+                    await tx
+                        .update(media)
+                        .set({ orderIndex: item.orderIndex })
+                        .where(
+                            and(eq(media.artPieceId, artPieceId), eq(media.mediaId, item.mediaId))
+                        )
+                }
+
+                const newMediaRows = mediaResult.items
+                    .filter(
+                        (item): item is Extract<PreparedMediaOrder, { kind: "new" }> =>
+                            item.kind === "new"
+                    )
+                    .map((item) => ({
+                        artPieceId,
+                        content: item.content,
+                        contentHash: item.contentHash,
+                        fileType: item.fileType,
+                        orderIndex: item.orderIndex,
+                    }))
+
+                if (newMediaRows.length > 0) {
+                    await tx.insert(media).values(newMediaRows)
+                }
             }
 
             return updated.length
