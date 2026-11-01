@@ -1,5 +1,6 @@
 import { Suspense } from "react"
 import { notFound } from "next/navigation"
+import { useTranslations } from "next-intl"
 import { getLocale, getTranslations } from "next-intl/server"
 import { Ruler, MoveRight } from "lucide-react"
 import parse from "html-react-parser"
@@ -98,6 +99,8 @@ interface NextArtworkNavigationProps {
 }
 
 function NextArtworkNavigation({ artPieceId, title }: NextArtworkNavigationProps) {
+    const t = useTranslations("Artwork")
+
     return (
         <div className="mt-24 pt-12 border-t border-border">
             <Link
@@ -106,7 +109,7 @@ function NextArtworkNavigation({ artPieceId, title }: NextArtworkNavigationProps
             >
                 <div className="flex flex-col gap-3">
                     <span className="text-xs font-bold tracking-widest text-primary uppercase font-secondary">
-                        Zobacz kolejny
+                        {t("next")}
                     </span>
                     <span className="text-3xl md:text-5xl font-normal font-primary text-foreground transition-colors">
                         {title}
@@ -152,7 +155,7 @@ async function WorkDetails({ params }: PageProps) {
 
     const galleryPhotos = artwork.photos.map((photo) => ({
         src: `/media/${photo.mediaId}`,
-        alt: `${title} - photo ${photo.orderIndex + 1}`,
+        alt: t("photoAlt", { title, number: photo.orderIndex + 1 }),
     }))
 
     return (
@@ -170,8 +173,8 @@ async function WorkDetails({ params }: PageProps) {
                             tags={artwork.tags}
                         />
                         <DimensionsSection dimensions={artwork.dimensions} />
-                        <DetailSection label="Technika i materiały" content={artwork.technique} />
-                        <DetailSection label="O projekcie" content={artwork.description} />
+                        <DetailSection label={t("technique")} content={artwork.technique} />
+                        <DetailSection label={t("description")} content={artwork.description} />
                     </div>
                 </div>
                 {nextArtwork && (
