@@ -39,8 +39,17 @@ export default function TagsListCard({
           })
         : tags
 
-    const hiddenCount = Math.max(filteredTags.length - COLLAPSED_LIMIT, 0)
-    const visibleTags = expanded ? filteredTags : filteredTags.slice(0, COLLAPSED_LIMIT)
+    const collapsedSlice = filteredTags.slice(0, COLLAPSED_LIMIT)
+    const selectedOutsideSlice =
+        !expanded && selectedTagId && !collapsedSlice.some((t) => t.tagId === selectedTagId)
+            ? filteredTags.find((t) => t.tagId === selectedTagId)
+            : undefined
+    const visibleTags = expanded
+        ? filteredTags
+        : selectedOutsideSlice
+          ? [...collapsedSlice, selectedOutsideSlice]
+          : collapsedSlice
+    const hiddenCount = Math.max(filteredTags.length - visibleTags.length, 0)
 
     return (
         <div className="overflow-hidden rounded-xl border border-border bg-background">
@@ -88,7 +97,7 @@ export default function TagsListCard({
                 )}
             </div>
 
-            {hiddenCount > 0 && (
+            {(expanded ? filteredTags.length > COLLAPSED_LIMIT : hiddenCount > 0) && (
                 <div className="border-t border-border">
                     <ExpandToggle
                         expanded={expanded}

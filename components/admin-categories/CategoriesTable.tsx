@@ -26,8 +26,19 @@ export default function CategoriesTable({
     const [expanded, setExpanded] = useState(false)
     const tableId = useId()
 
-    const hiddenCount = Math.max(categories.length - COLLAPSED_LIMIT, 0)
-    const visibleCategories = expanded ? categories : categories.slice(0, COLLAPSED_LIMIT)
+    const collapsedSlice = categories.slice(0, COLLAPSED_LIMIT)
+    const selectedOutsideSlice =
+        !expanded &&
+        selectedCategoryId &&
+        !collapsedSlice.some((c) => c.categoryId === selectedCategoryId)
+            ? categories.find((c) => c.categoryId === selectedCategoryId)
+            : undefined
+    const visibleCategories = expanded
+        ? categories
+        : selectedOutsideSlice
+          ? [...collapsedSlice, selectedOutsideSlice]
+          : collapsedSlice
+    const hiddenCount = Math.max(categories.length - visibleCategories.length, 0)
 
     return (
         <div className="overflow-hidden rounded-xl border border-border bg-background">
@@ -72,7 +83,7 @@ export default function CategoriesTable({
                 </table>
             </div>
 
-            {hiddenCount > 0 && (
+            {(expanded ? categories.length > COLLAPSED_LIMIT : hiddenCount > 0) && (
                 <div className="border-t border-border">
                     <ExpandToggle
                         expanded={expanded}
