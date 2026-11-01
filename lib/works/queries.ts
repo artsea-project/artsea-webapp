@@ -192,7 +192,7 @@ export async function getWorkFormOptions(): Promise<WorkFormOptions> {
                 nameEng: categories.nameEng,
             })
             .from(categories)
-            .orderBy(asc(categories.namePln)),
+            .orderBy(asc(sql`lower(${categories.namePln})`)),
         getOrderedTags(),
     ])
 

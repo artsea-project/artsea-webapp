@@ -61,6 +61,14 @@ function getPostgresConstraintName(error: unknown): string | undefined {
     return undefined
 }
 
+function isOutsideRequestContextError(error: unknown): boolean {
+    return (
+        error instanceof Error &&
+        typeof error.message === "string" &&
+        error.message.includes("static generation store missing")
+    )
+}
+
 function refreshViews(artPieceId?: string) {
     try {
         revalidatePath("/admin/works")
@@ -68,8 +76,10 @@ function refreshViews(artPieceId?: string) {
         revalidatePath("/")
         if (artPieceId) revalidatePath(`/work/${artPieceId}`)
         revalidateTag(BENTO_CACHE_TAG, "max")
-    } catch {
-        // Ignored when executed outside the Next.js request context (e.g. integration tests)
+    } catch (error) {
+        if (!isOutsideRequestContextError(error)) {
+            console.error("Failed to revalidate cache:", error)
+        }
     }
 }
 
