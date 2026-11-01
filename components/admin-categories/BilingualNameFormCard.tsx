@@ -17,8 +17,8 @@ export type BilingualNameAction = (
 
 export interface BilingualNameItem {
     id: string
-    namePln: string | null
-    nameEng: string | null
+    namePln: string
+    nameEng: string
 }
 
 export interface BilingualNameFormCopy {
