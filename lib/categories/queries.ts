@@ -27,7 +27,7 @@ export async function getCategoriesWithWorkCounts(): Promise<AdminCategory[]> {
         .from(categories)
         .leftJoin(artPieces, eq(categories.categoryId, artPieces.categoryId))
         .groupBy(categories.categoryId, categories.namePln, categories.nameEng)
-        .orderBy(asc(categories.namePln))
+        .orderBy(asc(sql`lower(${categories.namePln})`))
 
     return rows.map((row) => ({
         ...row,
