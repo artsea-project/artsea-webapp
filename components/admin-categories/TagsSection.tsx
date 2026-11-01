@@ -21,7 +21,7 @@ export default function TagsSection({ tags }: TagsSectionProps) {
             deleteFailureMessage="Nie udało się usunąć tagu. Spróbuj ponownie."
             deleteDialogTitle="Usunąć tag?"
             deleteDialogDescription={(tag) =>
-                `Tag #${tag.namePln || tag.nameEng} zniknie z listy dostępnych tagów i zostanie odpięty od wszystkich prac.`
+                `Tag #${tag.namePln} zniknie z listy dostępnych tagów i zostanie odpięty od wszystkich prac.`
             }
             renderForm={({ editingItem, onDone, onCancel }) => (
                 <TagFormCard

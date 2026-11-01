@@ -96,8 +96,8 @@ export const tags = pgTable(
     "tag",
     {
         tagId: uuid("tag_id").primaryKey().defaultRandom(),
-        namePln: text("name_pln"),
-        nameEng: text("name_eng"),
+        namePln: text("name_pln").notNull(),
+        nameEng: text("name_eng").notNull(),
     },
     (table) => [
         uniqueIndex("tag_name_pln_uq").on(sql`lower(${table.namePln})`),

@@ -16,7 +16,8 @@ import type {
 import {
     checkCategoryNameEng,
     checkCategoryNamePln,
-    checkTagNames,
+    checkTagNameEng,
+    checkTagNamePln,
     normalizeTagName,
 } from "@/lib/categories/validation"
 
@@ -87,24 +88,20 @@ interface ConflictCheckConfig {
 
 async function findNameConflicts(
     config: ConflictCheckConfig,
-    values: { namePln: string | null; nameEng: string | null },
+    values: { namePln: string; nameEng: string },
     excludeId?: string
 ): Promise<FieldErrors<BilingualNameField>> {
     const notSelf = excludeId ? ne(config.idColumn, excludeId) : undefined
 
     const [existingPln, existingEng] = await Promise.all([
-        values.namePln
-            ? hasMatchingRow(
-                  config.table,
-                  and(equalsIgnoreCase(config.namePlnColumn, values.namePln), notSelf)
-              )
-            : false,
-        values.nameEng
-            ? hasMatchingRow(
-                  config.table,
-                  and(equalsIgnoreCase(config.nameEngColumn, values.nameEng), notSelf)
-              )
-            : false,
+        hasMatchingRow(
+            config.table,
+            and(equalsIgnoreCase(config.namePlnColumn, values.namePln), notSelf)
+        ),
+        hasMatchingRow(
+            config.table,
+            and(equalsIgnoreCase(config.nameEngColumn, values.nameEng), notSelf)
+        ),
     ])
 
     const fieldErrors: FieldErrors<BilingualNameField> = {}
@@ -269,24 +266,27 @@ function readTag(formData: FormData) {
     const rawPln = readText(formData, "namePln")
     const rawEng = readText(formData, "nameEng")
 
-    const validationError = checkTagNames(rawPln, rawEng)
-    if (validationError) {
-        return { formError: validationError }
-    }
+    const plnError = checkTagNamePln(rawPln)
+    const engError = checkTagNameEng(rawEng)
 
-    const normalizedPln = normalizeTagName(rawPln)
-    const normalizedEng = normalizeTagName(rawEng)
+    if (plnError || engError) {
+        const fieldErrors: FieldErrors<TagField> = {
+            namePln: plnError ?? undefined,
+            nameEng: engError ?? undefined,
+        }
+        return { fieldErrors }
+    }
 
     return {
         values: {
-            namePln: normalizedPln || null,
-            nameEng: normalizedEng || null,
+            namePln: normalizeTagName(rawPln),
+            nameEng: normalizeTagName(rawEng),
         },
     }
 }
 
 async function findTagConflicts(
-    values: { namePln: string | null; nameEng: string | null },
+    values: { namePln: string; nameEng: string },
     excludeId?: string
 ): Promise<FieldErrors<TagField>> {
     return findNameConflicts(tagConflictConfig, values, excludeId)
@@ -297,9 +297,7 @@ export async function createTag(
     formData: FormData
 ): Promise<TagFormState> {
     const tag = readTag(formData)
-    if (!tag.values) {
-        return failed({}, tag.formError)
-    }
+    if (!tag.values) return failed(tag.fieldErrors)
 
     const conflicts = await findTagConflicts(tag.values)
     if (conflicts.namePln || conflicts.nameEng) return failed(conflicts)
@@ -327,9 +325,7 @@ export async function updateTag(
     }
 
     const tag = readTag(formData)
-    if (!tag.values) {
-        return failed({}, tag.formError)
-    }
+    if (!tag.values) return failed(tag.fieldErrors)
 
     const conflicts = await findTagConflicts(tag.values, tagId)
     if (conflicts.namePln || conflicts.nameEng) return failed(conflicts)

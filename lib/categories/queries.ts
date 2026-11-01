@@ -12,8 +12,8 @@ export interface AdminCategory {
 
 export interface AdminTag {
     tagId: string
-    namePln: string | null
-    nameEng: string | null
+    namePln: string
+    nameEng: string
 }
 
 export async function getCategoriesWithWorkCounts(): Promise<AdminCategory[]> {
@@ -43,5 +43,5 @@ export async function getOrderedTags(): Promise<AdminTag[]> {
             nameEng: tags.nameEng,
         })
         .from(tags)
-        .orderBy(asc(sql`lower(coalesce(${tags.namePln}, ${tags.nameEng}))`))
+        .orderBy(asc(sql`lower(${tags.namePln})`))
 }

@@ -3,8 +3,8 @@ import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface TagPillProps {
-    namePln: string | null
-    nameEng: string | null
+    namePln: string
+    nameEng: string
     isSelected?: boolean
     disabled?: boolean
     onSelect?: () => void
@@ -19,9 +19,7 @@ export default function TagPill({
     onSelect,
     onDelete,
 }: TagPillProps) {
-    const primaryLabel = namePln || nameEng || ""
-    const secondaryLabel =
-        namePln && nameEng && namePln.toLowerCase() !== nameEng.toLowerCase() ? nameEng : null
+    const secondaryLabel = namePln.toLowerCase() !== nameEng.toLowerCase() ? nameEng : null
 
     return (
         <span
@@ -33,11 +31,11 @@ export default function TagPill({
             <button
                 type="button"
                 onClick={onSelect}
-                aria-label={`Edytuj tag ${primaryLabel}`}
+                aria-label={`Edytuj tag ${namePln}`}
                 className="flex min-w-0 cursor-pointer flex-col items-center gap-0.5 text-center transition-opacity hover:opacity-75 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
             >
                 <span className="max-w-full truncate text-sm leading-tight font-semibold text-foreground">
-                    #{primaryLabel}
+                    #{namePln}
                 </span>
                 {secondaryLabel && (
                     <span className="max-w-full truncate text-[11px] leading-tight font-normal text-muted-foreground">
@@ -48,7 +46,7 @@ export default function TagPill({
             <button
                 type="button"
                 disabled={disabled}
-                aria-label={`Usuń tag ${primaryLabel}`}
+                aria-label={`Usuń tag ${namePln}`}
                 onClick={onDelete}
                 className="inline-flex shrink-0 items-center justify-center rounded-xs text-muted-foreground transition-colors hover:text-destructive focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
             >

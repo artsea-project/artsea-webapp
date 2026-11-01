@@ -18,7 +18,8 @@ import { getOrderedTags } from "../lib/categories/queries"
 import {
     checkCategoryNameEng,
     checkCategoryNamePln,
-    checkTagNames,
+    checkTagNameEng,
+    checkTagNamePln,
     formatWorksCount,
     normalizeTagName,
 } from "../lib/categories/validation"
@@ -60,12 +61,12 @@ test.describe("category and tag validation helpers", () => {
         expect(checkCategoryNameEng("Painting")).toBeNull()
     })
 
-    test("strips leading '#' from tag names and requires at least one language", () => {
+    test("strips leading '#' from tag names and requires Polish and English names", () => {
         expect(normalizeTagName("  ##minimalizm  ")).toBe("minimalizm")
-        expect(checkTagNames(" ### ", "")).toBe("Podaj nazwę tagu w przynajmniej jednym języku.")
-        expect(checkTagNames("#grafika", "")).toBeNull()
-        expect(checkTagNames("", "graphics")).toBeNull()
-        expect(checkTagNames("#grafika", "graphics")).toBeNull()
+        expect(checkTagNamePln(" ### ")).toBe("Podaj nazwę tagu po polsku.")
+        expect(checkTagNameEng("")).toBe("Podaj nazwę tagu po angielsku.")
+        expect(checkTagNamePln("#grafika")).toBeNull()
+        expect(checkTagNameEng("graphics")).toBeNull()
     })
 
     test("formats Polish plural forms for artwork counts", () => {
@@ -115,8 +116,10 @@ test.describe("category and tag server actions", () => {
         )
         expect(tagState).toEqual({
             status: "error",
-            fieldErrors: {},
-            formError: "Podaj nazwę tagu w przynajmniej jednym języku.",
+            fieldErrors: {
+                namePln: "Podaj nazwę tagu po polsku.",
+                nameEng: "Podaj nazwę tagu po angielsku.",
+            },
         })
 
         const invalidTagUpdate = await updateTag(
@@ -221,12 +224,13 @@ test.describe("category and tag server actions", () => {
         expect(remaining).toBeUndefined()
     })
 
-    test("creates single- and dual-language tags, updates tags, blocks duplicates, and deletes tags", async () => {
+    test("creates tags stripping leading '#', updates tags, blocks duplicates, and deletes tags", async () => {
         const namePln = `tag_pl_${suffix}`
         const nameEng = `tag_en_${suffix}`
-        const singleEng = `a_tag_only_en_${suffix}`
+        const secondPln = `a_tag_pl_${suffix}`
+        const secondEng = `a_tag_en_${suffix}`
         const updatedEng = `tag_updated_en_${suffix}`
-        createdTagNames.push(namePln, nameEng, singleEng, updatedEng)
+        createdTagNames.push(namePln, nameEng, secondPln, secondEng, updatedEng)
 
         const createResult = await createTag(
             initialTagFormState,
@@ -243,32 +247,31 @@ test.describe("category and tag server actions", () => {
         expect(savedTag).toBeDefined()
         expect(savedTag?.nameEng).toBe(nameEng)
 
-        const singleLangResult = await createTag(
+        const secondTagResult = await createTag(
             initialTagFormState,
             makeFormData({
-                namePln: "   ",
-                nameEng: `#${singleEng}`,
+                namePln: `#${secondPln}`,
+                nameEng: `#${secondEng}`,
             })
         )
-        expect(singleLangResult.status).toBe("success")
+        expect(secondTagResult.status).toBe("success")
 
-        const savedSingleTag = await db.query.tags.findFirst({
-            where: eq(tags.nameEng, singleEng),
+        const savedSecondTag = await db.query.tags.findFirst({
+            where: eq(tags.namePln, secondPln),
         })
-        expect(savedSingleTag).toBeDefined()
-        expect(savedSingleTag?.namePln).toBeNull()
+        expect(savedSecondTag).toBeDefined()
 
         const orderedTags = await getOrderedTags()
-        const singleIndex = orderedTags.findIndex((t) => t.tagId === savedSingleTag!.tagId)
-        const dualIndex = orderedTags.findIndex((t) => t.tagId === savedTag!.tagId)
-        expect(singleIndex).toBeGreaterThanOrEqual(0)
-        expect(dualIndex).toBeGreaterThan(singleIndex)
+        const secondIndex = orderedTags.findIndex((t) => t.tagId === savedSecondTag!.tagId)
+        const firstIndex = orderedTags.findIndex((t) => t.tagId === savedTag!.tagId)
+        expect(secondIndex).toBeGreaterThanOrEqual(0)
+        expect(firstIndex).toBeGreaterThan(secondIndex)
 
         const updateResult = await updateTag(
             initialTagFormState,
             makeFormData({
-                tagId: savedSingleTag!.tagId,
-                namePln: "",
+                tagId: savedSecondTag!.tagId,
+                namePln: secondPln,
                 nameEng: `#${updatedEng}`,
             })
         )
@@ -289,7 +292,7 @@ test.describe("category and tag server actions", () => {
         })
 
         expect(await deleteTag(savedTag!.tagId)).toEqual({ status: "success" })
-        expect(await deleteTag(savedSingleTag!.tagId)).toEqual({ status: "success" })
+        expect(await deleteTag(savedSecondTag!.tagId)).toEqual({ status: "success" })
 
         const afterDelete = await db.query.tags.findFirst({
             where: eq(tags.tagId, savedTag!.tagId),
