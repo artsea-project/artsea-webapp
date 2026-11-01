@@ -1,11 +1,18 @@
 import { Suspense } from "react"
-import { db } from "@/db"
 import { notFound } from "next/navigation"
+import { getLocale } from "next-intl/server"
 import { ArrowUpRight } from "lucide-react"
 import Image from "next/image"
-import { DEFAULT_ABOUT_HEADING, parseBio, parseParagraphs } from "@/lib/profile/content"
+import type { Locale } from "@/i18n/routing"
+import { localizedValue } from "@/lib/i18n/localized-key"
+import { DEFAULT_ABOUT_HEADING } from "@/lib/profile/content"
 import { profileImagePath } from "@/lib/profile/image"
-import { getOrderedLinks, type ProfileLink } from "@/lib/profile/queries"
+import {
+    getAboutProfile,
+    getOrderedLinks,
+    type AboutProfile,
+    type ProfileLink,
+} from "@/lib/profile/queries"
 
 interface HeroSectionProps {
     fullName: string
@@ -198,34 +205,31 @@ export default function AboutPage() {
     )
 }
 
-async function AboutContent() {
-    let profile = null
-    let socialLinksDb: ProfileLink[] = []
+async function loadAbout(locale: Locale): Promise<[AboutProfile | null, ProfileLink[]]> {
     try {
-        profile = await db.query.profiles.findFirst({
-            columns: { profileImageContent: false },
-        })
-        socialLinksDb = await getOrderedLinks()
+        return await Promise.all([getAboutProfile(locale), getOrderedLinks()])
     } catch (error) {
         console.error("Failed to fetch data:", error)
+        return [null, []]
     }
+}
+
+async function AboutContent() {
+    const locale = await getLocale()
+    const [profile, socialLinks] = await loadAbout(locale)
 
     if (!profile) {
         notFound()
     }
 
-    const bio = parseBio(profile.bioPln)
-    const contactParagraphs = parseParagraphs(profile.contactPln)
-
-    const profileImageSrc = profile.profileImageContentHash
-        ? profileImagePath(profile.profileImageContentHash)
-        : null
+    const { bio } = profile
+    const profileImageSrc = profile.imageHash ? profileImagePath(profile.imageHash) : null
 
     return (
         <div className="w-full">
             <HeroSection
                 fullName={profile.fullName}
-                heading={bio.heading || DEFAULT_ABOUT_HEADING.pln}
+                heading={bio.heading || localizedValue(DEFAULT_ABOUT_HEADING, locale)}
                 intro={bio.intro}
                 profileImageSrc={profileImageSrc}
             />
@@ -246,8 +250,8 @@ async function AboutContent() {
 
             <ContactSection
                 email={profile.contactEmail}
-                socialLinks={socialLinksDb}
-                paragraphs={contactParagraphs}
+                socialLinks={socialLinks}
+                paragraphs={profile.contact}
             />
         </div>
     )
