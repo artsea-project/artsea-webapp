@@ -9,6 +9,17 @@
     "Footer": {
         "heading": "Let's talk about art."
     },
+    "Gallery": {
+        "morePhotos": "+{count, plural, one {# photo} other {# photos}}",
+        "previous": "Previous",
+        "next": "Next",
+        "close": "Close",
+        "slide": "Slide",
+        "carousel": "Carousel",
+        "lightbox": "Lightbox",
+        "photoGallery": "Photo gallery",
+        "slideCounter": "{index} of {total}"
+    },
     "Home": {
         "heading": "Selected works."
     },
