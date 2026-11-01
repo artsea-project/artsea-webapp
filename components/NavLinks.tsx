@@ -2,14 +2,15 @@
 
 import { Fragment, useState } from "react"
 import { Menu, X } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { Link, usePathname } from "@/i18n/navigation"
 
 const NAV_ITEMS = [
-    { name: "O MNIE", href: "/about" },
-    { name: "PORTFOLIO", href: "/" },
-    { name: "KONTAKT", href: "/about#contact" },
-]
+    { labelKey: "about", href: "/about" },
+    { labelKey: "portfolio", href: "/" },
+    { labelKey: "contact", href: "/about#contact" },
+] as const
 
 const LANGUAGES = ["PL", "EN"] as const
 type Language = (typeof LANGUAGES)[number]
@@ -18,6 +19,7 @@ type Language = (typeof LANGUAGES)[number]
 const NAV_TYPOGRAPHY = "font-secondary text-xs font-normal uppercase tracking-widest"
 
 function NavItemLinks({ className, onNavigate }: { className?: string; onNavigate?: () => void }) {
+    const t = useTranslations("Nav")
     const pathname = usePathname()
 
     const isLinkActive = (href: string) => {
@@ -40,7 +42,7 @@ function NavItemLinks({ className, onNavigate }: { className?: string; onNavigat
                         onClick={onNavigate}
                         className={`transition-colors duration-200 ${active ? "text-foreground" : "text-muted-foreground"} ${className ?? ""}`}
                     >
-                        {item.name}
+                        {t(item.labelKey)}
                     </Link>
                 )
             })}
@@ -77,6 +79,7 @@ function LangToggle({
 }
 
 export default function NavLinks() {
+    const t = useTranslations("Nav")
     const [currentLang, setCurrentLang] = useState<Language>("PL")
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -97,7 +100,7 @@ export default function NavLinks() {
                     type="button"
                     onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                     className="p-2 text-foreground transition-colors focus:outline-none"
-                    aria-label="Toggle navigation menu"
+                    aria-label={t("toggleMenu")}
                     aria-expanded={mobileMenuOpen}
                     aria-controls="mobile-menu"
                 >
