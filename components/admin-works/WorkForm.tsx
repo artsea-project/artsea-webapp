@@ -1,10 +1,12 @@
 "use client"
 
+import { Plus } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useActionState, useEffect, useMemo, useRef, useState } from "react"
 
 import { createWork, updateWork } from "@/app/admin/works/actions"
+import CategoryPanel from "@/components/admin-categories/CategoryPanel"
 import BilingualTextField, {
     type BilingualTexts,
 } from "@/components/admin-profile/BilingualTextField"
@@ -21,6 +23,7 @@ import WorkMediaManager, {
     toInitialMediaItems,
     type EditableMediaItem,
 } from "@/components/admin-works/WorkMediaManager"
+import { AlertDialog, AlertDialogContent, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
@@ -126,6 +129,7 @@ export default function WorkForm({ work, categories, tags }: WorkFormProps) {
 
     const [draft, setDraft] = useState<WorkDraft>(savedDraft)
     const [mediaItems, setMediaItems] = useState<EditableMediaItem[]>(initialMedia)
+    const [isAddingCategory, setIsAddingCategory] = useState(false)
 
     const categoryOptions = useMemo<ChecklistOption[]>(
         () =>
@@ -326,6 +330,16 @@ export default function WorkForm({ work, categories, tags }: WorkFormProps) {
                             options={categoryOptions}
                             selectedIds={draft.categoryId ? [draft.categoryId] : []}
                             error={fieldError("categoryId")}
+                            headerAction={
+                                <button
+                                    type="button"
+                                    onClick={() => setIsAddingCategory(true)}
+                                    className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                                >
+                                    <Plus aria-hidden="true" className="size-3.5" />
+                                    Dodaj kategorię
+                                </button>
+                            }
                             onToggle={(categoryId) => {
                                 setDraft((current) => ({
                                     ...current,
@@ -369,6 +383,29 @@ export default function WorkForm({ work, categories, tags }: WorkFormProps) {
 
                 {leaveDialog}
             </form>
+
+            <AlertDialog open={isAddingCategory} onOpenChange={setIsAddingCategory}>
+                <AlertDialogContent
+                    data-leave-guard-root
+                    className="admin-theme border-0 bg-transparent p-0 font-secondary text-foreground shadow-none sm:max-w-lg"
+                >
+                    <AlertDialogTitle className="sr-only">Dodaj nową kategorię</AlertDialogTitle>
+                    <CategoryPanel
+                        alwaysShowCancel
+                        onCancel={() => setIsAddingCategory(false)}
+                        onDone={(_message, createdCategoryId) => {
+                            setIsAddingCategory(false)
+                            if (createdCategoryId) {
+                                setDraft((current) => ({
+                                    ...current,
+                                    categoryId: createdCategoryId,
+                                }))
+                                markEdited("categoryId")
+                            }
+                        }}
+                    />
+                </AlertDialogContent>
+            </AlertDialog>
         </section>
     )
 }

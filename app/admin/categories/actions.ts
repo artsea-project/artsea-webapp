@@ -52,8 +52,17 @@ function failedConflict(fieldErrors: FieldErrors<BilingualNameField>, fallbackEr
     return failed(fieldErrors, hasFieldErrors ? undefined : fallbackError)
 }
 
-function succeeded() {
-    return { status: "success" as const, fieldErrors: {}, savedAt: Date.now() }
+function succeeded(createdId?: string) {
+    return createdId
+        ? {
+              status: "success" as const,
+              fieldErrors: {},
+              savedAt: Date.now(),
+              categoryId: createdId,
+              tagId: createdId,
+              createdId,
+          }
+        : { status: "success" as const, fieldErrors: {}, savedAt: Date.now() }
 }
 
 function getPostgresErrorCode(error: unknown): string | undefined {
@@ -74,7 +83,7 @@ function isOutsideRequestContextError(error: unknown): boolean {
 function refreshViews() {
     try {
         revalidatePath("/admin/categories")
-        revalidatePath("/admin/works")
+        revalidatePath("/admin/works", "layout")
         revalidatePath("/")
         revalidateTag(BENTO_CACHE_TAG, "max")
     } catch (error) {
@@ -185,8 +194,13 @@ export async function createCategory(
     const conflicts = await findCategoryConflicts(category.values.namePln, category.values.nameEng)
     if (conflicts.namePln || conflicts.nameEng) return failed(conflicts)
 
+    let createdId: string
     try {
-        await db.insert(categories).values(category.values)
+        const [created] = await db
+            .insert(categories)
+            .values(category.values)
+            .returning({ categoryId: categories.categoryId })
+        createdId = created.categoryId
     } catch (error) {
         if (getPostgresErrorCode(error) === "23505") {
             const raceConflicts = await findCategoryConflicts(
@@ -199,7 +213,7 @@ export async function createCategory(
     }
 
     refreshViews()
-    return succeeded()
+    return succeeded(createdId)
 }
 
 export async function updateCategory(

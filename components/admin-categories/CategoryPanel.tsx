@@ -24,13 +24,15 @@ const categoryFormCopy: BilingualNameFormCopy = {
 
 interface CategoryPanelProps {
     category?: AdminCategory
-    onDone: (message: string) => void
+    alwaysShowCancel?: boolean
+    onDone: (message: string, createdCategoryId?: string) => void
     onCancel?: () => void
     onSavingChange?: (isSaving: boolean) => void
 }
 
 export default function CategoryPanel({
     category,
+    alwaysShowCancel = false,
     onDone,
     onCancel,
     onSavingChange,
@@ -46,6 +48,7 @@ export default function CategoryPanel({
                       }
                     : undefined
             }
+            alwaysShowCancel={alwaysShowCancel}
             copy={categoryFormCopy}
             createAction={createCategory}
             updateAction={updateCategory}

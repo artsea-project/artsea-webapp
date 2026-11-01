@@ -1,7 +1,7 @@
 "use client"
 
 import { Search } from "lucide-react"
-import { useMemo, useState } from "react"
+import { useMemo, useState, type ReactNode } from "react"
 
 import { Checkbox } from "@/components/ui/checkbox"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
@@ -18,6 +18,7 @@ interface SearchableOptionListProps {
     options: ChecklistOption[]
     selectedIds: string[]
     error?: string
+    headerAction?: ReactNode
     onToggle: (id: string) => void
 }
 
@@ -27,6 +28,7 @@ export default function SearchableOptionList({
     options,
     selectedIds,
     error,
+    headerAction,
     onToggle,
 }: SearchableOptionListProps) {
     const [search, setSearch] = useState("")
@@ -41,7 +43,10 @@ export default function SearchableOptionList({
 
     return (
         <Field data-invalid={Boolean(error)}>
-            <FieldLabel className="font-bold">{label}</FieldLabel>
+            <div className="flex items-center justify-between gap-2">
+                <FieldLabel className="font-bold">{label}</FieldLabel>
+                {headerAction}
+            </div>
 
             <div className="flex flex-col gap-3 rounded-xl border border-border bg-background p-4">
                 <div className="flex h-10 items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 focus-within:border-ring">

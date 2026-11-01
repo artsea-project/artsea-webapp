@@ -55,7 +55,7 @@ test.beforeAll(async () => {
 
     const [tag] = await db
         .insert(tags)
-        .values({ namePln: `${marker}tag`, nameEng: null })
+        .values({ namePln: `${marker}tag`, nameEng: `${marker}tag_en` })
         .returning({ tagId: tags.tagId })
     tagId = tag.tagId
 })
