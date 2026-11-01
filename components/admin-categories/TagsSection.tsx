@@ -65,26 +65,28 @@ export default function TagsSection({ tags }: TagsSectionProps) {
                 notice={notice}
             />
 
-            <div className="grid items-start gap-6 lg:grid-cols-[11fr_14fr]">
+            <div className="grid gap-6 lg:grid-cols-[11fr_14fr]">
                 <TagFormCard
                     key={editingTag?.tagId ?? "new"}
                     tag={editingTag}
                     onDone={finishPanel}
                     onCancel={() => setEditingTag(undefined)}
                 />
-                <TagsListCard
-                    tags={tags}
-                    isDeleting={isDeleting}
-                    selectedTagId={editingTag?.tagId}
-                    onEdit={(tag) => {
-                        setNotice(null)
-                        setEditingTag(tag)
-                    }}
-                    onDelete={(tag) => {
-                        setNotice(null)
-                        setTagToDelete(tag)
-                    }}
-                />
+                <div className="lg:relative">
+                    <TagsListCard
+                        tags={tags}
+                        isDeleting={isDeleting}
+                        selectedTagId={editingTag?.tagId}
+                        onEdit={(tag) => {
+                            setNotice(null)
+                            setEditingTag(tag)
+                        }}
+                        onDelete={(tag) => {
+                            setNotice(null)
+                            setTagToDelete(tag)
+                        }}
+                    />
+                </div>
             </div>
 
             <AlertDialog
