@@ -28,8 +28,8 @@ export default function TagsListCard({
 
     const filteredTags = normalizedQuery
         ? tags.filter((tag) => {
-              const pln = (tag.namePln ?? "").toLowerCase()
-              const eng = (tag.nameEng ?? "").toLowerCase()
+              const pln = tag.namePln.toLowerCase()
+              const eng = tag.nameEng.toLowerCase()
               return pln.includes(normalizedQuery) || eng.includes(normalizedQuery)
           })
         : tags
