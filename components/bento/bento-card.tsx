@@ -1,7 +1,7 @@
-import type { CSSProperties } from "react"
+import { useTranslations } from "next-intl"
 import Image from "next/image"
-import Link from "next/link"
 
+import { Link } from "@/i18n/navigation"
 import type { BentoCardData } from "@/lib/bento"
 
 type BentoCardProps = {
@@ -19,7 +19,9 @@ export function bentoImageProps(mediaId: string, sizes: string) {
     } as const
 }
 
-export function BentoCard({ card, className = "", sizes, style }: BentoCardProps) {
+export function BentoCard({ card, className, sizes }: BentoCardProps) {
+    const t = useTranslations("Artwork")
+    const title = card.title ?? t("untitled")
     const visibleTags = card.tags.slice(0, 3)
     const hasTagOverflow = card.tags.length > visibleTags.length
 
@@ -30,19 +32,19 @@ export function BentoCard({ card, className = "", sizes, style }: BentoCardProps
         >
             <Link
                 href={`/work/${card.artPieceId}`}
-                aria-label={card.title}
+                aria-label={title}
                 className="group absolute inset-0 rounded-[20px] focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white"
             >
                 <Image
                     {...bentoImageProps(card.mediaId, sizes)}
-                    alt={card.title}
+                    alt={title}
                     className="object-cover"
                 />
                 <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 flex flex-col gap-3 p-4 text-white sm:p-5">
                     <div>
                         <h2 className="font-primary text-base font-medium leading-tight group-hover:underline group-focus-visible:underline sm:text-lg">
-                            {card.title}
+                            {title}
                         </h2>
                         {card.year && (
                             <p className="mt-1 text-sm leading-none text-white/80">{card.year}</p>
