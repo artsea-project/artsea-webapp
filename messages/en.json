@@ -1,4 +1,9 @@
 {
+    "About": {
+        "portraitAlt": "Portrait - {name}",
+        "contactHeading": "Get in touch.",
+        "findMe": "Find me here"
+    },
     "Artwork": {
         "untitled": "Untitled",
         "technique": "Technique and materials",

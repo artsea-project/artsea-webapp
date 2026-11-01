@@ -1,5 +1,6 @@
 import { Suspense } from "react"
 import { notFound } from "next/navigation"
+import { useTranslations } from "next-intl"
 import { getLocale } from "next-intl/server"
 import { ArrowUpRight } from "lucide-react"
 import Image from "next/image"
@@ -22,6 +23,8 @@ interface HeroSectionProps {
 }
 
 function HeroSection({ fullName, heading, intro, profileImageSrc }: HeroSectionProps) {
+    const t = useTranslations("About")
+
     return (
         <section className="max-w-[1440px] mx-auto px-10 md:px-32 pt-24 pb-32">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
@@ -61,7 +64,7 @@ function HeroSection({ fullName, heading, intro, profileImageSrc }: HeroSectionP
                         />
                         <Image
                             src={profileImageSrc}
-                            alt={`Portret - ${fullName}`}
+                            alt={t("portraitAlt", { name: fullName })}
                             width={469}
                             height={703}
                             unoptimized
@@ -121,12 +124,14 @@ interface ContactSectionProps {
 }
 
 function ContactSection({ email, socialLinks, paragraphs }: ContactSectionProps) {
+    const t = useTranslations("About")
+
     return (
         <section id="contact" className="max-w-[1440px] mx-auto px-10 md:px-32 pt-16 pb-32">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 items-start">
                 <div className="md:col-span-5 flex flex-col gap-6">
                     <h2 className="font-primary text-[40px] md:text-[56px] leading-[1.1] font-normal text-foreground">
-                        Skontaktuj się ze mną.
+                        {t("contactHeading")}
                     </h2>
                     {paragraphs.length > 0 && (
                         <div className="text-muted-foreground font-body text-lg leading-relaxed flex flex-col gap-1">
@@ -154,7 +159,7 @@ function ContactSection({ email, socialLinks, paragraphs }: ContactSectionProps)
                     {socialLinks.length > 0 && (
                         <div className="flex flex-col gap-4">
                             <span className="font-secondary text-[12px] tracking-widest uppercase text-primary">
-                                Znajdź mnie tutaj
+                                {t("findMe")}
                             </span>
                             <div className="flex flex-wrap gap-8">
                                 {socialLinks.map((link) => (
