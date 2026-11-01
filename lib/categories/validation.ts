@@ -10,14 +10,6 @@ export function normalizeTagName(value: string): string {
     return value.trim().replace(/^#+/, "").trim()
 }
 
-export function checkTagNamePln(value: string): string | null {
-    return normalizeTagName(value) ? null : "Podaj nazwę tagu po polsku."
-}
-
-export function checkTagNameEng(value: string): string | null {
-    return normalizeTagName(value) ? null : "Podaj nazwę tagu po angielsku."
-}
-
 export function checkTagNames(rawPln: string, rawEng: string): string | null {
     const pln = normalizeTagName(rawPln)
     const eng = normalizeTagName(rawEng)
