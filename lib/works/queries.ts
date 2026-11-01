@@ -3,12 +3,13 @@ import { and, asc, count, desc, eq, ilike, inArray, or, sql } from "drizzle-orm"
 import { db } from "@/db"
 import { artPieces, artPieceTags, categories, media } from "@/db/schema"
 import { getOrderedTags, type AdminTag } from "@/lib/categories/queries"
+import { resolveLocalizedLabel } from "@/lib/localized-labels"
 import { readWorkDescription, type WorkDescription } from "@/lib/works/description"
 import { escapeLikePattern, isUuid, WORKS_PER_PAGE } from "@/lib/works/validation"
 
 export interface AdminWork {
     artPieceId: string
-    title: string | null
+    title: string
     categoryNamePln: string
     uploadedAt: Date
     isVisible: boolean
@@ -128,7 +129,11 @@ export async function getAdminWorks({
     return {
         works: rows.map(({ titlePln, titleEng, ...row }) => ({
             ...row,
-            title: titlePln?.trim() || titleEng?.trim() || null,
+            title: resolveLocalizedLabel(
+                titlePln?.trim() || null,
+                titleEng?.trim() || null,
+                "Bez tytułu"
+            ),
             coverMediaId: covers.get(row.artPieceId) ?? null,
         })),
         total,
