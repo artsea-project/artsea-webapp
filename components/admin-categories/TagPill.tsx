@@ -27,7 +27,7 @@ export default function TagPill({
         <span
             className={cn(
                 "inline-flex h-14 items-center gap-2 rounded-full border border-border bg-muted px-4.5 py-2.5 text-foreground transition-colors",
-                isSelected && "border-[#0284c7] ring-1 ring-[#0284c7]"
+                isSelected && "border-primary ring-1 ring-primary"
             )}
         >
             <button
