@@ -7,9 +7,11 @@ import {
 } from "../lib/works/description"
 import {
     checkWorkCategory,
+    checkWorkMediaFile,
     checkWorkTitles,
     checkYearOfExecution,
     escapeLikePattern,
+    MAX_MEDIA_FILE_BYTES,
     normalizeSearchQuery,
     parsePage,
     parseTagIds,
@@ -48,6 +50,38 @@ test.describe("work validation helpers", () => {
         expect(parseTagIds([VALID_UUID, "oops"])).toEqual({
             error: "Nieprawidłowy identyfikator tagu.",
         })
+    })
+
+    test("validates uploaded media file type and 2 MB size limit", () => {
+        expect(MAX_MEDIA_FILE_BYTES).toBe(2 * 1024 * 1024)
+        expect(
+            checkWorkMediaFile({
+                name: "photo.png",
+                size: MAX_MEDIA_FILE_BYTES,
+                type: "image/png",
+            })
+        ).toBeNull()
+        expect(
+            checkWorkMediaFile({
+                name: "too-big.jpg",
+                size: MAX_MEDIA_FILE_BYTES + 1,
+                type: "image/jpeg",
+            })
+        ).toBe("Plik „too-big.jpg” jest większy niż 2 MB.")
+        expect(
+            checkWorkMediaFile({
+                name: "empty.png",
+                size: 0,
+                type: "image/png",
+            })
+        ).toBe("Przesyłany plik jest pusty.")
+        expect(
+            checkWorkMediaFile({
+                name: "doc.pdf",
+                size: 512,
+                type: "application/pdf",
+            })
+        ).toBe("Obsługiwane formaty plików to PNG, JPG, GIF oraz MP4.")
     })
 
     test("normalizes search query and page number", () => {
