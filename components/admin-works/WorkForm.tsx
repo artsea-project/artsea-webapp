@@ -7,6 +7,7 @@ import { useActionState, useEffect, useMemo, useRef, useState } from "react"
 
 import { createWork, updateWork } from "@/app/admin/works/actions"
 import CategoryPanel from "@/components/admin-categories/CategoryPanel"
+import TagFormCard from "@/components/admin-categories/TagFormCard"
 import BilingualTextField, {
     type BilingualTexts,
 } from "@/components/admin-profile/BilingualTextField"
@@ -130,6 +131,7 @@ export default function WorkForm({ work, categories, tags }: WorkFormProps) {
     const [draft, setDraft] = useState<WorkDraft>(savedDraft)
     const [mediaItems, setMediaItems] = useState<EditableMediaItem[]>(initialMedia)
     const [isAddingCategory, setIsAddingCategory] = useState(false)
+    const [isAddingTag, setIsAddingTag] = useState(false)
 
     const categoryOptions = useMemo<ChecklistOption[]>(
         () =>
@@ -354,6 +356,16 @@ export default function WorkForm({ work, categories, tags }: WorkFormProps) {
                             searchPlaceholder="Szukaj tagu..."
                             options={tagOptions}
                             selectedIds={draft.tagIds}
+                            headerAction={
+                                <button
+                                    type="button"
+                                    onClick={() => setIsAddingTag(true)}
+                                    className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                                >
+                                    <Plus aria-hidden="true" className="size-3.5" />
+                                    Dodaj tag
+                                </button>
+                            }
                             onToggle={toggleTag}
                         />
                     </div>
@@ -401,6 +413,30 @@ export default function WorkForm({ work, categories, tags }: WorkFormProps) {
                                     categoryId: createdCategoryId,
                                 }))
                                 markEdited("categoryId")
+                            }
+                        }}
+                    />
+                </AlertDialogContent>
+            </AlertDialog>
+
+            <AlertDialog open={isAddingTag} onOpenChange={setIsAddingTag}>
+                <AlertDialogContent
+                    data-leave-guard-root
+                    className="admin-theme border-0 bg-transparent p-0 font-secondary text-foreground shadow-none sm:max-w-lg"
+                >
+                    <AlertDialogTitle className="sr-only">Dodaj nowy tag</AlertDialogTitle>
+                    <TagFormCard
+                        alwaysShowCancel
+                        onCancel={() => setIsAddingTag(false)}
+                        onDone={(_message, createdTagId) => {
+                            setIsAddingTag(false)
+                            if (createdTagId) {
+                                setDraft((current) => ({
+                                    ...current,
+                                    tagIds: current.tagIds.includes(createdTagId)
+                                        ? current.tagIds
+                                        : [...current.tagIds, createdTagId],
+                                }))
                             }
                         }}
                     />
