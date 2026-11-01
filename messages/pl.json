@@ -9,6 +9,17 @@
     "Footer": {
         "heading": "Porozmawiajmy o sztuce."
     },
+    "Gallery": {
+        "morePhotos": "+{count, plural, one {# zdjęcie} few {# zdjęcia} many {# zdjęć} other {# zdjęcia}}",
+        "previous": "Poprzednie",
+        "next": "Następne",
+        "close": "Zamknij",
+        "slide": "Slajd",
+        "carousel": "Karuzela",
+        "lightbox": "Podgląd zdjęć",
+        "photoGallery": "Galeria zdjęć",
+        "slideCounter": "{index} z {total}"
+    },
     "Home": {
         "heading": "Wybrane prace."
     },
