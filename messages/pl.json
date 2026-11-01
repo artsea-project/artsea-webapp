@@ -3,6 +3,12 @@
         "title": "Artsea Portfolio",
         "description": "Portfolio prac artystycznych"
     },
+    "Nav": {
+        "about": "O MNIE",
+        "portfolio": "PORTFOLIO",
+        "contact": "KONTAKT",
+        "toggleMenu": "Otwórz lub zamknij menu"
+    },
     "NotFound": {
         "title": "Nie znaleziono strony",
         "description": "Strona, której szukasz, nie istnieje albo została przeniesiona.",
