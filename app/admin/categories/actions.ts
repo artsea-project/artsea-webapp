@@ -23,6 +23,9 @@ import {
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
+const CATEGORY_SAVE_ERROR = "Nie udało się zapisać kategorii. Spróbuj ponownie."
+const TAG_SAVE_ERROR = "Nie udało się zapisać tagu. Spróbuj ponownie."
+
 type FieldErrors<Field extends string> = Partial<Record<Field, string>>
 
 export type DeleteResult = { status: "success" } | { status: "error"; error: string }
@@ -42,6 +45,11 @@ function failed<Field extends string>(fieldErrors: FieldErrors<Field>, formError
     return formError
         ? { status: "error" as const, fieldErrors, formError }
         : { status: "error" as const, fieldErrors }
+}
+
+function failedConflict(fieldErrors: FieldErrors<BilingualNameField>, fallbackError: string) {
+    const hasFieldErrors = Boolean(fieldErrors.namePln || fieldErrors.nameEng)
+    return failed(fieldErrors, hasFieldErrors ? undefined : fallbackError)
 }
 
 function succeeded() {
@@ -175,7 +183,7 @@ export async function createCategory(
                 category.values.namePln,
                 category.values.nameEng
             )
-            return failed(raceConflicts)
+            return failedConflict(raceConflicts, CATEGORY_SAVE_ERROR)
         }
         throw error
     }
@@ -217,7 +225,7 @@ export async function updateCategory(
                 category.values.nameEng,
                 categoryId
             )
-            return failed(raceConflicts)
+            return failedConflict(raceConflicts, CATEGORY_SAVE_ERROR)
         }
         throw error
     }
@@ -306,7 +314,7 @@ export async function createTag(
         await db.insert(tags).values(tag.values)
     } catch (error) {
         if (getPostgresErrorCode(error) === "23505") {
-            return failed(await findTagConflicts(tag.values))
+            return failedConflict(await findTagConflicts(tag.values), TAG_SAVE_ERROR)
         }
         throw error
     }
@@ -339,7 +347,7 @@ export async function updateTag(
             .returning({ tagId: tags.tagId })
     } catch (error) {
         if (getPostgresErrorCode(error) === "23505") {
-            return failed(await findTagConflicts(tag.values, tagId))
+            return failedConflict(await findTagConflicts(tag.values, tagId), TAG_SAVE_ERROR)
         }
         throw error
     }
