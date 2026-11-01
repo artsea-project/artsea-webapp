@@ -72,7 +72,7 @@ export default function CategoriesSection({ categories }: CategoriesSectionProps
                 notice={notice}
             />
 
-            <div className="grid items-start gap-6 lg:grid-cols-[11fr_14fr]">
+            <div className="grid gap-6 lg:grid-cols-[11fr_14fr]">
                 <CategoryPanel
                     key={editingCategory?.categoryId ?? "new"}
                     category={editingCategory}
@@ -80,19 +80,21 @@ export default function CategoriesSection({ categories }: CategoriesSectionProps
                     onCancel={() => setEditingCategory(undefined)}
                 />
 
-                <CategoriesTable
-                    categories={categories}
-                    isDeleting={isDeleting}
-                    selectedCategoryId={editingCategory?.categoryId}
-                    onEdit={(category) => {
-                        setNotice(null)
-                        setEditingCategory(category)
-                    }}
-                    onDelete={(category) => {
-                        setNotice(null)
-                        setCategoryToDelete(category)
-                    }}
-                />
+                <div className="lg:relative">
+                    <CategoriesTable
+                        categories={categories}
+                        isDeleting={isDeleting}
+                        selectedCategoryId={editingCategory?.categoryId}
+                        onEdit={(category) => {
+                            setNotice(null)
+                            setEditingCategory(category)
+                        }}
+                        onDelete={(category) => {
+                            setNotice(null)
+                            setCategoryToDelete(category)
+                        }}
+                    />
+                </div>
             </div>
 
             <AlertDialog
