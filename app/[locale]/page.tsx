@@ -1,8 +1,10 @@
+import { getLocale } from "next-intl/server"
+
 import { BentoBox } from "@/components/bento/bento-box"
 import { getBentoData } from "@/lib/bento"
 
 export default async function Home() {
-    const data = await getBentoData()
+    const data = await getBentoData(await getLocale())
 
     return (
         <div className="bg-background px-5 py-12 text-foreground sm:px-8 sm:py-16 lg:px-12 lg:py-24">
