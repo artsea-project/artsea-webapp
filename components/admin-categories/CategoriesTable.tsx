@@ -20,17 +20,23 @@ export default function CategoriesTable({
 }: CategoriesTableProps) {
     return (
         <div className="flex max-h-80 flex-col overflow-hidden rounded-xl border border-border bg-background lg:absolute lg:inset-x-0 lg:top-0 lg:max-h-full">
-            <div className="min-h-0 flex-1 overflow-auto">
-                <table className="w-full min-w-md border-collapse text-left">
+            <div className="min-h-0 flex-1 overflow-y-auto">
+                <table className="w-full border-collapse text-left">
                     <thead className="sticky top-0 z-20 bg-background shadow-[inset_0_-1px_0_0_var(--border)]">
                         <tr className="h-14 bg-border/50 text-sm font-normal text-muted-foreground">
-                            <th scope="col" className="px-6 py-3 font-normal">
+                            <th scope="col" className="py-3 pr-2 pl-4 font-normal sm:px-6">
                                 Nazwa kategorii
                             </th>
-                            <th scope="col" className="px-6 py-3 font-normal">
+                            <th
+                                scope="col"
+                                className="px-2 py-3 font-normal whitespace-nowrap sm:px-6"
+                            >
                                 Liczba prac
                             </th>
-                            <th scope="col" className="px-6 py-3 text-right font-normal">
+                            <th
+                                scope="col"
+                                className="py-3 pr-2 pl-2 text-right font-normal whitespace-nowrap sm:px-6"
+                            >
                                 Akcje
                             </th>
                         </tr>
@@ -40,7 +46,7 @@ export default function CategoriesTable({
                             <tr>
                                 <td
                                     colSpan={3}
-                                    className="px-6 py-8 text-center text-sm text-muted-foreground"
+                                    className="px-4 py-8 text-center text-sm text-muted-foreground sm:px-6"
                                 >
                                     Brak kategorii. Dodaj pierwszą kategorię w formularzu obok.
                                 </td>

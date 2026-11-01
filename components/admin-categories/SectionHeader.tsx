@@ -19,7 +19,7 @@ export default function SectionHeader({ title, description, notice }: SectionHea
             <p
                 role="status"
                 className={cn(
-                    "text-sm lg:text-right",
+                    "text-sm empty:hidden lg:text-right lg:empty:block",
                     notice?.isError ? "font-medium text-destructive" : "text-muted-foreground"
                 )}
             >
