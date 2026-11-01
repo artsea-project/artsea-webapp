@@ -1,6 +1,6 @@
 "use client"
 
-import { CloudUpload, GripVertical, Image as ImageIcon, Trash2 } from "lucide-react"
+import { CloudUpload, GripVertical, Trash2 } from "lucide-react"
 import { useRef, useState, type DragEvent } from "react"
 
 import { Badge } from "@/components/ui/badge"
@@ -198,7 +198,17 @@ export default function WorkMediaManager({ items, onChange }: WorkMediaManagerPr
                                         <div className="relative size-11 shrink-0">
                                             <div className="flex size-full items-center justify-center overflow-hidden rounded-lg bg-muted">
                                                 {item.fileType === "mp4" ? (
-                                                    <ImageIcon className="size-4 text-muted-foreground" />
+                                                    <video
+                                                        src={item.previewUrl}
+                                                        muted
+                                                        playsInline
+                                                        preload="metadata"
+                                                        aria-label={item.fileName}
+                                                        onLoadedMetadata={(event) => {
+                                                            event.currentTarget.currentTime = 0.001
+                                                        }}
+                                                        className="pointer-events-none size-full object-cover"
+                                                    />
                                                 ) : (
                                                     // eslint-disable-next-line @next/next/no-img-element
                                                     <img
