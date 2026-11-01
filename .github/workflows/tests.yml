@@ -47,6 +47,10 @@ jobs:
             - name: Seed test database
               run: npm run db:seed
 
+            # Before the other tests: db.spec.ts replaces the seeded profile and site settings.
+            - name: Run end-to-end tests
+              run: npm run test:e2e
+
             - name: Run tests
               run: npm run test
 
