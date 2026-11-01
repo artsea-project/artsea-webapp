@@ -1,0 +1,2 @@
+ALTER TABLE "links" ADD COLUMN "position" integer NOT NULL GENERATED ALWAYS AS IDENTITY (sequence name "links_position_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 2147483647 START WITH 1 CACHE 1);--> statement-breakpoint
+ALTER TABLE "profile" ADD COLUMN "contact_email" text;
