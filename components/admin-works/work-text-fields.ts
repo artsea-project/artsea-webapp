@@ -5,8 +5,8 @@ export const titleFieldCopy: BilingualFieldCopy = {
     label: "Tytuł",
     inputNames: { pln: "titlePln", eng: "titleEng" },
     placeholders: {
-        pln: "Wpisz tytuł …",
-        eng: "Wpisz tytuł …",
+        pln: "Wpisz tytuł po polsku…",
+        eng: "Wpisz tytuł po angielsku…",
     },
     description: "",
 }
@@ -16,8 +16,8 @@ export const techniqueFieldCopy: BilingualFieldCopy = {
     label: "Technika",
     inputNames: { pln: "techniquePln", eng: "techniqueEng" },
     placeholders: {
-        pln: "Opisz technikę wykonania pracy …",
-        eng: "Opisz technikę wykonania pracy …",
+        pln: "Opisz technikę wykonania pracy po polsku…",
+        eng: "Opisz technikę wykonania pracy po angielsku…",
     },
     description: "",
 }
@@ -27,8 +27,8 @@ export const descriptionFieldCopy: BilingualFieldCopy = {
     label: "O projekcie",
     inputNames: { pln: "descriptionPln", eng: "descriptionEng" },
     placeholders: {
-        pln: "Wpisz długi opis pracy …",
-        eng: "Wpisz długi opis pracy …",
+        pln: "Wpisz opis pracy po polsku …",
+        eng: "Wpisz opis pracy po angielsku…",
     },
     description: "",
     rows: 5,

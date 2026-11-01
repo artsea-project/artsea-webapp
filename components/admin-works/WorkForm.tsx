@@ -22,7 +22,7 @@ import WorkMediaManager, {
     type EditableMediaItem,
 } from "@/components/admin-works/WorkMediaManager"
 import { Button } from "@/components/ui/button"
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import type { AdminTag } from "@/lib/categories/queries"
 import { resolveLocalizedLabel } from "@/lib/localized-labels"
@@ -245,7 +245,7 @@ export default function WorkForm({ work, categories, tags }: WorkFormProps) {
                     <input key={tagId} type="hidden" name="tagIds" value={tagId} />
                 ))}
 
-                <FieldGroup>
+                <FieldGroup className="[&_[data-slot=field-label]]:font-bold">
                     <BilingualTextField
                         copy={titleFieldCopy}
                         texts={draft.title}
@@ -257,7 +257,9 @@ export default function WorkForm({ work, categories, tags }: WorkFormProps) {
                     />
 
                     <Field data-invalid={Boolean(fieldError("yearOfExecution"))}>
-                        <FieldLabel htmlFor="workYearOfExecution">Rok wykonania</FieldLabel>
+                        <FieldLabel htmlFor="workYearOfExecution" className="font-bold">
+                            Rok wykonania
+                        </FieldLabel>
                         <Input
                             id="workYearOfExecution"
                             name="yearOfExecution"
@@ -274,16 +276,21 @@ export default function WorkForm({ work, categories, tags }: WorkFormProps) {
                     </Field>
 
                     <Field>
-                        <FieldLabel htmlFor="workDimensions">Wymiary</FieldLabel>
+                        <FieldLabel htmlFor="workDimensions" className="font-bold">
+                            Wymiary
+                        </FieldLabel>
                         <Input
                             id="workDimensions"
                             name="dimensions"
                             value={draft.dimensions}
-                            placeholder="np. 70 x 100 cm …"
+                            placeholder="Podaj wymiary dzieła ..."
                             onChange={(event) =>
                                 setDraft({ ...draft, dimensions: event.target.value })
                             }
                         />
+                        <FieldDescription>
+                            Wymiary możesz podać w dowolnym formacie
+                        </FieldDescription>
                     </Field>
 
                     <BilingualTextField
