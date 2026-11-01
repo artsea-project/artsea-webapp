@@ -60,9 +60,6 @@ thesis project. It is under active development and will consist of two parts:
 
     It prints the SQL it is about to run and asks for confirmation, so answer "Yes" in the prompt.
 
-    Use `db:push` rather than `db:migrate` for now: the migrations in `drizzle/` are out of date
-    with the schema and will be regenerated (#44).
-
 5. **Seed sample data**
 
     ```bash
