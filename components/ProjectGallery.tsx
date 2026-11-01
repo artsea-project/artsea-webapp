@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Image from "next/image"
 import dynamic from "next/dynamic"
+import { useTranslations } from "next-intl"
 
 const Lightbox = dynamic(() => import("./ProjectGalleryLightbox"), { ssr: false })
 
@@ -66,6 +67,7 @@ interface LayoutProps {
 }
 
 function GalleryPreview({ photos, onSelect }: LayoutProps) {
+    const t = useTranslations("Gallery")
     const thumbnails = photos.slice(1, 4)
     const remaining = photos.length - 4
     const gridColsClass = thumbnails.length <= 2 ? "grid-cols-2" : "grid-cols-3"
@@ -77,7 +79,7 @@ function GalleryPreview({ photos, onSelect }: LayoutProps) {
                 <div className={`grid ${gridColsClass} gap-4`}>
                     {thumbnails.map((photo, i) => {
                         const isLastWithRemaining = i === 2 && remaining > 0
-                        const remainingLabel = `+${remaining} ${remaining === 1 ? "photo" : "photos"}`
+                        const remainingLabel = t("morePhotos", { count: remaining })
 
                         return (
                             <GalleryThumbnail
@@ -103,6 +105,7 @@ function GalleryPreview({ photos, onSelect }: LayoutProps) {
 
 export function ProjectGallery({ photos }: ProjectGalleryProps) {
     const [index, setIndex] = useState(-1)
+    const t = useTranslations("Gallery")
 
     if (!photos || photos.length === 0) {
         return null
@@ -117,6 +120,19 @@ export function ProjectGallery({ photos }: ProjectGalleryProps) {
                     index={index}
                     close={() => setIndex(-1)}
                     slides={photos}
+                    labels={{
+                        Previous: t("previous"),
+                        Next: t("next"),
+                        Close: t("close"),
+                        Slide: t("slide"),
+                        Carousel: t("carousel"),
+                        Lightbox: t("lightbox"),
+                        "Photo gallery": t("photoGallery"),
+                        "{index} of {total}": t("slideCounter", {
+                            index: "{index}",
+                            total: "{total}",
+                        }),
+                    }}
                     controller={{ closeOnBackdropClick: true }}
                     carousel={{ padding: "48px" }}
                     styles={{
