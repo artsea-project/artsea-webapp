@@ -41,7 +41,7 @@ export default function SearchableOptionList({
 
     return (
         <Field data-invalid={Boolean(error)}>
-            <FieldLabel>{label}</FieldLabel>
+            <FieldLabel className="font-bold">{label}</FieldLabel>
 
             <div className="flex flex-col gap-3 rounded-xl border border-border bg-background p-4">
                 <div className="flex h-10 items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 focus-within:border-ring">
