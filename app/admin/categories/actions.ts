@@ -316,7 +316,19 @@ export async function deleteTag(tagId: string): Promise<DeleteTagResult> {
         return { status: "error", error: "Nieprawidłowy identyfikator tagu." }
     }
 
-    await db.delete(tags).where(eq(tags.tagId, tagId))
+    let deleted: { tagId: string }[]
+    try {
+        deleted = await db
+            .delete(tags)
+            .where(eq(tags.tagId, tagId))
+            .returning({ tagId: tags.tagId })
+    } catch {
+        return { status: "error", error: "Nie udało się usunąć tagu. Spróbuj ponownie." }
+    }
+
     refreshViews()
+    if (deleted.length === 0) {
+        return { status: "error", error: "Ten tag został już usunięty." }
+    }
     return { status: "success" }
 }
