@@ -3,14 +3,16 @@ import { cacheLife, cacheTag } from "next/cache"
 
 import { db } from "@/db"
 import { artPieces, artPieceTags, media, siteSettings, tags } from "@/db/schema"
+import type { Locale } from "@/i18n/routing"
 import { normalizeBentoLayout } from "@/lib/bento-layout"
+import { localizedKey } from "@/lib/i18n/localized-key"
 import { isBentoMediaType } from "@/lib/media"
 import type { BentoBoxLayout, BentoLayoutItem } from "@/types/bento"
 
 export const BENTO_CACHE_TAG = "bento-artworks"
 
 export type BentoCardData = BentoLayoutItem & {
-    title: string
+    title: string | null
     year: number | null
     tags: string[]
 }
@@ -22,19 +24,11 @@ export type BentoData = {
 
 type LayoutName = keyof BentoData
 
-export function resolveLocalizedLabel(
-    polish: string | null,
-    english: string | null,
-    fallback: string
-) {
-    return polish || english || fallback
+export function orderBentoLabels(labels: string[], locale: Locale) {
+    return [...labels].sort((left, right) => left.localeCompare(right, locale))
 }
 
-export function orderBentoLabels(labels: string[]) {
-    return [...labels].sort((left, right) => left.localeCompare(right, "pl"))
-}
-
-async function loadBentoData(): Promise<BentoData> {
+async function loadBentoData(locale: Locale): Promise<BentoData> {
     "use cache"
 
     cacheLife("max")
@@ -74,8 +68,7 @@ async function loadBentoData(): Promise<BentoData> {
         db
             .select({
                 artPieceId: artPieces.artPieceId,
-                titlePln: artPieces.titlePln,
-                titleEng: artPieces.titleEng,
+                title: artPieces[localizedKey("title", locale)],
                 year: artPieces.yearOfExecution,
             })
             .from(artPieces)
@@ -91,8 +84,7 @@ async function loadBentoData(): Promise<BentoData> {
         db
             .select({
                 artPieceId: artPieceTags.artPieceId,
-                namePln: tags.namePln,
-                nameEng: tags.nameEng,
+                name: tags[localizedKey("name", locale)],
             })
             .from(artPieceTags)
             .innerJoin(tags, eq(artPieceTags.tagId, tags.tagId))
@@ -102,13 +94,11 @@ async function loadBentoData(): Promise<BentoData> {
     const artworksById = new Map(artworkRows.map((artwork) => [artwork.artPieceId, artwork]))
     const mediaById = new Map(mediaRows.map((item) => [item.mediaId, item]))
     const tagsByArtwork = new Map<string, string[]>()
-    for (const tag of tagRows) {
-        const name = resolveLocalizedLabel(tag.namePln, tag.nameEng, "")
-        if (name)
-            tagsByArtwork.set(tag.artPieceId, [...(tagsByArtwork.get(tag.artPieceId) ?? []), name])
+    for (const { artPieceId, name } of tagRows) {
+        if (name) tagsByArtwork.set(artPieceId, [...(tagsByArtwork.get(artPieceId) ?? []), name])
     }
     for (const [artPieceId, tagNames] of tagsByArtwork) {
-        tagsByArtwork.set(artPieceId, orderBentoLabels(tagNames))
+        tagsByArtwork.set(artPieceId, orderBentoLabels(tagNames, locale))
     }
 
     const cardsFor = (name: LayoutName) =>
@@ -127,7 +117,7 @@ async function loadBentoData(): Promise<BentoData> {
             return [
                 {
                     ...item,
-                    title: resolveLocalizedLabel(artwork.titlePln, artwork.titleEng, "Bez tytułu"),
+                    title: artwork.title || null,
                     year: artwork.year,
                     tags: tagsByArtwork.get(item.artPieceId) ?? [],
                 },
@@ -137,6 +127,6 @@ async function loadBentoData(): Promise<BentoData> {
     return { desktop: cardsFor("desktop"), mobile: cardsFor("mobile") }
 }
 
-export async function getBentoData(): Promise<BentoData> {
-    return loadBentoData()
+export async function getBentoData(locale: Locale): Promise<BentoData> {
+    return loadBentoData(locale)
 }
