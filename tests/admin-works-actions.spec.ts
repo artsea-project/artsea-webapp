@@ -41,8 +41,8 @@ test.beforeAll(async () => {
     const [tagA, tagB] = await db
         .insert(tags)
         .values([
-            { namePln: `${marker}tagA`, nameEng: null },
-            { namePln: `${marker}tagB`, nameEng: null },
+            { namePln: `${marker}tagA`, nameEng: `${marker}tagA_en` },
+            { namePln: `${marker}tagB`, nameEng: `${marker}tagB_en` },
         ])
         .returning({ tagId: tags.tagId })
     tagIdA = tagA.tagId
