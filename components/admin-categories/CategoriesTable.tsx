@@ -1,12 +1,7 @@
 "use client"
 
-import { useId, useState } from "react"
-
 import CategoryRow from "@/components/admin-categories/CategoryRow"
-import ExpandToggle from "@/components/admin-categories/ExpandToggle"
 import type { AdminCategory } from "@/lib/categories/queries"
-
-const COLLAPSED_LIMIT = 6
 
 interface CategoriesTableProps {
     categories: AdminCategory[]
@@ -23,29 +18,12 @@ export default function CategoriesTable({
     onEdit,
     onDelete,
 }: CategoriesTableProps) {
-    const [expanded, setExpanded] = useState(false)
-    const tableId = useId()
-
-    const collapsedSlice = categories.slice(0, COLLAPSED_LIMIT)
-    const selectedOutsideSlice =
-        !expanded &&
-        selectedCategoryId &&
-        !collapsedSlice.some((c) => c.categoryId === selectedCategoryId)
-            ? categories.find((c) => c.categoryId === selectedCategoryId)
-            : undefined
-    const visibleCategories = expanded
-        ? categories
-        : selectedOutsideSlice
-          ? [...collapsedSlice, selectedOutsideSlice]
-          : collapsedSlice
-    const hiddenCount = Math.max(categories.length - visibleCategories.length, 0)
-
     return (
-        <div className="overflow-hidden rounded-xl border border-border bg-background">
-            <div className="overflow-x-auto">
-                <table id={tableId} className="w-full min-w-md border-collapse text-left">
-                    <thead>
-                        <tr className="h-14 border-b border-border bg-border/50 text-sm font-normal text-muted-foreground">
+        <div className="flex max-h-80 flex-col overflow-hidden rounded-xl border border-border bg-background lg:absolute lg:inset-x-0 lg:top-0 lg:max-h-full">
+            <div className="min-h-0 flex-1 overflow-auto">
+                <table className="w-full min-w-md border-collapse text-left">
+                    <thead className="sticky top-0 z-20 bg-background shadow-[inset_0_-1px_0_0_var(--border)]">
+                        <tr className="h-14 bg-border/50 text-sm font-normal text-muted-foreground">
                             <th scope="col" className="px-6 py-3 font-normal">
                                 Nazwa kategorii
                             </th>
@@ -68,7 +46,7 @@ export default function CategoriesTable({
                                 </td>
                             </tr>
                         ) : (
-                            visibleCategories.map((category) => (
+                            categories.map((category) => (
                                 <CategoryRow
                                     key={category.categoryId}
                                     category={category}
@@ -82,17 +60,6 @@ export default function CategoriesTable({
                     </tbody>
                 </table>
             </div>
-
-            {(expanded ? categories.length > COLLAPSED_LIMIT : hiddenCount > 0) && (
-                <div className="border-t border-border">
-                    <ExpandToggle
-                        expanded={expanded}
-                        hiddenCount={hiddenCount}
-                        controlsId={tableId}
-                        onToggle={() => setExpanded((value) => !value)}
-                    />
-                </div>
-            )}
         </div>
     )
 }

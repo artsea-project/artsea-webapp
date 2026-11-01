@@ -1,15 +1,12 @@
 "use client"
 
-import { useId, useState } from "react"
+import { useState } from "react"
 import { Search } from "lucide-react"
 
-import ExpandToggle from "@/components/admin-categories/ExpandToggle"
 import TagPill from "@/components/admin-categories/TagPill"
 import { Input } from "@/components/ui/input"
 import type { AdminTag } from "@/lib/categories/queries"
 import { normalizeTagName } from "@/lib/categories/validation"
-
-const COLLAPSED_LIMIT = 16
 
 interface TagsListCardProps {
     tags: AdminTag[]
@@ -27,8 +24,6 @@ export default function TagsListCard({
     onDelete,
 }: TagsListCardProps) {
     const [searchQuery, setSearchQuery] = useState("")
-    const [expanded, setExpanded] = useState(false)
-    const listId = useId()
     const normalizedQuery = normalizeTagName(searchQuery).toLowerCase()
 
     const filteredTags = normalizedQuery
@@ -39,20 +34,8 @@ export default function TagsListCard({
           })
         : tags
 
-    const collapsedSlice = filteredTags.slice(0, COLLAPSED_LIMIT)
-    const selectedOutsideSlice =
-        !expanded && selectedTagId && !collapsedSlice.some((t) => t.tagId === selectedTagId)
-            ? filteredTags.find((t) => t.tagId === selectedTagId)
-            : undefined
-    const visibleTags = expanded
-        ? filteredTags
-        : selectedOutsideSlice
-          ? [...collapsedSlice, selectedOutsideSlice]
-          : collapsedSlice
-    const hiddenCount = Math.max(filteredTags.length - visibleTags.length, 0)
-
     return (
-        <div className="overflow-hidden rounded-xl border border-border bg-background">
+        <div className="flex max-h-96 flex-col overflow-hidden rounded-xl border border-border bg-background lg:absolute lg:inset-x-0 lg:top-0 lg:max-h-full">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-muted px-6 py-4">
                 <h3 className="text-base font-bold text-foreground">
                     Dostępne Tagi ({tags.length})
@@ -71,7 +54,7 @@ export default function TagsListCard({
                 </div>
             </div>
 
-            <div className="p-6">
+            <div className="min-h-0 flex-1 overflow-y-auto p-6">
                 {tags.length === 0 ? (
                     <p className="text-sm text-muted-foreground">
                         Brak dostępnych tagów. Dodaj pierwszy tag w formularzu obok.
@@ -81,8 +64,8 @@ export default function TagsListCard({
                         Brak tagów pasujących do wyszukiwania.
                     </p>
                 ) : (
-                    <div id={listId} className="flex flex-wrap gap-4">
-                        {visibleTags.map((tag) => (
+                    <div className="flex flex-wrap gap-4">
+                        {filteredTags.map((tag) => (
                             <TagPill
                                 key={tag.tagId}
                                 namePln={tag.namePln}
@@ -96,17 +79,6 @@ export default function TagsListCard({
                     </div>
                 )}
             </div>
-
-            {(expanded ? filteredTags.length > COLLAPSED_LIMIT : hiddenCount > 0) && (
-                <div className="border-t border-border">
-                    <ExpandToggle
-                        expanded={expanded}
-                        hiddenCount={hiddenCount}
-                        controlsId={listId}
-                        onToggle={() => setExpanded((value) => !value)}
-                    />
-                </div>
-            )}
         </div>
     )
 }
