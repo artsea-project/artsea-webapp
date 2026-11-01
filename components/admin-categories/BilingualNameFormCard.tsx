@@ -40,10 +40,11 @@ export interface BilingualNameFormCopy {
 
 interface BilingualNameFormCardProps {
     item?: BilingualNameItem
+    alwaysShowCancel?: boolean
     copy: BilingualNameFormCopy
     createAction: BilingualNameAction
     updateAction: BilingualNameAction
-    onDone: (message: string) => void
+    onDone: (message: string, createdId?: string) => void
     onCancel?: () => void
     onSavingChange?: (isSaving: boolean) => void
     footer?: ReactNode
@@ -51,6 +52,7 @@ interface BilingualNameFormCardProps {
 
 export default function BilingualNameFormCard({
     item,
+    alwaysShowCancel = false,
     copy,
     createAction,
     updateAction,
@@ -83,7 +85,10 @@ export default function BilingualNameFormCard({
                     setNamePln("")
                     setNameEng("")
                 }
-                onDone(item ? copy.updatedMessage : copy.createdMessage)
+                onDone(
+                    item ? copy.updatedMessage : copy.createdMessage,
+                    result.createdId ?? result.categoryId ?? result.tagId
+                )
             }
             return result
         },
@@ -183,7 +188,7 @@ export default function BilingualNameFormCard({
                               ? copy.editSubmitLabel
                               : copy.createSubmitLabel}
                     </Button>
-                    {item && onCancel && (
+                    {(item || alwaysShowCancel) && onCancel && (
                         <Button
                             type="button"
                             variant="ghost"
