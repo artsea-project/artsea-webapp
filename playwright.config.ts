@@ -7,6 +7,8 @@ dotenv.config({ path: path.resolve(__dirname, ".env.local") })
 
 export default defineConfig({
     testDir: "./tests",
+    // End-to-end tests need a running app and have their own config (playwright.e2e.config.ts).
+    testIgnore: "e2e/**",
     fullyParallel: false,
     forbidOnly: !!process.env.CI,
     retries: 0,
