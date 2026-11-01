@@ -19,6 +19,7 @@ interface CatalogSectionFormRenderProps<T> {
     editingItem: T | undefined
     onDone: (message: string) => void
     onCancel: () => void
+    onSavingChange: (isSaving: boolean) => void
 }
 
 interface CatalogSectionListRenderProps<T> {
@@ -56,6 +57,7 @@ export default function CatalogSection<T>({
     const [editingItem, setEditingItem] = useState<T | undefined>(undefined)
     const [notice, setNotice] = useState<StatusNotice | null>(null)
     const [itemToDelete, setItemToDelete] = useState<T | null>(null)
+    const [isSaving, setIsSaving] = useState(false)
     const [isDeleting, startDeleting] = useTransition()
 
     function finishPanel(doneMessage: string) {
@@ -102,17 +104,20 @@ export default function CatalogSection<T>({
                     editingItem,
                     onDone: finishPanel,
                     onCancel: () => setEditingItem(undefined),
+                    onSavingChange: setIsSaving,
                 })}
 
                 <div className="lg:relative">
                     {renderList({
-                        isDeleting,
+                        isDeleting: isDeleting || isSaving,
                         selectedId,
                         onEdit: (item) => {
+                            if (isSaving || isDeleting) return
                             setNotice(null)
                             setEditingItem(item)
                         },
                         onDelete: (item) => {
+                            if (isSaving || isDeleting) return
                             setNotice(null)
                             setItemToDelete(item)
                         },

@@ -26,9 +26,15 @@ interface CategoryPanelProps {
     category?: AdminCategory
     onDone: (message: string) => void
     onCancel?: () => void
+    onSavingChange?: (isSaving: boolean) => void
 }
 
-export default function CategoryPanel({ category, onDone, onCancel }: CategoryPanelProps) {
+export default function CategoryPanel({
+    category,
+    onDone,
+    onCancel,
+    onSavingChange,
+}: CategoryPanelProps) {
     return (
         <BilingualNameFormCard
             item={
@@ -45,6 +51,7 @@ export default function CategoryPanel({ category, onDone, onCancel }: CategoryPa
             updateAction={updateCategory}
             onDone={onDone}
             onCancel={onCancel}
+            onSavingChange={onSavingChange}
         />
     )
 }

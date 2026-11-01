@@ -30,9 +30,10 @@ export default function TagPill({
         >
             <button
                 type="button"
+                disabled={disabled}
                 onClick={onSelect}
                 aria-label={`Edytuj tag ${namePln}`}
-                className="flex min-w-0 cursor-pointer flex-col items-center gap-0.5 text-center transition-opacity hover:opacity-75 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
+                className="flex min-w-0 cursor-pointer flex-col items-center gap-0.5 text-center transition-opacity hover:opacity-75 focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
             >
                 <span className="max-w-full truncate text-sm leading-tight font-semibold text-foreground">
                     #{namePln}

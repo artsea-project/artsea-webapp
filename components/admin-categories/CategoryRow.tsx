@@ -50,6 +50,7 @@ export default function CategoryRow({
                         size="icon"
                         className="text-muted-foreground"
                         aria-label={`Edytuj kategorię ${category.namePln}`}
+                        disabled={isDeleting}
                         onClick={onEdit}
                     >
                         <Pencil />
