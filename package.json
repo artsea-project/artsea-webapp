@@ -8,6 +8,7 @@
         "start": "next start",
         "lint": "eslint --max-warnings 0",
         "test": "playwright test",
+        "test:e2e": "playwright test -c playwright.e2e.config.ts",
         "db:up": "docker compose -f docker-compose.dev.yml up -d",
         "db:down": "docker compose -f docker-compose.dev.yml down",
         "db:logs": "docker compose -f docker-compose.dev.yml logs -f postgres",
