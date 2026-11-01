@@ -115,6 +115,7 @@ export default function ProfileForm({ saved }: ProfileFormProps) {
     const savedDraft = draftFromSaved(saved)
     const [draft, setDraft] = useState(savedDraft)
     const [photo, setPhoto] = useState<PickedPhoto | null>(null)
+    const [photoPickError, setPhotoPickError] = useState<string | null>(null)
     const photoInputRef = useRef<HTMLInputElement>(null)
     const formRef = useRef<HTMLFormElement>(null)
 
@@ -144,6 +145,7 @@ export default function ProfileForm({ saved }: ProfileFormProps) {
     if (state !== errorsState) {
         setErrorsState(state)
         setEditedFields(new Set())
+        setPhotoPickError(null)
     }
 
     function fieldError(field: ProfileField) {
@@ -177,6 +179,7 @@ export default function ProfileForm({ saved }: ProfileFormProps) {
         setDraft(savedDraft)
         setEditedFields(new Set(Object.keys(state.fieldErrors) as ProfileField[]))
         replacePhoto(null)
+        setPhotoPickError(null)
         if (photoInputRef.current) photoInputRef.current.value = ""
     }
 
@@ -186,11 +189,13 @@ export default function ProfileForm({ saved }: ProfileFormProps) {
                 previewSrc={photo?.previewUrl ?? savedPhotoSrc}
                 alt={draft.fullName}
                 inputRef={photoInputRef}
-                serverError={fieldError("profileImage")}
+                error={photoPickError ?? fieldError("profileImage")}
                 onPick={(file) => {
                     replacePhoto({ file, previewUrl: URL.createObjectURL(file) })
+                    setPhotoPickError(null)
                     markEdited("profileImage")
                 }}
+                onReject={setPhotoPickError}
             />
 
             <FieldGroup>
