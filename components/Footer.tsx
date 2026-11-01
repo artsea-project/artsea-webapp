@@ -1,3 +1,5 @@
+import { useTranslations } from "next-intl"
+
 import { getContactEmail, getOrderedLinks, type ProfileLink } from "@/lib/profile/queries"
 
 interface ContactSectionProps {
@@ -5,10 +7,12 @@ interface ContactSectionProps {
 }
 
 function ContactSection({ email }: ContactSectionProps) {
+    const t = useTranslations("Footer")
+
     return (
         <div className="flex flex-col justify-between space-y-6 md:space-y-12">
             <h2 className="max-w-xl text-4xl font-normal leading-tight tracking-tight text-background md:text-5xl lg:text-6xl font-primary">
-                Porozmawiajmy o sztuce.
+                {t("heading")}
             </h2>
             {email && (
                 <div>
