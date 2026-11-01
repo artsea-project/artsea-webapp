@@ -86,8 +86,8 @@ export const categories = pgTable(
         nameEng: text("name_eng").notNull(),
     },
     (table) => [
-        unique("category_name_pln_uq").on(table.namePln),
-        unique("category_name_eng_uq").on(table.nameEng),
+        uniqueIndex("category_name_pln_uq").on(sql`lower(${table.namePln})`),
+        uniqueIndex("category_name_eng_uq").on(sql`lower(${table.nameEng})`),
     ]
 )
 
