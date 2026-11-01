@@ -26,12 +26,19 @@ const tagFormCopy: BilingualNameFormCopy = {
 
 interface TagFormCardProps {
     tag?: AdminTag
-    onDone: (message: string) => void
+    alwaysShowCancel?: boolean
+    onDone: (message: string, createdTagId?: string) => void
     onCancel?: () => void
     onSavingChange?: (isSaving: boolean) => void
 }
 
-export default function TagFormCard({ tag, onDone, onCancel, onSavingChange }: TagFormCardProps) {
+export default function TagFormCard({
+    tag,
+    alwaysShowCancel = false,
+    onDone,
+    onCancel,
+    onSavingChange,
+}: TagFormCardProps) {
     return (
         <BilingualNameFormCard
             item={
@@ -43,6 +50,7 @@ export default function TagFormCard({ tag, onDone, onCancel, onSavingChange }: T
                       }
                     : undefined
             }
+            alwaysShowCancel={alwaysShowCancel}
             copy={tagFormCopy}
             createAction={createTag}
             updateAction={updateTag}
