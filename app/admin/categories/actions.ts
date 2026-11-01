@@ -1,10 +1,10 @@
 "use server"
 
-import { and, count, eq, ne, sql, type AnyColumn, type SQL } from "drizzle-orm"
+import { and, eq, ne, sql, type AnyColumn, type SQL } from "drizzle-orm"
 import { revalidatePath, revalidateTag } from "next/cache"
 
 import { db } from "@/db"
-import { artPieces, categories, tags } from "@/db/schema"
+import { categories, tags } from "@/db/schema"
 import { BENTO_CACHE_TAG } from "@/lib/bento"
 import type {
     BilingualNameField,
@@ -250,18 +250,6 @@ export async function updateCategory(
 export async function deleteCategory(categoryId: string): Promise<DeleteCategoryResult> {
     if (!UUID_PATTERN.test(categoryId)) {
         return { status: "error", error: "Nieprawidłowy identyfikator kategorii." }
-    }
-
-    const [{ value: assignedCount }] = await db
-        .select({ value: count() })
-        .from(artPieces)
-        .where(eq(artPieces.categoryId, categoryId))
-
-    if (Number(assignedCount) > 0) {
-        return {
-            status: "error",
-            error: "Nie można usunąć kategorii, do której są przypisane prace.",
-        }
     }
 
     try {
