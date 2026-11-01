@@ -295,5 +295,10 @@ test.describe("category and tag server actions", () => {
             where: eq(tags.tagId, savedTag!.tagId),
         })
         expect(afterDelete).toBeUndefined()
+
+        expect(await deleteTag(savedTag!.tagId)).toEqual({
+            status: "error",
+            error: "Ten tag został już usunięty.",
+        })
     })
 })
