@@ -1,25 +1,24 @@
 import { Suspense } from "react"
 import { notFound } from "next/navigation"
-import Link from "next/link"
-import { db } from "@/db"
+import { getLocale, getTranslations } from "next-intl/server"
 import { Ruler, MoveRight } from "lucide-react"
 import parse from "html-react-parser"
 import { ProjectGallery } from "@/components/ProjectGallery"
-import { isBentoMediaType } from "@/lib/media"
+import { Link } from "@/i18n/navigation"
+import {
+    getArtworkDetails,
+    getNextArtwork,
+    type ArtworkDetails,
+    type ArtworkLink,
+} from "@/lib/artworks/queries"
 
 interface PageProps {
     params: Promise<{ id: string }>
 }
 
-function parseDescriptionSlot(value: unknown, slot: "technique" | "description"): string {
-    if (!value || typeof value !== "object") return ""
-    const obj = value as Record<string, unknown>
-    return typeof obj[slot] === "string" ? (obj[slot] as string) : ""
-}
-
 interface ArtworkHeaderProps {
-    title: string | null
-    categoryName: string | null
+    title: string
+    categoryName: string
     yearOfExecution: number | null
     tags: string[]
 }
@@ -28,7 +27,7 @@ function ArtworkHeader({ title, categoryName, yearOfExecution, tags }: ArtworkHe
     return (
         <div>
             <div className="flex items-center gap-6 text-[11px] uppercase tracking-widest text-muted-foreground font-secondary font-bold">
-                <span>{categoryName || "Bez kategorii"}</span>
+                <span>{categoryName}</span>
                 {yearOfExecution && (
                     <>
                         <span className="text-muted-foreground"></span>
@@ -36,9 +35,7 @@ function ArtworkHeader({ title, categoryName, yearOfExecution, tags }: ArtworkHe
                     </>
                 )}
             </div>
-            <h1 className="text-3xl font-semibold tracking-tight font-primary mt-2">
-                {title || "Bez tytułu"}
-            </h1>
+            <h1 className="text-3xl font-semibold tracking-tight font-primary mt-2">{title}</h1>
             {tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-4">
                     {tags.map((tagText, idx) => (
@@ -96,20 +93,15 @@ function DetailSection({ label, content }: DetailSectionProps) {
 }
 
 interface NextArtworkNavigationProps {
-    nextArtwork: {
-        artPieceId: string
-        titlePln: string | null
-        titleEng: string | null
-    } | null
+    artPieceId: string
+    title: string
 }
 
-function NextArtworkNavigation({ nextArtwork }: NextArtworkNavigationProps) {
-    if (!nextArtwork) return null
-    const nextTitle = nextArtwork.titlePln || nextArtwork.titleEng || "Bez tytułu"
+function NextArtworkNavigation({ artPieceId, title }: NextArtworkNavigationProps) {
     return (
         <div className="mt-24 pt-12 border-t border-border">
             <Link
-                href={`/work/${nextArtwork.artPieceId}`}
+                href={`/work/${artPieceId}`}
                 className="group flex items-center justify-between gap-8 py-4 hover:opacity-90 transition-opacity"
             >
                 <div className="flex flex-col gap-3">
@@ -117,7 +109,7 @@ function NextArtworkNavigation({ nextArtwork }: NextArtworkNavigationProps) {
                         Zobacz kolejny
                     </span>
                     <span className="text-3xl md:text-5xl font-normal font-primary text-foreground transition-colors">
-                        {nextTitle}
+                        {title}
                     </span>
                 </div>
                 <div className="flex items-center">
@@ -136,76 +128,32 @@ export default function WorkPage({ params }: PageProps) {
     )
 }
 
-async function WorkDetails({ params }: PageProps) {
-    const { id } = await params
-
-    let artPiece = null
+async function loadArtwork(id: string): Promise<[ArtworkDetails | null, ArtworkLink | null]> {
+    const locale = await getLocale()
 
     try {
-        artPiece = await db.query.artPieces.findFirst({
-            where: (fields, { and, eq }) =>
-                and(eq(fields.artPieceId, id), eq(fields.isVisible, true)),
-            with: {
-                category: true,
-                tags: {
-                    with: {
-                        tag: true,
-                    },
-                },
-                media: {
-                    columns: {
-                        mediaId: true,
-                        orderIndex: true,
-                        fileType: true,
-                    },
-                    orderBy: (media, { asc }) => [asc(media.orderIndex)],
-                },
-            },
-        })
+        return await Promise.all([getArtworkDetails(id, locale), getNextArtwork(id, locale)])
     } catch (error) {
         console.error("Database query failed:", error)
+        return [null, null]
     }
+}
 
-    if (!artPiece) {
+async function WorkDetails({ params }: PageProps) {
+    const { id } = await params
+    const [artwork, nextArtwork] = await loadArtwork(id)
+
+    if (!artwork) {
         notFound()
     }
 
-    let allArtworks: { artPieceId: string; titlePln: string | null; titleEng: string | null }[] = []
-    try {
-        allArtworks = await db.query.artPieces.findMany({
-            columns: {
-                artPieceId: true,
-                titlePln: true,
-                titleEng: true,
-            },
-            where: (fields, { and, eq }) => and(eq(fields.isVisible, true)),
-            orderBy: (fields, { asc }) => asc(fields.uploadedAt),
-        })
-    } catch (error) {
-        console.error("Failed to fetch all artworks:", error)
-    }
+    const t = await getTranslations("Artwork")
+    const title = artwork.title ?? t("untitled")
 
-    const currentIndex = allArtworks.findIndex((a) => a.artPieceId === id)
-    const nextArtwork =
-        currentIndex !== -1 && allArtworks.length > 1
-            ? allArtworks[(currentIndex + 1) % allArtworks.length]
-            : null
-
-    const title = artPiece.titlePln || artPiece.titleEng || "Bez tytułu"
-    const categoryName = artPiece.category?.namePln
-    const technique = parseDescriptionSlot(artPiece.descriptionPln, "technique")
-    const description = parseDescriptionSlot(artPiece.descriptionPln, "description")
-
-    const tagsList = (artPiece.tags || [])
-        .map((t) => t.tag?.namePln)
-        .filter((name): name is string => typeof name === "string")
-
-    const galleryPhotos = (artPiece.media || [])
-        .filter((m) => isBentoMediaType(m.fileType))
-        .map((m) => ({
-            src: `/media/${m.mediaId}`,
-            alt: `${title} - photo ${m.orderIndex + 1}`,
-        }))
+    const galleryPhotos = artwork.photos.map((photo) => ({
+        src: `/media/${photo.mediaId}`,
+        alt: `${title} - photo ${photo.orderIndex + 1}`,
+    }))
 
     return (
         <div className="min-h-screen bg-background text-foreground font-body transition-colors duration-200">
@@ -217,16 +165,21 @@ async function WorkDetails({ params }: PageProps) {
                     <div className="md:col-span-5 md:sticky md:top-24 flex flex-col gap-8">
                         <ArtworkHeader
                             title={title}
-                            categoryName={categoryName}
-                            yearOfExecution={artPiece.yearOfExecution}
-                            tags={tagsList}
+                            categoryName={artwork.categoryName}
+                            yearOfExecution={artwork.yearOfExecution}
+                            tags={artwork.tags}
                         />
-                        <DimensionsSection dimensions={artPiece.dimensions} />
-                        <DetailSection label="Technika i materiały" content={technique} />
-                        <DetailSection label="O projekcie" content={description} />
+                        <DimensionsSection dimensions={artwork.dimensions} />
+                        <DetailSection label="Technika i materiały" content={artwork.technique} />
+                        <DetailSection label="O projekcie" content={artwork.description} />
                     </div>
                 </div>
-                <NextArtworkNavigation nextArtwork={nextArtwork} />
+                {nextArtwork && (
+                    <NextArtworkNavigation
+                        artPieceId={nextArtwork.artPieceId}
+                        title={nextArtwork.title ?? t("untitled")}
+                    />
+                )}
             </div>
         </div>
     )
