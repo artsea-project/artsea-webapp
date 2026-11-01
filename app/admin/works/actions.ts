@@ -11,10 +11,12 @@ import { BENTO_CACHE_TAG } from "@/lib/bento"
 import { buildWorkDescription } from "@/lib/works/description"
 import type { WorkField, WorkFormState } from "@/lib/works/form-state"
 import {
+    checkCoverMediaType,
     checkWorkCategory,
     checkWorkMediaFile,
     checkWorkTitles,
     checkYearOfExecution,
+    COVER_MEDIA_TYPE_ERROR,
     isUuid,
     parseTagIds,
     parseYearOfExecution,
@@ -173,6 +175,11 @@ async function readMediaOrder(
             }
 
             const fileType = resolveUploadedFileType(file.type, file.name)!
+            if (orderIndex === 0) {
+                const coverError = checkCoverMediaType(fileType)
+                if (coverError) return { error: coverError }
+            }
+
             const content = Buffer.from(await file.arrayBuffer())
             const contentHash = createHash("sha256").update(content).digest("hex")
             items.push({ kind: "new", content, contentHash, fileType, orderIndex })
@@ -265,16 +272,32 @@ export async function updateWork(
     const mediaResult = await readMediaOrder(formData, true)
     if ("error" in mediaResult) return failed({}, mediaResult.error)
 
-    let updatedCount: number
+    let outcome: "updated" | "missing" | "cover-error"
     try {
-        updatedCount = await db.transaction(async (tx) => {
-            const updated = await tx
-                .update(artPieces)
-                .set(work.values)
+        outcome = await db.transaction(async (tx) => {
+            const existing = await tx
+                .select({ artPieceId: artPieces.artPieceId })
+                .from(artPieces)
                 .where(eq(artPieces.artPieceId, artPieceId))
-                .returning({ artPieceId: artPieces.artPieceId })
 
-            if (updated.length === 0) return 0
+            if (existing.length === 0) return "missing"
+
+            if (mediaResult.hasOrderField && mediaResult.items[0]?.kind === "existing") {
+                const [firstMedia] = await tx
+                    .select({ fileType: media.fileType })
+                    .from(media)
+                    .where(
+                        and(
+                            eq(media.artPieceId, artPieceId),
+                            eq(media.mediaId, mediaResult.items[0].mediaId)
+                        )
+                    )
+                if (firstMedia && checkCoverMediaType(firstMedia.fileType)) {
+                    return "cover-error"
+                }
+            }
+
+            await tx.update(artPieces).set(work.values).where(eq(artPieces.artPieceId, artPieceId))
 
             await tx.delete(artPieceTags).where(eq(artPieceTags.artPieceId, artPieceId))
             if (work.tagIds.length > 0) {
@@ -330,7 +353,7 @@ export async function updateWork(
                 }
             }
 
-            return updated.length
+            return "updated"
         })
     } catch (error) {
         if (getPostgresErrorCode(error) === "23503") {
@@ -339,8 +362,11 @@ export async function updateWork(
         throw error
     }
 
+    if (outcome === "cover-error") {
+        return failed({}, COVER_MEDIA_TYPE_ERROR)
+    }
     refreshViews(artPieceId)
-    if (updatedCount === 0) {
+    if (outcome === "missing") {
         return failed({}, "Ta praca została już usunięta.")
     }
     return succeeded(artPieceId)

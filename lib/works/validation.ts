@@ -1,6 +1,7 @@
 export const WORKS_PER_PAGE = 6
 export const MIN_YEAR_OF_EXECUTION = 1000
 export const MAX_MEDIA_FILE_BYTES = 2 * 1024 * 1024
+export const COVER_MEDIA_TYPE_ERROR = "Okładką pracy nie może być plik MP4."
 
 const MIME_TO_FILE_TYPE: Record<string, "png" | "jpg" | "gif" | "mp4"> = {
     "image/png": "png",
@@ -51,6 +52,10 @@ export function checkWorkMediaFile(file: {
         return `Plik „${file.name}” jest większy niż 2 MB.`
     }
     return null
+}
+
+export function checkCoverMediaType(fileType: string): string | null {
+    return fileType === "mp4" ? COVER_MEDIA_TYPE_ERROR : null
 }
 
 export function formatFileSize(bytes: number): string {
