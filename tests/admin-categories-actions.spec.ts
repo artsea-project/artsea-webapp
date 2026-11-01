@@ -14,6 +14,7 @@ import {
 import { db } from "../db"
 import { artPieces, categories, tags } from "../db/schema"
 import { initialCategoryFormState, initialTagFormState } from "../lib/categories/form-state"
+import { getOrderedTags } from "../lib/categories/queries"
 import {
     checkCategoryNameEng,
     checkCategoryNamePln,
@@ -191,7 +192,7 @@ test.describe("category and tag server actions", () => {
     test("creates single- and dual-language tags, updates tags, blocks duplicates, and deletes tags", async () => {
         const namePln = `tag_pl_${suffix}`
         const nameEng = `tag_en_${suffix}`
-        const singleEng = `tag_only_en_${suffix}`
+        const singleEng = `a_tag_only_en_${suffix}`
         const updatedEng = `tag_updated_en_${suffix}`
         createdTagNames.push(namePln, nameEng, singleEng, updatedEng)
 
@@ -224,6 +225,12 @@ test.describe("category and tag server actions", () => {
         })
         expect(savedSingleTag).toBeDefined()
         expect(savedSingleTag?.namePln).toBeNull()
+
+        const orderedTags = await getOrderedTags()
+        const singleIndex = orderedTags.findIndex((t) => t.tagId === savedSingleTag!.tagId)
+        const dualIndex = orderedTags.findIndex((t) => t.tagId === savedTag!.tagId)
+        expect(singleIndex).toBeGreaterThanOrEqual(0)
+        expect(dualIndex).toBeGreaterThan(singleIndex)
 
         const updateResult = await updateTag(
             initialTagFormState,
