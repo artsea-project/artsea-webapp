@@ -90,10 +90,17 @@ export default function WorkCard({
                         asChild
                         variant="ghost"
                         size="icon"
-                        className="text-muted-foreground"
+                        className={cn(
+                            "text-muted-foreground",
+                            isBusy && "pointer-events-none opacity-50"
+                        )}
                         aria-label={`Edytuj pracę ${title}`}
                     >
-                        <Link href={`/admin/works/${work.artPieceId}/edit`}>
+                        <Link
+                            href={`/admin/works/${work.artPieceId}/edit`}
+                            aria-disabled={isBusy}
+                            tabIndex={isBusy ? -1 : undefined}
+                        >
                             <Pencil />
                         </Link>
                     </Button>
