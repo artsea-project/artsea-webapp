@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, type ChangeEvent, type RefObject } from "react"
+import type { ChangeEvent, RefObject } from "react"
 import { Camera } from "lucide-react"
 
 import ProfileAvatar from "@/components/admin-profile/ProfileAvatar"
@@ -12,28 +12,30 @@ interface ProfilePhotoFieldProps {
     previewSrc: string | null
     alt: string
     inputRef: RefObject<HTMLInputElement | null>
-    serverError?: string
+    error?: string
     onPick: (file: File) => void
+    onReject: (error: string) => void
 }
 
 export default function ProfilePhotoField({
     previewSrc,
     alt,
     inputRef,
-    serverError,
+    error,
     onPick,
+    onReject,
 }: ProfilePhotoFieldProps) {
-    const [pickError, setPickError] = useState<string | null>(null)
-
     function handleChange(event: ChangeEvent<HTMLInputElement>) {
         const file = event.target.files?.[0]
         if (!file) return
 
-        const error = checkProfileImageFile(file)
-        setPickError(error)
-
-        if (error) event.target.value = ""
-        else onPick(file)
+        const fileError = checkProfileImageFile(file)
+        if (fileError) {
+            event.target.value = ""
+            onReject(fileError)
+        } else {
+            onPick(file)
+        }
     }
 
     return (
@@ -52,7 +54,7 @@ export default function ProfilePhotoField({
                     onChange={handleChange}
                 />
                 <p className="text-xs text-muted-foreground">JPG, PNG. Max. 2 MB.</p>
-                <FieldError>{pickError ?? serverError}</FieldError>
+                <FieldError>{error}</FieldError>
             </div>
         </div>
     )
