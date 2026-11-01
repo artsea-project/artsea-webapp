@@ -23,12 +23,13 @@ export default function CategoriesSection({ categories }: CategoriesSectionProps
             deleteDialogDescription={(category) =>
                 `Kategoria ${category.namePln} zniknie z listy dostępnych kategorii.`
             }
-            renderForm={({ editingItem, onDone, onCancel }) => (
+            renderForm={({ editingItem, onDone, onCancel, onSavingChange }) => (
                 <CategoryPanel
                     key={editingItem?.categoryId ?? "new"}
                     category={editingItem}
                     onDone={onDone}
                     onCancel={onCancel}
+                    onSavingChange={onSavingChange}
                 />
             )}
             renderList={({ isDeleting, selectedId, onEdit, onDelete }) => (
