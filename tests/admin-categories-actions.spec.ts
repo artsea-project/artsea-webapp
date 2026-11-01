@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto"
 
 import { expect, test } from "@playwright/test"
-import { eq, inArray } from "drizzle-orm"
+import { eq, inArray, or } from "drizzle-orm"
 
 import {
     createCategory,
@@ -9,6 +9,7 @@ import {
     deleteCategory,
     deleteTag,
     updateCategory,
+    updateTag,
 } from "../app/admin/categories/actions"
 import { db } from "../db"
 import { artPieces, categories, tags } from "../db/schema"
@@ -16,15 +17,14 @@ import { initialCategoryFormState, initialTagFormState } from "../lib/categories
 import {
     checkCategoryNameEng,
     checkCategoryNamePln,
-    checkTagNameEng,
-    checkTagNamePln,
+    checkTagNames,
     formatWorksCount,
     normalizeTagName,
 } from "../lib/categories/validation"
 
 const suffix = randomUUID().slice(0, 8)
 const createdCategoryNamesPln: string[] = []
-const createdTagNamesPln: string[] = []
+const createdTagNames: string[] = []
 const createdArtworkIds: string[] = []
 
 function makeFormData(entries: Record<string, string>): FormData {
@@ -42,8 +42,12 @@ test.afterAll(async () => {
     if (createdCategoryNamesPln.length > 0) {
         await db.delete(categories).where(inArray(categories.namePln, createdCategoryNamesPln))
     }
-    if (createdTagNamesPln.length > 0) {
-        await db.delete(tags).where(inArray(tags.namePln, createdTagNamesPln))
+    if (createdTagNames.length > 0) {
+        await db
+            .delete(tags)
+            .where(
+                or(inArray(tags.namePln, createdTagNames), inArray(tags.nameEng, createdTagNames))
+            )
     }
 })
 
@@ -55,12 +59,12 @@ test.describe("category and tag validation helpers", () => {
         expect(checkCategoryNameEng("Painting")).toBeNull()
     })
 
-    test("strips leading '#' from tag names and validates non-empty values", () => {
+    test("strips leading '#' from tag names and requires at least one language", () => {
         expect(normalizeTagName("  ##minimalizm  ")).toBe("minimalizm")
-        expect(checkTagNamePln(" ### ")).toBe("Podaj nazwę tagu po polsku.")
-        expect(checkTagNameEng("")).toBe("Podaj nazwę tagu po angielsku.")
-        expect(checkTagNamePln("#grafika")).toBeNull()
-        expect(checkTagNameEng("graphics")).toBeNull()
+        expect(checkTagNames(" ### ", "")).toBe("Podaj nazwę tagu w przynajmniej jednym języku.")
+        expect(checkTagNames("#grafika", "")).toBeNull()
+        expect(checkTagNames("", "graphics")).toBeNull()
+        expect(checkTagNames("#grafika", "graphics")).toBeNull()
     })
 
     test("formats Polish plural forms for artwork counts", () => {
@@ -75,7 +79,7 @@ test.describe("category and tag validation helpers", () => {
 })
 
 test.describe("category and tag server actions", () => {
-    test("returns fieldErrors when category or tag inputs are empty", async () => {
+    test("returns validation errors when category or tag inputs are empty", async () => {
         const categoryState = await createCategory(
             initialCategoryFormState,
             makeFormData({ namePln: "   ", nameEng: "" })
@@ -94,10 +98,8 @@ test.describe("category and tag server actions", () => {
         )
         expect(tagState).toEqual({
             status: "error",
-            fieldErrors: {
-                namePln: "Podaj nazwę tagu po polsku.",
-                nameEng: "Podaj nazwę tagu po angielsku.",
-            },
+            fieldErrors: {},
+            formError: "Podaj nazwę tagu w przynajmniej jednym języku.",
         })
     })
 
@@ -186,10 +188,12 @@ test.describe("category and tag server actions", () => {
         expect(remaining).toBeUndefined()
     })
 
-    test("creates tags stripping leading '#', blocks duplicates, and deletes tags", async () => {
+    test("creates single- and dual-language tags, updates tags, blocks duplicates, and deletes tags", async () => {
         const namePln = `tag_pl_${suffix}`
         const nameEng = `tag_en_${suffix}`
-        createdTagNamesPln.push(namePln)
+        const singleEng = `tag_only_en_${suffix}`
+        const updatedEng = `tag_updated_en_${suffix}`
+        createdTagNames.push(namePln, nameEng, singleEng, updatedEng)
 
         const createResult = await createTag(
             initialTagFormState,
@@ -206,6 +210,31 @@ test.describe("category and tag server actions", () => {
         expect(savedTag).toBeDefined()
         expect(savedTag?.nameEng).toBe(nameEng)
 
+        const singleLangResult = await createTag(
+            initialTagFormState,
+            makeFormData({
+                namePln: "   ",
+                nameEng: `#${singleEng}`,
+            })
+        )
+        expect(singleLangResult.status).toBe("success")
+
+        const savedSingleTag = await db.query.tags.findFirst({
+            where: eq(tags.nameEng, singleEng),
+        })
+        expect(savedSingleTag).toBeDefined()
+        expect(savedSingleTag?.namePln).toBeNull()
+
+        const updateResult = await updateTag(
+            initialTagFormState,
+            makeFormData({
+                tagId: savedSingleTag!.tagId,
+                namePln: "",
+                nameEng: `#${updatedEng}`,
+            })
+        )
+        expect(updateResult.status).toBe("success")
+
         const duplicateResult = await createTag(
             initialTagFormState,
             makeFormData({
@@ -221,6 +250,7 @@ test.describe("category and tag server actions", () => {
         })
 
         await deleteTag(savedTag!.tagId)
+        await deleteTag(savedSingleTag!.tagId)
 
         const afterDelete = await db.query.tags.findFirst({
             where: eq(tags.tagId, savedTag!.tagId),
