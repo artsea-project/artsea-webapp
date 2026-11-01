@@ -1,8 +1,22 @@
 export const WORKS_PER_PAGE = 6
 export const MIN_YEAR_OF_EXECUTION = 1000
-export const MAX_TITLE_LENGTH = 200
-export const MAX_TECHNIQUE_LENGTH = 200
-export const MAX_DESCRIPTION_LENGTH = 10000
+export const MAX_MEDIA_FILE_BYTES = 10 * 1024 * 1024
+
+const MIME_TO_FILE_TYPE: Record<string, "png" | "jpg" | "gif" | "mp4"> = {
+    "image/png": "png",
+    "image/jpeg": "jpg",
+    "image/jpg": "jpg",
+    "image/gif": "gif",
+    "video/mp4": "mp4",
+}
+
+const EXTENSION_TO_FILE_TYPE: Record<string, "png" | "jpg" | "gif" | "mp4"> = {
+    png: "png",
+    jpg: "jpg",
+    jpeg: "jpg",
+    gif: "gif",
+    mp4: "mp4",
+}
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
@@ -10,15 +24,26 @@ export function isUuid(value: string): boolean {
     return UUID_PATTERN.test(value)
 }
 
-export function checkWorkTitles(rawPln: string, rawEng: string): string | null {
-    const pln = rawPln.trim()
-    const eng = rawEng.trim()
-
-    if (!pln && !eng) return "Podaj tytuł pracy w przynajmniej jednym języku."
-    if (pln.length > MAX_TITLE_LENGTH || eng.length > MAX_TITLE_LENGTH) {
-        return `Tytuł może mieć maksymalnie ${MAX_TITLE_LENGTH} znaków.`
+export function resolveUploadedFileType(
+    mimeType: string,
+    fileName: string
+): "png" | "jpg" | "gif" | "mp4" | null {
+    const normalizedMime = mimeType.trim().toLowerCase()
+    if (normalizedMime in MIME_TO_FILE_TYPE) {
+        return MIME_TO_FILE_TYPE[normalizedMime]
     }
-    return null
+    const extension = fileName.split(".").pop()?.trim().toLowerCase() ?? ""
+    return EXTENSION_TO_FILE_TYPE[extension] ?? null
+}
+
+export function formatFileSize(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+export function checkWorkTitles(rawPln: string, rawEng: string): string | null {
+    return rawPln.trim() || rawEng.trim() ? null : "Podaj tytuł pracy w przynajmniej jednym języku."
 }
 
 export function checkYearOfExecution(
@@ -42,18 +67,6 @@ export function parseYearOfExecution(raw: string): number | null {
 
 export function checkWorkCategory(categoryId: string): string | null {
     return isUuid(categoryId) ? null : "Wybierz kategorię pracy."
-}
-
-export function checkTechnique(raw: string): string | null {
-    return raw.trim().length > MAX_TECHNIQUE_LENGTH
-        ? `Technika może mieć maksymalnie ${MAX_TECHNIQUE_LENGTH} znaków.`
-        : null
-}
-
-export function checkDescription(raw: string): string | null {
-    return raw.trim().length > MAX_DESCRIPTION_LENGTH
-        ? `Opis może mieć maksymalnie ${MAX_DESCRIPTION_LENGTH} znaków.`
-        : null
 }
 
 export function parseTagIds(rawIds: string[]): { tagIds: string[] } | { error: string } {

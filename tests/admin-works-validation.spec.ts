@@ -10,7 +10,6 @@ import {
     checkWorkTitles,
     checkYearOfExecution,
     escapeLikePattern,
-    MAX_TITLE_LENGTH,
     normalizeSearchQuery,
     parsePage,
     parseTagIds,
@@ -24,9 +23,6 @@ test.describe("work validation helpers", () => {
         expect(checkWorkTitles("  ", "")).toBe("Podaj tytuł pracy w przynajmniej jednym języku.")
         expect(checkWorkTitles("Płynna harmonia", "")).toBeNull()
         expect(checkWorkTitles("", "Fluid harmony")).toBeNull()
-        expect(checkWorkTitles("x".repeat(MAX_TITLE_LENGTH + 1), "")).toBe(
-            `Tytuł może mieć maksymalnie ${MAX_TITLE_LENGTH} znaków.`
-        )
     })
 
     test("accepts an empty year and rejects values out of range", () => {

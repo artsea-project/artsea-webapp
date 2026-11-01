@@ -109,6 +109,7 @@ test.describe("works server actions", () => {
             makeFormData({
                 titlePln: `  ${marker} Tytuł PL  `,
                 titleEng: "",
+                dimensions: "  70 x 100 cm  ",
                 yearOfExecution: "2024",
                 techniquePln: " Olej na płótnie ",
                 descriptionPln: " Opis pracy ",
@@ -128,6 +129,7 @@ test.describe("works server actions", () => {
             isVisible: true,
             titlePln: `${marker} Tytuł PL`,
             titleEng: "",
+            dimensions: "70 x 100 cm",
             yearOfExecution: 2024,
             descriptionPln: { technique: "Olej na płótnie", description: "Opis pracy" },
             descriptionEng: { technique: "", description: "" },
@@ -140,6 +142,7 @@ test.describe("works server actions", () => {
                 artPieceId: workId,
                 titlePln: "",
                 titleEng: `${marker} Title EN`,
+                dimensions: "   ",
                 yearOfExecution: "",
                 techniqueEng: "Acrylic",
                 descriptionEng: "English description",
@@ -153,6 +156,7 @@ test.describe("works server actions", () => {
         expect(updated).toMatchObject({
             titlePln: "",
             titleEng: `${marker} Title EN`,
+            dimensions: "",
             yearOfExecution: null,
             descriptionPln: { technique: "", description: "" },
             descriptionEng: { technique: "Acrylic", description: "English description" },
@@ -223,6 +227,62 @@ test.describe("works server actions", () => {
             status: "error",
             fieldErrors: {},
             formError: "Ta praca została już usunięta.",
+        })
+    })
+
+    test("creates, reorders, and removes uploaded media files", async () => {
+        const createForm = makeFormData({
+            titlePln: `${marker} z plikami`,
+            categoryId,
+            mediaOrderSubmitted: "1",
+            mediaOrder: ["new:0", "new:1"],
+        })
+        createForm.append(
+            "newMedia",
+            new File([Buffer.from("first-png")], "a.png", { type: "image/png" })
+        )
+        createForm.append(
+            "newMedia",
+            new File([Buffer.from("second-jpg-data")], "b.jpg", { type: "image/jpeg" })
+        )
+
+        const created = await createWork(initialWorkFormState, createForm)
+        expect(created.status).toBe("success")
+        const workId = created.workId!
+        createdArtworkIds.push(workId)
+
+        const initial = await getWorkForEdit(workId)
+        expect(initial?.media).toHaveLength(2)
+        expect(initial?.media[0]).toMatchObject({ fileType: "png", orderIndex: 0, sizeBytes: 9 })
+        expect(initial?.media[1]).toMatchObject({ fileType: "jpg", orderIndex: 1, sizeBytes: 15 })
+
+        const secondMediaId = initial!.media[1].mediaId
+        const updateForm = makeFormData({
+            artPieceId: workId,
+            titlePln: `${marker} z plikami`,
+            categoryId,
+            mediaOrderSubmitted: "1",
+            mediaOrder: [`existing:${secondMediaId}`, "new:0"],
+        })
+        updateForm.append(
+            "newMedia",
+            new File([Buffer.from("gif!")], "c.gif", { type: "image/gif" })
+        )
+
+        const updated = await updateWork(initialWorkFormState, updateForm)
+        expect(updated.status).toBe("success")
+
+        const afterReorder = await getWorkForEdit(workId)
+        expect(afterReorder?.media).toHaveLength(2)
+        expect(afterReorder?.media[0]).toMatchObject({
+            mediaId: secondMediaId,
+            fileType: "jpg",
+            orderIndex: 0,
+        })
+        expect(afterReorder?.media[1]).toMatchObject({
+            fileType: "gif",
+            orderIndex: 1,
+            sizeBytes: 4,
         })
     })
 })
