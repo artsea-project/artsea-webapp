@@ -89,8 +89,6 @@ export default function WorksSection({ works, page, pageCount, search }: WorksSe
         })
     }
 
-    const deleteTitle = workToDelete?.title ?? "Bez tytułu"
-
     return (
         <section className="flex flex-col gap-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
@@ -162,7 +160,7 @@ export default function WorksSection({ works, page, pageCount, search }: WorksSe
                     <AlertDialogHeader>
                         <AlertDialogTitle>Usunąć pracę?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Praca {deleteTitle} zostanie trwale usunięta z portfolio wraz z
+                            Praca {workToDelete?.title} zostanie trwale usunięta z portfolio wraz z
                             przypisanymi zdjęciami.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
