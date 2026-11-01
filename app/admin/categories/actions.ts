@@ -52,17 +52,22 @@ function failedConflict(fieldErrors: FieldErrors<BilingualNameField>, fallbackEr
     return failed(fieldErrors, hasFieldErrors ? undefined : fallbackError)
 }
 
-function succeeded(createdId?: string) {
-    return createdId
-        ? {
-              status: "success" as const,
-              fieldErrors: {},
-              savedAt: Date.now(),
-              categoryId: createdId,
-              tagId: createdId,
-              createdId,
-          }
-        : { status: "success" as const, fieldErrors: {}, savedAt: Date.now() }
+function succeeded(extra?: string | { categoryId?: string; tagId?: string }) {
+    if (!extra) {
+        return { status: "success" as const, fieldErrors: {}, savedAt: Date.now() }
+    }
+    const id = typeof extra === "string" ? extra : (extra.categoryId ?? extra.tagId)
+    const categoryId = typeof extra === "string" ? extra : extra.categoryId
+    const tagId = typeof extra === "string" ? extra : extra.tagId
+
+    return {
+        status: "success" as const,
+        fieldErrors: {},
+        savedAt: Date.now(),
+        ...(categoryId ? { categoryId } : {}),
+        ...(tagId ? { tagId } : {}),
+        ...(id ? { createdId: id } : {}),
+    }
 }
 
 function getPostgresErrorCode(error: unknown): string | undefined {
@@ -213,7 +218,7 @@ export async function createCategory(
     }
 
     refreshViews()
-    return succeeded(createdId)
+    return succeeded({ categoryId: createdId })
 }
 
 export async function updateCategory(
@@ -322,8 +327,10 @@ export async function createTag(
     const conflicts = await findTagConflicts(tag.values)
     if (conflicts.namePln || conflicts.nameEng) return failed(conflicts)
 
+    let createdId: string
     try {
-        await db.insert(tags).values(tag.values)
+        const [created] = await db.insert(tags).values(tag.values).returning({ tagId: tags.tagId })
+        createdId = created.tagId
     } catch (error) {
         if (getPostgresErrorCode(error) === "23505") {
             return failedConflict(await findTagConflicts(tag.values), TAG_SAVE_ERROR)
@@ -332,7 +339,7 @@ export async function createTag(
     }
 
     refreshViews()
-    return succeeded()
+    return succeeded({ tagId: createdId })
 }
 
 export async function updateTag(
