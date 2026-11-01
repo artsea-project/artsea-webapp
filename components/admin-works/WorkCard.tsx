@@ -26,7 +26,7 @@ export default function WorkCard({
     onToggleVisibility,
     onDelete,
 }: WorkCardProps) {
-    const title = work.title ?? "Bez tytułu"
+    const { title } = work
 
     return (
         <article className="flex flex-col rounded-xl border border-border bg-background">
