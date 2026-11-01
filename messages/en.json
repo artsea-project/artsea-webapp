@@ -7,7 +7,12 @@
         "about": "ABOUT",
         "portfolio": "PORTFOLIO",
         "contact": "CONTACT",
-        "toggleMenu": "Toggle navigation menu"
+        "toggleMenu": "Toggle navigation menu",
+        "switchLanguage": "Switch language to {language}",
+        "languages": {
+            "pl": "Polish",
+            "en": "English"
+        }
     },
     "NotFound": {
         "title": "Page not found",
