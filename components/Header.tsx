@@ -1,19 +1,22 @@
-import { db } from "@/db"
 import NavLinks from "@/components/NavLinks"
 import { Link } from "@/i18n/navigation"
+import { getArtistName } from "@/lib/profile/queries"
 
-export default async function Header() {
-    let profile = null
-
-    if (process.env.DATABASE_URL) {
-        try {
-            profile = await db.query.profiles.findFirst()
-        } catch {
-            // Fallback to the default artist name if the database is unavailable
-        }
+async function loadArtistName() {
+    if (!process.env.DATABASE_URL) {
+        return null
     }
 
-    const artistName = profile?.fullName
+    try {
+        return await getArtistName()
+    } catch {
+        // Render without a name if the database is offline or uninitialized
+        return null
+    }
+}
+
+export default async function Header() {
+    const artistName = await loadArtistName()
 
     return (
         <header className="w-full">

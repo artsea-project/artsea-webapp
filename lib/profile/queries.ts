@@ -71,3 +71,8 @@ export async function getContactEmail(): Promise<string | null> {
     const profile = await db.query.profiles.findFirst({ columns: { contactEmail: true } })
     return profile?.contactEmail ?? null
 }
+
+export async function getArtistName(): Promise<string | null> {
+    const profile = await db.query.profiles.findFirst({ columns: { fullName: true } })
+    return profile?.fullName ?? null
+}
