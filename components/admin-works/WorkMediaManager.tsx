@@ -116,7 +116,7 @@ export default function WorkMediaManager({ items, onChange }: WorkMediaManagerPr
     return (
         <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-2">
-                <span className="text-sm font-medium text-foreground">Zdjęcia pracy</span>
+                <span className="text-sm font-bold text-foreground">Zdjęcia pracy</span>
 
                 <div
                     onDragOver={(event) => {
@@ -161,7 +161,7 @@ export default function WorkMediaManager({ items, onChange }: WorkMediaManagerPr
             {items.length > 0 && (
                 <div className="flex flex-col gap-3">
                     <div>
-                        <h3 className="text-sm font-medium text-foreground">
+                        <h3 className="text-sm font-bold text-foreground">
                             Kolejność wyświetlania
                         </h3>
                         <p className="mt-0.5 text-xs text-muted-foreground">
