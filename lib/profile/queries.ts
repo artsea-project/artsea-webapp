@@ -1,7 +1,9 @@
 import { asc } from "drizzle-orm"
 
 import { db } from "@/db"
-import { links } from "@/db/schema"
+import { links, profiles } from "@/db/schema"
+import type { Locale } from "@/i18n/routing"
+import { localizedKey } from "@/lib/i18n/localized-key"
 import { parseBio, parseParagraphs } from "@/lib/profile/content"
 import type { BioContent } from "@/types/profile"
 
@@ -19,6 +21,14 @@ export type EditableProfile = {
     contactPln: string[]
     contactEng: string[]
     imageHash: string | null
+}
+
+export type AboutProfile = {
+    fullName: string
+    contactEmail: string | null
+    imageHash: string | null
+    bio: BioContent
+    contact: string[]
 }
 
 export async function getOrderedLinks(): Promise<ProfileLink[]> {
@@ -70,4 +80,26 @@ export async function getSidebarProfile(): Promise<{
 export async function getContactEmail(): Promise<string | null> {
     const profile = await db.query.profiles.findFirst({ columns: { contactEmail: true } })
     return profile?.contactEmail ?? null
+}
+
+export async function getArtistName(): Promise<string | null> {
+    const profile = await db.query.profiles.findFirst({ columns: { fullName: true } })
+    return profile?.fullName ?? null
+}
+
+export async function getAboutProfile(locale: Locale): Promise<AboutProfile | null> {
+    const [profile] = await db
+        .select({
+            fullName: profiles.fullName,
+            contactEmail: profiles.contactEmail,
+            imageHash: profiles.profileImageContentHash,
+            bio: profiles[localizedKey("bio", locale)],
+            contact: profiles[localizedKey("contact", locale)],
+        })
+        .from(profiles)
+        .limit(1)
+
+    if (!profile) return null
+
+    return { ...profile, bio: parseBio(profile.bio), contact: parseParagraphs(profile.contact) }
 }

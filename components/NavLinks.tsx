@@ -1,23 +1,23 @@
 "use client"
 
 import { Fragment, useState } from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
 import { Menu, X } from "lucide-react"
+import { useLocale, useTranslations } from "next-intl"
+
+import { Link, usePathname } from "@/i18n/navigation"
+import { routing } from "@/i18n/routing"
 
 const NAV_ITEMS = [
-    { name: "O MNIE", href: "/about" },
-    { name: "PORTFOLIO", href: "/" },
-    { name: "KONTAKT", href: "/about#contact" },
-]
-
-const LANGUAGES = ["PL", "EN"] as const
-type Language = (typeof LANGUAGES)[number]
+    { labelKey: "about", href: "/about" },
+    { labelKey: "portfolio", href: "/" },
+    { labelKey: "contact", href: "/about#contact" },
+] as const
 
 // Shared by the desktop bar and the mobile drawer so the two can't drift apart.
 const NAV_TYPOGRAPHY = "font-secondary text-xs font-normal uppercase tracking-widest"
 
 function NavItemLinks({ className, onNavigate }: { className?: string; onNavigate?: () => void }) {
+    const t = useTranslations("Nav")
     const pathname = usePathname()
 
     const isLinkActive = (href: string) => {
@@ -40,7 +40,7 @@ function NavItemLinks({ className, onNavigate }: { className?: string; onNavigat
                         onClick={onNavigate}
                         className={`transition-colors duration-200 ${active ? "text-foreground" : "text-muted-foreground"} ${className ?? ""}`}
                     >
-                        {item.name}
+                        {t(item.labelKey)}
                     </Link>
                 )
             })}
@@ -48,28 +48,27 @@ function NavItemLinks({ className, onNavigate }: { className?: string; onNavigat
     )
 }
 
-function LangToggle({
-    currentLang,
-    onSelect,
-}: {
-    currentLang: Language
-    onSelect: (lang: Language) => void
-}) {
+function LangToggle({ onNavigate }: { onNavigate?: () => void }) {
+    const t = useTranslations("Nav")
+    const currentLocale = useLocale()
+    const pathname = usePathname()
+
     return (
         <>
-            {LANGUAGES.map((lang, index) => (
-                <Fragment key={lang}>
+            {routing.locales.map((locale, index) => (
+                <Fragment key={locale}>
                     {index > 0 && <span className="text-muted-foreground opacity-40">/</span>}
-                    <button
-                        type="button"
-                        onClick={() => onSelect(lang)}
+                    <Link
+                        href={pathname}
+                        locale={locale}
+                        onClick={onNavigate}
                         className={`transition-colors duration-200 focus:outline-none ${
-                            currentLang === lang ? "text-foreground" : "text-muted-foreground"
+                            currentLocale === locale ? "text-foreground" : "text-muted-foreground"
                         }`}
-                        aria-label={`Switch language to ${lang === "PL" ? "Polish" : "English"}`}
+                        aria-label={t("switchLanguage", { language: t(`languages.${locale}`) })}
                     >
-                        {lang}
-                    </button>
+                        {locale.toUpperCase()}
+                    </Link>
                 </Fragment>
             ))}
         </>
@@ -77,7 +76,7 @@ function LangToggle({
 }
 
 export default function NavLinks() {
-    const [currentLang, setCurrentLang] = useState<Language>("PL")
+    const t = useTranslations("Nav")
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
     return (
@@ -88,7 +87,7 @@ export default function NavLinks() {
                 </div>
 
                 <div className="flex items-center gap-1.5 ml-16 lg:ml-28 text-xs font-normal">
-                    <LangToggle currentLang={currentLang} onSelect={setCurrentLang} />
+                    <LangToggle />
                 </div>
             </nav>
 
@@ -97,7 +96,7 @@ export default function NavLinks() {
                     type="button"
                     onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                     className="p-2 text-foreground transition-colors focus:outline-none"
-                    aria-label="Toggle navigation menu"
+                    aria-label={t("toggleMenu")}
                     aria-expanded={mobileMenuOpen}
                     aria-controls="mobile-menu"
                 >
@@ -113,13 +112,7 @@ export default function NavLinks() {
                 <NavItemLinks className="py-2" onNavigate={() => setMobileMenuOpen(false)} />
 
                 <div className="flex items-center gap-2 pt-4 border-t border-muted-foreground/20 text-xs font-normal">
-                    <LangToggle
-                        currentLang={currentLang}
-                        onSelect={(lang) => {
-                            setCurrentLang(lang)
-                            setMobileMenuOpen(false)
-                        }}
-                    />
+                    <LangToggle onNavigate={() => setMobileMenuOpen(false)} />
                 </div>
             </nav>
         </>

@@ -1,0 +1,51 @@
+{
+    "About": {
+        "portraitAlt": "Portrait - {name}",
+        "contactHeading": "Get in touch.",
+        "findMe": "Find me here"
+    },
+    "Artwork": {
+        "untitled": "Untitled",
+        "technique": "Technique and materials",
+        "description": "About the project",
+        "next": "See next",
+        "photoAlt": "{title} - photo {number}"
+    },
+    "Footer": {
+        "heading": "Let's talk about art."
+    },
+    "Gallery": {
+        "morePhotos": "+{count, plural, one {# photo} other {# photos}}",
+        "previous": "Previous",
+        "next": "Next",
+        "close": "Close",
+        "slide": "Slide",
+        "carousel": "Carousel",
+        "lightbox": "Lightbox",
+        "photoGallery": "Photo gallery",
+        "slideCounter": "{index} of {total}"
+    },
+    "Home": {
+        "heading": "Selected works."
+    },
+    "Metadata": {
+        "title": "Artsea Portfolio",
+        "description": "Portfolio of artworks"
+    },
+    "Nav": {
+        "about": "ABOUT",
+        "portfolio": "PORTFOLIO",
+        "contact": "CONTACT",
+        "toggleMenu": "Toggle navigation menu",
+        "switchLanguage": "Switch language to {language}",
+        "languages": {
+            "pl": "Polish",
+            "en": "English"
+        }
+    },
+    "NotFound": {
+        "title": "Page not found",
+        "description": "The page you are looking for does not exist or has been moved.",
+        "backHome": "Back to the homepage"
+    }
+}

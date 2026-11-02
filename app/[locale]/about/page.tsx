@@ -1,11 +1,19 @@
 import { Suspense } from "react"
-import { db } from "@/db"
 import { notFound } from "next/navigation"
+import { useTranslations } from "next-intl"
+import { getLocale } from "next-intl/server"
 import { ArrowUpRight } from "lucide-react"
 import Image from "next/image"
-import { DEFAULT_ABOUT_HEADING, parseBio, parseParagraphs } from "@/lib/profile/content"
+import type { Locale } from "@/i18n/routing"
+import { localizedValue } from "@/lib/i18n/localized-key"
+import { DEFAULT_ABOUT_HEADING } from "@/lib/profile/content"
 import { profileImagePath } from "@/lib/profile/image"
-import { getOrderedLinks, type ProfileLink } from "@/lib/profile/queries"
+import {
+    getAboutProfile,
+    getOrderedLinks,
+    type AboutProfile,
+    type ProfileLink,
+} from "@/lib/profile/queries"
 
 interface HeroSectionProps {
     fullName: string
@@ -15,6 +23,8 @@ interface HeroSectionProps {
 }
 
 function HeroSection({ fullName, heading, intro, profileImageSrc }: HeroSectionProps) {
+    const t = useTranslations("About")
+
     return (
         <section className="max-w-[1440px] mx-auto px-10 md:px-32 pt-24 pb-32">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
@@ -54,7 +64,7 @@ function HeroSection({ fullName, heading, intro, profileImageSrc }: HeroSectionP
                         />
                         <Image
                             src={profileImageSrc}
-                            alt={`Portret - ${fullName}`}
+                            alt={t("portraitAlt", { name: fullName })}
                             width={469}
                             height={703}
                             unoptimized
@@ -114,12 +124,14 @@ interface ContactSectionProps {
 }
 
 function ContactSection({ email, socialLinks, paragraphs }: ContactSectionProps) {
+    const t = useTranslations("About")
+
     return (
         <section id="contact" className="max-w-[1440px] mx-auto px-10 md:px-32 pt-16 pb-32">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 items-start">
                 <div className="md:col-span-5 flex flex-col gap-6">
                     <h2 className="font-primary text-[40px] md:text-[56px] leading-[1.1] font-normal text-foreground">
-                        Skontaktuj się ze mną.
+                        {t("contactHeading")}
                     </h2>
                     {paragraphs.length > 0 && (
                         <div className="text-muted-foreground font-body text-lg leading-relaxed flex flex-col gap-1">
@@ -147,7 +159,7 @@ function ContactSection({ email, socialLinks, paragraphs }: ContactSectionProps)
                     {socialLinks.length > 0 && (
                         <div className="flex flex-col gap-4">
                             <span className="font-secondary text-[12px] tracking-widest uppercase text-primary">
-                                Znajdź mnie tutaj
+                                {t("findMe")}
                             </span>
                             <div className="flex flex-wrap gap-8">
                                 {socialLinks.map((link) => (
@@ -198,34 +210,31 @@ export default function AboutPage() {
     )
 }
 
-async function AboutContent() {
-    let profile = null
-    let socialLinksDb: ProfileLink[] = []
+async function loadAbout(locale: Locale): Promise<[AboutProfile | null, ProfileLink[]]> {
     try {
-        profile = await db.query.profiles.findFirst({
-            columns: { profileImageContent: false },
-        })
-        socialLinksDb = await getOrderedLinks()
+        return await Promise.all([getAboutProfile(locale), getOrderedLinks()])
     } catch (error) {
         console.error("Failed to fetch data:", error)
+        return [null, []]
     }
+}
+
+async function AboutContent() {
+    const locale = await getLocale()
+    const [profile, socialLinks] = await loadAbout(locale)
 
     if (!profile) {
         notFound()
     }
 
-    const bio = parseBio(profile.bioPln)
-    const contactParagraphs = parseParagraphs(profile.contactPln)
-
-    const profileImageSrc = profile.profileImageContentHash
-        ? profileImagePath(profile.profileImageContentHash)
-        : null
+    const { bio } = profile
+    const profileImageSrc = profile.imageHash ? profileImagePath(profile.imageHash) : null
 
     return (
         <div className="w-full">
             <HeroSection
                 fullName={profile.fullName}
-                heading={bio.heading || DEFAULT_ABOUT_HEADING.pln}
+                heading={bio.heading || localizedValue(DEFAULT_ABOUT_HEADING, locale)}
                 intro={bio.intro}
                 profileImageSrc={profileImageSrc}
             />
@@ -246,8 +255,8 @@ async function AboutContent() {
 
             <ContactSection
                 email={profile.contactEmail}
-                socialLinks={socialLinksDb}
-                paragraphs={contactParagraphs}
+                socialLinks={socialLinks}
+                paragraphs={profile.contact}
             />
         </div>
     )
