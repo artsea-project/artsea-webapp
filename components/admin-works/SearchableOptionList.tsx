@@ -55,6 +55,11 @@ export default function SearchableOptionList({
                         type="search"
                         value={search}
                         onChange={(event) => setSearch(event.target.value)}
+                        onKeyDown={(event) => {
+                            if (event.key === "Enter") {
+                                event.preventDefault()
+                            }
+                        }}
                         placeholder={searchPlaceholder}
                         aria-label={searchPlaceholder}
                         className="min-w-0 flex-1 bg-transparent text-xs text-foreground placeholder:text-muted-foreground focus:outline-none"
