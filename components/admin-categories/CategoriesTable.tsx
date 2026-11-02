@@ -22,7 +22,7 @@ export default function CategoriesTable({
         <div className="flex max-h-80 flex-col overflow-hidden rounded-xl border border-border bg-background lg:absolute lg:inset-x-0 lg:top-0 lg:max-h-full">
             <div className="min-h-0 flex-1 overflow-y-auto">
                 <table className="w-full border-collapse text-left">
-                    <thead className="sticky top-0 z-20 bg-background shadow-[inset_0_-1px_0_0_var(--border)]">
+                    <thead className="sticky top-0 z-[2] bg-background shadow-[inset_0_-1px_0_0_var(--border)]">
                         <tr className="h-14 bg-border/50 text-sm font-normal text-muted-foreground">
                             <th scope="col" className="py-3 pr-2 pl-4 font-normal sm:px-6">
                                 Nazwa kategorii
