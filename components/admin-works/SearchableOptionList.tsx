@@ -34,7 +34,7 @@ export default function SearchableOptionList({
     const [search, setSearch] = useState("")
 
     const filteredOptions = useMemo(() => {
-        const needle = search.trim().toLowerCase()
+        const needle = search.trim().replace(/^#+/, "").trim().toLowerCase()
         if (!needle) return options
         return options.filter((option) => option.searchTerms.toLowerCase().includes(needle))
     }, [options, search])
