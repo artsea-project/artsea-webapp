@@ -24,7 +24,7 @@ export default function CategoryRow({
         <tr
             className={cn(
                 "h-18 transition-colors hover:bg-muted/40",
-                isSelected && "relative z-10 outline outline-1 -outline-offset-1 outline-primary"
+                isSelected && "relative z-[1] outline outline-1 -outline-offset-1 outline-primary"
             )}
         >
             <td className="max-w-0 w-full py-3 pr-2 pl-4 sm:px-6">
