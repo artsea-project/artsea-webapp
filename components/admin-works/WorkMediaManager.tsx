@@ -1,6 +1,6 @@
 "use client"
 
-import { CloudUpload, GripVertical, Trash2 } from "lucide-react"
+import { ChevronDown, ChevronUp, CloudUpload, GripVertical, Trash2 } from "lucide-react"
 import { useRef, useState, type DragEvent } from "react"
 
 import { Badge } from "@/components/ui/badge"
@@ -157,6 +157,24 @@ export default function WorkMediaManager({ items, onChange }: WorkMediaManagerPr
         onChange(reordered)
     }
 
+    function moveItem(fromIndex: number, direction: "up" | "down") {
+        const targetIndex = direction === "up" ? fromIndex - 1 : fromIndex + 1
+        if (targetIndex < 0 || targetIndex >= items.length) return
+
+        const reordered = [...items]
+        const [moved] = reordered.splice(fromIndex, 1)
+        reordered.splice(targetIndex, 0, moved)
+
+        const coverError = reordered[0] ? checkCoverMediaType(reordered[0].fileType) : null
+        if (coverError) {
+            setUploadError(coverError)
+            return
+        }
+
+        setUploadError(null)
+        onChange(reordered)
+    }
+
     function handleZoneDragOver(event: DragEvent<HTMLDivElement>) {
         if (draggedIndex !== null) return
         event.preventDefault()
@@ -228,7 +246,7 @@ export default function WorkMediaManager({ items, onChange }: WorkMediaManagerPr
                             Kolejność wyświetlania
                         </h3>
                         <p className="mt-0.5 text-xs text-muted-foreground">
-                            Przeciągnij za uchwyt z lewej strony, aby zmienić priorytet. Pierwsze
+                            Użyj strzałek lub przeciągnij za uchwyt, aby zmienić priorytet. Pierwsze
                             zdjęcie to też okładka.
                         </p>
                     </div>
@@ -313,19 +331,43 @@ export default function WorkMediaManager({ items, onChange }: WorkMediaManagerPr
                                         </div>
                                     </div>
 
-                                    <div className="flex shrink-0 items-center gap-2">
+                                    <div className="flex shrink-0 items-center gap-1 sm:gap-2">
                                         {isCover && (
                                             <Badge className="rounded-md bg-primary/15 px-2.5 py-1 text-[10px] font-bold tracking-wide text-primary uppercase hover:bg-primary/15">
                                                 OKŁADKA
                                             </Badge>
                                         )}
+                                        <div className="flex items-center">
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="icon"
+                                                disabled={index === 0}
+                                                aria-label={`Przesuń plik ${item.fileName} w górę`}
+                                                onClick={() => moveItem(index, "up")}
+                                                className="size-8 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                                            >
+                                                <ChevronUp className="size-4" />
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="icon"
+                                                disabled={index === items.length - 1}
+                                                aria-label={`Przesuń plik ${item.fileName} w dół`}
+                                                onClick={() => moveItem(index, "down")}
+                                                className="size-8 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                                            >
+                                                <ChevronDown className="size-4" />
+                                            </Button>
+                                        </div>
                                         <Button
                                             type="button"
                                             variant="ghost"
                                             size="icon"
                                             aria-label={`Usuń plik ${item.fileName}`}
                                             onClick={() => removeItem(index)}
-                                            className="text-muted-foreground hover:text-destructive"
+                                            className="size-8 text-muted-foreground hover:text-destructive"
                                         >
                                             <Trash2 />
                                         </Button>
