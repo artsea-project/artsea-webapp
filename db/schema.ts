@@ -9,6 +9,7 @@ import {
     primaryKey,
     foreignKey,
     unique,
+    uniqueIndex,
     check,
     customType,
 } from "drizzle-orm/pg-core"
@@ -85,17 +86,24 @@ export const categories = pgTable(
         nameEng: text("name_eng").notNull(),
     },
     (table) => [
-        unique("category_name_pln_uq").on(table.namePln),
-        unique("category_name_eng_uq").on(table.nameEng),
+        uniqueIndex("category_name_pln_uq").on(sql`lower(${table.namePln})`),
+        uniqueIndex("category_name_eng_uq").on(sql`lower(${table.nameEng})`),
     ]
 )
 
 // Tag Table
-export const tags = pgTable("tag", {
-    tagId: uuid("tag_id").primaryKey().defaultRandom(),
-    namePln: text("name_pln"),
-    nameEng: text("name_eng"),
-})
+export const tags = pgTable(
+    "tag",
+    {
+        tagId: uuid("tag_id").primaryKey().defaultRandom(),
+        namePln: text("name_pln").notNull(),
+        nameEng: text("name_eng").notNull(),
+    },
+    (table) => [
+        uniqueIndex("tag_name_pln_uq").on(sql`lower(${table.namePln})`),
+        uniqueIndex("tag_name_eng_uq").on(sql`lower(${table.nameEng})`),
+    ]
+)
 
 // Art Piece Table
 export const artPieces = pgTable(

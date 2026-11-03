@@ -1,0 +1,307 @@
+import { randomUUID } from "node:crypto"
+
+import { expect, test } from "@playwright/test"
+import { eq, inArray, or } from "drizzle-orm"
+
+import {
+    createCategory,
+    createTag,
+    deleteCategory,
+    deleteTag,
+    updateCategory,
+    updateTag,
+} from "../app/admin/categories/actions"
+import { db } from "../db"
+import { artPieces, categories, tags } from "../db/schema"
+import { initialCategoryFormState, initialTagFormState } from "../lib/categories/form-state"
+import { getOrderedTags } from "../lib/categories/queries"
+import {
+    checkCategoryNameEng,
+    checkCategoryNamePln,
+    checkTagNameEng,
+    checkTagNamePln,
+    formatWorksCount,
+    normalizeTagName,
+} from "../lib/categories/validation"
+
+const suffix = randomUUID().slice(0, 8)
+const createdCategoryNamesPln: string[] = []
+const createdTagNames: string[] = []
+const createdArtworkIds: string[] = []
+
+function makeFormData(entries: Record<string, string>): FormData {
+    const formData = new FormData()
+    for (const [key, value] of Object.entries(entries)) {
+        formData.set(key, value)
+    }
+    return formData
+}
+
+test.afterAll(async () => {
+    if (createdArtworkIds.length > 0) {
+        await db.delete(artPieces).where(inArray(artPieces.artPieceId, createdArtworkIds))
+    }
+    if (createdCategoryNamesPln.length > 0) {
+        await db.delete(categories).where(inArray(categories.namePln, createdCategoryNamesPln))
+    }
+    if (createdTagNames.length > 0) {
+        await db
+            .delete(tags)
+            .where(
+                or(inArray(tags.namePln, createdTagNames), inArray(tags.nameEng, createdTagNames))
+            )
+    }
+})
+
+test.describe("category and tag validation helpers", () => {
+    test("requires Polish and English category names", () => {
+        expect(checkCategoryNamePln("   ")).toBe("Podaj nazwę kategorii po polsku.")
+        expect(checkCategoryNameEng("")).toBe("Podaj nazwę kategorii po angielsku.")
+        expect(checkCategoryNamePln("Malarstwo")).toBeNull()
+        expect(checkCategoryNameEng("Painting")).toBeNull()
+    })
+
+    test("strips leading '#' from tag names and requires Polish and English names", () => {
+        expect(normalizeTagName("  ##minimalizm  ")).toBe("minimalizm")
+        expect(checkTagNamePln(" ### ")).toBe("Podaj nazwę tagu po polsku.")
+        expect(checkTagNameEng("")).toBe("Podaj nazwę tagu po angielsku.")
+        expect(checkTagNamePln("#grafika")).toBeNull()
+        expect(checkTagNameEng("graphics")).toBeNull()
+    })
+
+    test("formats Polish plural forms for artwork counts", () => {
+        expect(formatWorksCount(0)).toBe("0 prac")
+        expect(formatWorksCount(1)).toBe("1 praca")
+        expect(formatWorksCount(2)).toBe("2 prace")
+        expect(formatWorksCount(4)).toBe("4 prace")
+        expect(formatWorksCount(5)).toBe("5 prac")
+        expect(formatWorksCount(12)).toBe("12 prac")
+        expect(formatWorksCount(22)).toBe("22 prace")
+    })
+})
+
+test.describe("category and tag server actions", () => {
+    test("returns validation errors when category or tag inputs are empty or IDs are invalid", async () => {
+        const categoryState = await createCategory(
+            initialCategoryFormState,
+            makeFormData({ namePln: "   ", nameEng: "" })
+        )
+        expect(categoryState).toEqual({
+            status: "error",
+            fieldErrors: {
+                namePln: "Podaj nazwę kategorii po polsku.",
+                nameEng: "Podaj nazwę kategorii po angielsku.",
+            },
+        })
+
+        const invalidCategoryUpdate = await updateCategory(
+            initialCategoryFormState,
+            makeFormData({ categoryId: "not-a-uuid", namePln: "Malarstwo", nameEng: "Painting" })
+        )
+        expect(invalidCategoryUpdate).toEqual({
+            status: "error",
+            fieldErrors: {},
+            formError: "Nieprawidłowy identyfikator kategorii.",
+        })
+
+        const invalidCategoryDelete = await deleteCategory("not-a-uuid")
+        expect(invalidCategoryDelete).toEqual({
+            status: "error",
+            error: "Nieprawidłowy identyfikator kategorii.",
+        })
+
+        const tagState = await createTag(
+            initialTagFormState,
+            makeFormData({ namePln: "###", nameEng: "  " })
+        )
+        expect(tagState).toEqual({
+            status: "error",
+            fieldErrors: {
+                namePln: "Podaj nazwę tagu po polsku.",
+                nameEng: "Podaj nazwę tagu po angielsku.",
+            },
+        })
+
+        const invalidTagUpdate = await updateTag(
+            initialTagFormState,
+            makeFormData({ tagId: "not-a-uuid", namePln: "grafika", nameEng: "graphics" })
+        )
+        expect(invalidTagUpdate).toEqual({
+            status: "error",
+            fieldErrors: {},
+            formError: "Nieprawidłowy identyfikator tagu.",
+        })
+
+        const invalidTagDelete = await deleteTag("not-a-uuid")
+        expect(invalidTagDelete).toEqual({
+            status: "error",
+            error: "Nieprawidłowy identyfikator tagu.",
+        })
+    })
+
+    test("creates, updates, and prevents duplicate categories with per-field errors", async () => {
+        const namePln = `Kategoria PL ${suffix}`
+        const nameEng = `Category EN ${suffix}`
+        const updatedPln = `Kategoria PL Zmieniona ${suffix}`
+        const updatedEng = `Category EN Updated ${suffix}`
+        createdCategoryNamesPln.push(namePln, updatedPln)
+
+        const createResult = await createCategory(
+            initialCategoryFormState,
+            makeFormData({ namePln: `  ${namePln}  `, nameEng })
+        )
+        expect(createResult.status).toBe("success")
+        expect(createResult.fieldErrors).toEqual({})
+
+        const duplicateResult = await createCategory(
+            initialCategoryFormState,
+            makeFormData({ namePln: namePln.toLowerCase(), nameEng: `Other ${suffix}` })
+        )
+        expect(duplicateResult).toEqual({
+            status: "error",
+            fieldErrors: {
+                namePln: "Kategoria o takiej nazwie już istnieje.",
+            },
+        })
+
+        const created = await db.query.categories.findFirst({
+            where: eq(categories.namePln, namePln),
+        })
+        expect(created).toBeDefined()
+
+        const updateResult = await updateCategory(
+            initialCategoryFormState,
+            makeFormData({
+                categoryId: created!.categoryId,
+                namePln: updatedPln,
+                nameEng: updatedEng,
+            })
+        )
+        expect(updateResult.status).toBe("success")
+
+        const updated = await db.query.categories.findFirst({
+            where: eq(categories.categoryId, created!.categoryId),
+        })
+        expect(updated?.namePln).toBe(updatedPln)
+        expect(updated?.nameEng).toBe(updatedEng)
+    })
+
+    test("blocks deleting a category with assigned works until works are removed", async () => {
+        const namePln = `Kategoria Z Pracami ${suffix}`
+        const nameEng = `Category With Works ${suffix}`
+        createdCategoryNamesPln.push(namePln)
+
+        await createCategory(initialCategoryFormState, makeFormData({ namePln, nameEng }))
+        const category = await db.query.categories.findFirst({
+            where: eq(categories.namePln, namePln),
+        })
+        expect(category).toBeDefined()
+
+        const [artwork] = await db
+            .insert(artPieces)
+            .values({
+                categoryId: category!.categoryId,
+                titlePln: `Praca testowa ${suffix}`,
+                isVisible: true,
+            })
+            .returning()
+        createdArtworkIds.push(artwork.artPieceId)
+
+        const blockedDelete = await deleteCategory(category!.categoryId)
+        expect(blockedDelete).toEqual({
+            status: "error",
+            error: "Nie można usunąć kategorii, do której są przypisane prace.",
+        })
+
+        await db.delete(artPieces).where(eq(artPieces.artPieceId, artwork.artPieceId))
+
+        const allowedDelete = await deleteCategory(category!.categoryId)
+        expect(allowedDelete).toEqual({ status: "success" })
+
+        const remaining = await db.query.categories.findFirst({
+            where: eq(categories.categoryId, category!.categoryId),
+        })
+        expect(remaining).toBeUndefined()
+    })
+
+    test("creates tags stripping leading '#', updates tags, blocks duplicates, and deletes tags", async () => {
+        const namePln = `tag_pl_${suffix}`
+        const nameEng = `tag_en_${suffix}`
+        const secondPln = `a_tag_pl_${suffix}`
+        const secondEng = `a_tag_en_${suffix}`
+        const updatedEng = `tag_updated_en_${suffix}`
+        createdTagNames.push(namePln, nameEng, secondPln, secondEng, updatedEng)
+
+        const createResult = await createTag(
+            initialTagFormState,
+            makeFormData({
+                namePln: `  #${namePln} `,
+                nameEng: `##${nameEng}`,
+            })
+        )
+        expect(createResult.status).toBe("success")
+
+        const savedTag = await db.query.tags.findFirst({
+            where: eq(tags.namePln, namePln),
+        })
+        expect(savedTag).toBeDefined()
+        expect(savedTag?.nameEng).toBe(nameEng)
+
+        const secondTagResult = await createTag(
+            initialTagFormState,
+            makeFormData({
+                namePln: `#${secondPln}`,
+                nameEng: `#${secondEng}`,
+            })
+        )
+        expect(secondTagResult.status).toBe("success")
+
+        const savedSecondTag = await db.query.tags.findFirst({
+            where: eq(tags.namePln, secondPln),
+        })
+        expect(savedSecondTag).toBeDefined()
+
+        const orderedTags = await getOrderedTags()
+        const secondIndex = orderedTags.findIndex((t) => t.tagId === savedSecondTag!.tagId)
+        const firstIndex = orderedTags.findIndex((t) => t.tagId === savedTag!.tagId)
+        expect(secondIndex).toBeGreaterThanOrEqual(0)
+        expect(firstIndex).toBeGreaterThan(secondIndex)
+
+        const updateResult = await updateTag(
+            initialTagFormState,
+            makeFormData({
+                tagId: savedSecondTag!.tagId,
+                namePln: secondPln,
+                nameEng: `#${updatedEng}`,
+            })
+        )
+        expect(updateResult.status).toBe("success")
+
+        const duplicateResult = await createTag(
+            initialTagFormState,
+            makeFormData({
+                namePln: namePln.toUpperCase(),
+                nameEng: `other_${suffix}`,
+            })
+        )
+        expect(duplicateResult).toEqual({
+            status: "error",
+            fieldErrors: {
+                namePln: "Tag o takiej nazwie już istnieje.",
+            },
+        })
+
+        expect(await deleteTag(savedTag!.tagId)).toEqual({ status: "success" })
+        expect(await deleteTag(savedSecondTag!.tagId)).toEqual({ status: "success" })
+
+        const afterDelete = await db.query.tags.findFirst({
+            where: eq(tags.tagId, savedTag!.tagId),
+        })
+        expect(afterDelete).toBeUndefined()
+
+        expect(await deleteTag(savedTag!.tagId)).toEqual({
+            status: "error",
+            error: "Ten tag został już usunięty.",
+        })
+    })
+})
