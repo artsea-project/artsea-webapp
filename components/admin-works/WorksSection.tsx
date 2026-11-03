@@ -103,7 +103,7 @@ export default function WorksSection({ works, page, pageCount, search }: WorksSe
 
     return (
         <section className="flex flex-col gap-6">
-            <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                     <h2 className="text-2xl font-bold text-foreground">Zarządzaj pracami</h2>
                     <p className="mt-1 text-sm text-muted-foreground">
@@ -112,30 +112,26 @@ export default function WorksSection({ works, page, pageCount, search }: WorksSe
                     </p>
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <p
-                        role="status"
-                        className={cn(
-                            "text-sm",
-                            notice?.isError
-                                ? "font-medium text-destructive"
-                                : "text-muted-foreground"
-                        )}
-                    >
-                        {notice?.text ?? ""}
-                    </p>
-
-                    <Button
-                        asChild
-                        className="h-10 rounded-lg bg-foreground px-4 text-xs font-medium text-background hover:bg-foreground/90"
-                    >
-                        <Link href="/admin/works/new">
-                            <Plus className="size-4" />
-                            Dodaj pracę
-                        </Link>
-                    </Button>
-                </div>
+                <Button
+                    asChild
+                    className="h-10 shrink-0 self-start rounded-lg bg-foreground px-4 text-xs font-medium text-background hover:bg-foreground/90 sm:self-auto"
+                >
+                    <Link href="/admin/works/new">
+                        <Plus className="size-4" />
+                        Dodaj pracę
+                    </Link>
+                </Button>
             </div>
+
+            <p
+                role="status"
+                className={cn(
+                    "-mt-2 text-sm empty:hidden",
+                    notice?.isError ? "font-medium text-destructive" : "text-muted-foreground"
+                )}
+            >
+                {notice?.text ?? ""}
+            </p>
 
             <WorksSearchBar key={search} initialSearch={search} />
 
