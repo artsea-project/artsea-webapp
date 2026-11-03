@@ -15,8 +15,12 @@ import {
 } from "@/components/ui/alert-dialog"
 
 const GUARD_ROOT_SELECTOR = "[data-leave-guard-root]"
+const DEFAULT_LEAVE_MESSAGE = "Jeśli wyjdziesz, niezapisane zmiany w profilu przepadną."
 
-type PendingLeave = { kind: "link"; href: string } | { kind: "form"; form: HTMLFormElement }
+type PendingLeave =
+    | { kind: "link"; href: string }
+    | { kind: "form"; form: HTMLFormElement }
+    | { kind: "history" }
 
 function isPlainLeftClick(event: MouseEvent) {
     return (
@@ -38,7 +42,10 @@ function readLeavingHref(event: MouseEvent): string | null {
     return `${url.pathname}${url.search}${url.hash}`
 }
 
-export function useLeaveGuard(enabled: boolean): ReactNode {
+export function useLeaveGuard(
+    enabled: boolean,
+    message: string = DEFAULT_LEAVE_MESSAGE
+): ReactNode {
     const router = useRouter()
     const [pending, setPending] = useState<PendingLeave | null>(null)
     const isLeaving = useRef(false)
@@ -67,38 +74,54 @@ export function useLeaveGuard(enabled: boolean): ReactNode {
             if (!isLeaving.current) event.preventDefault()
         }
 
+        function onPopState() {
+            if (isLeaving.current) return
+            setPending({ kind: "history" })
+        }
+
+        window.history.pushState(null, "", window.location.href)
+
         document.addEventListener("click", onClick, true)
         document.addEventListener("submit", onSubmit, true)
         window.addEventListener("beforeunload", onBeforeUnload)
+        window.addEventListener("popstate", onPopState)
 
         return () => {
             document.removeEventListener("click", onClick, true)
             document.removeEventListener("submit", onSubmit, true)
             window.removeEventListener("beforeunload", onBeforeUnload)
+            window.removeEventListener("popstate", onPopState)
         }
     }, [enabled])
+
+    function cancel() {
+        if (pending?.kind === "history") {
+            window.history.pushState(null, "", window.location.href)
+        }
+        setPending(null)
+    }
 
     function leave() {
         if (!pending) return
 
         isLeaving.current = true
+        const toLeave = pending
         setPending(null)
 
-        if (pending.kind === "link") router.push(pending.href)
-        else pending.form.requestSubmit()
+        if (toLeave.kind === "link") router.push(toLeave.href)
+        else if (toLeave.kind === "form") toLeave.form.requestSubmit()
+        else router.back()
     }
 
     return (
-        <AlertDialog open={pending !== null} onOpenChange={(open) => !open && setPending(null)}>
+        <AlertDialog open={pending !== null} onOpenChange={(open) => !open && cancel()}>
             <AlertDialogContent className="admin-theme font-secondary text-foreground">
                 <AlertDialogHeader>
                     <AlertDialogTitle>Masz niezapisane zmiany</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        Jeśli wyjdziesz, niezapisane zmiany w profilu przepadną.
-                    </AlertDialogDescription>
+                    <AlertDialogDescription>{message}</AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel>Zostań</AlertDialogCancel>
+                    <AlertDialogCancel onClick={cancel}>Zostań</AlertDialogCancel>
                     <AlertDialogAction onClick={leave}>Wyjdź bez zapisywania</AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
