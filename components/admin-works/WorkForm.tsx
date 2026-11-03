@@ -69,7 +69,7 @@ function draftFromWork(work?: WorkForEdit): WorkDraft {
             eng: work?.descriptionEng.description ?? "",
         },
         categoryId: work?.categoryId ?? "",
-        tagIds: work?.tagIds ?? [],
+        tagIds: work?.tagIds ? [...work.tagIds] : [],
     }
 }
 
@@ -222,7 +222,10 @@ export default function WorkForm({ work, categories, tags }: WorkFormProps) {
     }
 
     const isDirty = differsFromSaved(draft, savedDraft, mediaItems, initialMediaKeys)
-    const leaveDialog = useLeaveGuard(isDirty && state.status !== "success")
+    const leaveDialog = useLeaveGuard(
+        isDirty && state.status !== "success",
+        "Jeśli wyjdziesz, niezapisane zmiany w pracy przepadną."
+    )
 
     function toggleTag(tagId: string) {
         setDraft((current) => ({
@@ -382,7 +385,7 @@ export default function WorkForm({ work, categories, tags }: WorkFormProps) {
                 <div className="flex flex-wrap items-center gap-3 pt-2">
                     <Button
                         type="submit"
-                        disabled={isSaving}
+                        disabled={isSaving || !isDirty}
                         aria-busy={isSaving}
                         className="bg-foreground text-background hover:bg-foreground/90"
                     >
