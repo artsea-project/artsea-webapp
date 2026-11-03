@@ -2,7 +2,7 @@
 
 import { Plus } from "lucide-react"
 import Link from "next/link"
-import { useState, useTransition } from "react"
+import { useOptimistic, useState, useTransition } from "react"
 
 import { deleteWork, setWorkVisibility } from "@/app/admin/works/actions"
 import type { StatusNotice } from "@/components/admin-categories/SectionHeader"
@@ -33,59 +33,71 @@ interface WorksSectionProps {
 export default function WorksSection({ works, page, pageCount, search }: WorksSectionProps) {
     const [notice, setNotice] = useState<StatusNotice | null>(null)
     const [workToDelete, setWorkToDelete] = useState<AdminWork | null>(null)
+    const [savingWorkId, setSavingWorkId] = useState<string | null>(null)
     const [isPending, startTransition] = useTransition()
 
+    const [optimisticWorks, setOptimisticWorks] = useOptimistic(
+        works,
+        (currentWorks, update: { artPieceId: string; isVisible: boolean }) =>
+            currentWorks.map((work) =>
+                work.artPieceId === update.artPieceId
+                    ? { ...work, isVisible: update.isVisible }
+                    : work
+            )
+    )
+
     function handleToggleVisibility(work: AdminWork) {
-        if (isPending) return
+        if (savingWorkId !== null || isPending) return
         const nextVisible = !work.isVisible
 
+        setSavingWorkId(work.artPieceId)
         startTransition(async () => {
-            let result: Awaited<ReturnType<typeof setWorkVisibility>>
+            setOptimisticWorks({ artPieceId: work.artPieceId, isVisible: nextVisible })
             try {
-                result = await setWorkVisibility(work.artPieceId, nextVisible)
+                const result = await setWorkVisibility(work.artPieceId, nextVisible)
+                if (result.status === "error") {
+                    setNotice({ text: result.error, isError: true })
+                    return
+                }
+
+                setNotice({
+                    text: nextVisible ? "Praca jest teraz widoczna." : "Praca została ukryta.",
+                    isError: false,
+                })
             } catch {
                 setNotice({
                     text: "Nie udało się zmienić widoczności pracy. Spróbuj ponownie.",
                     isError: true,
                 })
-                return
+            } finally {
+                setSavingWorkId(null)
             }
-
-            if (result.status === "error") {
-                setNotice({ text: result.error, isError: true })
-                return
-            }
-
-            setNotice({
-                text: nextVisible ? "Praca jest teraz widoczna." : "Praca została ukryta.",
-                isError: false,
-            })
         })
     }
 
     function confirmDelete() {
-        if (!workToDelete || isPending) return
+        if (!workToDelete || savingWorkId !== null || isPending) return
         const { artPieceId } = workToDelete
 
+        setSavingWorkId(artPieceId)
         startTransition(async () => {
-            let result: Awaited<ReturnType<typeof deleteWork>>
             try {
-                result = await deleteWork(artPieceId)
+                const result = await deleteWork(artPieceId)
+                if (result.status === "error") {
+                    setNotice({ text: result.error, isError: true })
+                    return
+                }
+
+                setWorkToDelete(null)
+                setNotice({ text: "Usunięto pracę.", isError: false })
             } catch {
                 setNotice({
                     text: "Nie udało się usunąć pracy. Spróbuj ponownie.",
                     isError: true,
                 })
-                return
+            } finally {
+                setSavingWorkId(null)
             }
-
-            if (result.status === "error") {
-                setNotice({ text: result.error, isError: true })
-                return
-            }
-
-            setWorkToDelete(null)
-            setNotice({ text: "Usunięto pracę.", isError: false })
         })
     }
 
@@ -127,7 +139,7 @@ export default function WorksSection({ works, page, pageCount, search }: WorksSe
 
             <WorksSearchBar key={search} initialSearch={search} />
 
-            {works.length === 0 ? (
+            {optimisticWorks.length === 0 ? (
                 <div className="flex min-h-48 items-center justify-center rounded-xl border border-dashed border-border bg-background p-8 text-sm text-muted-foreground">
                     {search
                         ? "Nie znaleziono prac pasujących do wyszukiwanej frazy."
@@ -135,11 +147,11 @@ export default function WorksSection({ works, page, pageCount, search }: WorksSe
                 </div>
             ) : (
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-                    {works.map((work) => (
+                    {optimisticWorks.map((work) => (
                         <WorkCard
                             key={work.artPieceId}
                             work={work}
-                            isBusy={isPending}
+                            isBusy={savingWorkId === work.artPieceId}
                             onToggleVisibility={handleToggleVisibility}
                             onDelete={(selected) => {
                                 setNotice(null)
@@ -168,7 +180,7 @@ export default function WorksSection({ works, page, pageCount, search }: WorksSe
                         <AlertDialogCancel>Anuluj</AlertDialogCancel>
                         <AlertDialogAction
                             variant="destructive"
-                            disabled={isPending}
+                            disabled={isPending || savingWorkId !== null}
                             onClick={confirmDelete}
                         >
                             Usuń
