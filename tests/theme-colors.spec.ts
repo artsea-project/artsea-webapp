@@ -41,7 +41,7 @@ function expectedTokens({
     const muted = `color-mix(in oklab, ${background}, ${foreground} 5%)`
     const mutedForeground = `color-mix(in oklab, ${foreground} 70%, ${background})`
     const accent = `color-mix(in oklab, ${primary} 12%, ${background})`
-    const border = `color-mix(in oklab, ${background}, ${foreground} 20%)`
+    const border = `color-mix(in oklab, ${background}, ${foreground} 12%)`
     return {
         foreground,
         background,
