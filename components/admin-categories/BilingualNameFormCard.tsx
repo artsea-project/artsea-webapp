@@ -7,6 +7,7 @@ import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import {
     initialBilingualNameFormState,
+    type BilingualNameField,
     type BilingualNameFormState,
 } from "@/lib/categories/form-state"
 
@@ -89,6 +90,23 @@ export default function BilingualNameFormCard({
         initialBilingualNameFormState
     )
 
+    const [errorsState, setErrorsState] = useState(state)
+    const [editedFields, setEditedFields] = useState<ReadonlySet<BilingualNameField>>(new Set())
+    if (state !== errorsState) {
+        setErrorsState(state)
+        setEditedFields(new Set())
+    }
+
+    function fieldError(field: BilingualNameField) {
+        return editedFields.has(field) ? undefined : state.fieldErrors[field]
+    }
+
+    function markEdited(field: BilingualNameField) {
+        if (!editedFields.has(field)) {
+            setEditedFields((prev) => new Set(prev).add(field))
+        }
+    }
+
     useEffect(() => {
         onSavingChange?.(isSaving)
         return () => onSavingChange?.(false)
@@ -108,7 +126,7 @@ export default function BilingualNameFormCard({
             <form action={formAction} noValidate className="flex flex-col gap-3 p-6">
                 {item && <input type="hidden" name={copy.idFieldName} value={item.id} />}
 
-                <Field data-invalid={Boolean(state.fieldErrors.namePln)}>
+                <Field data-invalid={Boolean(fieldError("namePln"))}>
                     <FieldLabel htmlFor={plnInputId} className="font-normal">
                         {copy.plnLabel}
                     </FieldLabel>
@@ -117,14 +135,17 @@ export default function BilingualNameFormCard({
                         name="namePln"
                         placeholder={copy.plnPlaceholder}
                         value={namePln}
-                        aria-invalid={Boolean(state.fieldErrors.namePln)}
-                        onChange={(event) => setNamePln(event.target.value)}
+                        aria-invalid={Boolean(fieldError("namePln"))}
+                        onChange={(event) => {
+                            setNamePln(event.target.value)
+                            markEdited("namePln")
+                        }}
                         className="h-10"
                     />
-                    <FieldError>{state.fieldErrors.namePln}</FieldError>
+                    <FieldError>{fieldError("namePln")}</FieldError>
                 </Field>
 
-                <Field data-invalid={Boolean(state.fieldErrors.nameEng)}>
+                <Field data-invalid={Boolean(fieldError("nameEng"))}>
                     <FieldLabel htmlFor={engInputId} className="font-normal">
                         {copy.engLabel}
                     </FieldLabel>
@@ -133,11 +154,14 @@ export default function BilingualNameFormCard({
                         name="nameEng"
                         placeholder={copy.engPlaceholder}
                         value={nameEng}
-                        aria-invalid={Boolean(state.fieldErrors.nameEng)}
-                        onChange={(event) => setNameEng(event.target.value)}
+                        aria-invalid={Boolean(fieldError("nameEng"))}
+                        onChange={(event) => {
+                            setNameEng(event.target.value)
+                            markEdited("nameEng")
+                        }}
                         className="h-10"
                     />
-                    <FieldError>{state.fieldErrors.nameEng}</FieldError>
+                    <FieldError>{fieldError("nameEng")}</FieldError>
                 </Field>
 
                 {state.formError && (
