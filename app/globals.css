@@ -82,7 +82,7 @@
     --secondary-foreground: var(--foreground);
     --muted: color-mix(in oklab, var(--background), var(--foreground) 5%);
     --surface: color-mix(in oklab, var(--background), var(--foreground) 2%);
-    --border: color-mix(in oklab, var(--background), var(--foreground) 20%);
+    --border: color-mix(in oklab, var(--background), var(--foreground) 12%);
     --input: var(--border);
     --ring: var(--primary);
     --destructive: #dc2626;
