@@ -18,7 +18,7 @@ export interface AdminRoute {
 /** Main sidebar navigation. Labels double as the page header title for each section. */
 export const ADMIN_NAV_ROUTES: readonly AdminRoute[] = [
     { label: "Przegląd", href: "/admin", icon: Home },
-    { label: "Prace", href: "/admin/works", icon: ImageIcon },
+    { label: "Prace", href: "/admin/works", icon: ImageIcon, previewHref: "/portfolio" },
     { label: "Kategorie", href: "/admin/categories", icon: Folder, previewHref: "/portfolio" },
     { label: "Układ i Personalizacja", href: "/admin/appearance", icon: LayoutDashboard },
     { label: "Profil", href: "/admin/profile", icon: User, previewHref: "/about" },
@@ -40,7 +40,13 @@ export function isRouteActive(href: string, pathname: string): boolean {
     return pathname === href || pathname.startsWith(`${href}/`)
 }
 
+const EDIT_WORK_PATH_REGEX = /^\/admin\/works\/([^/]+)\/edit(?:\/|$)/
+
 export function getPortfolioPreviewHref(pathname: string): string {
+    const editWorkMatch = pathname.match(EDIT_WORK_PATH_REGEX)
+    if (editWorkMatch) {
+        return `/work/${editWorkMatch[1]}`
+    }
     const section = ADMIN_NAV_ROUTES.find(
         (route) => route.previewHref && isRouteActive(route.href, pathname)
     )
