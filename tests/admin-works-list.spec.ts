@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm"
 
 import { GET } from "../app/admin/media/[mediaId]/route"
 import { getVisiblePages } from "../components/admin-works/WorksPagination"
+import { getPortfolioPreviewHref } from "../lib/admin-routes"
 import { db } from "../db"
 import { artPieces, categories, media } from "../db/schema"
 
@@ -70,5 +71,15 @@ test.describe("admin media route and pagination helpers", () => {
         expect(getVisiblePages(1, 8)).toEqual([1, 2, 3, 4, 5])
         expect(getVisiblePages(4, 8)).toEqual([2, 3, 4, 5, 6])
         expect(getVisiblePages(8, 8)).toEqual([4, 5, 6, 7, 8])
+    })
+
+    test("resolves portfolio preview href for works index and edit pages", () => {
+        expect(getPortfolioPreviewHref("/admin/works")).toBe("/portfolio")
+        expect(getPortfolioPreviewHref("/admin/works/new")).toBe("/portfolio")
+        expect(getPortfolioPreviewHref("/admin/works/123/edit")).toBe("/work/123")
+        expect(getPortfolioPreviewHref("/admin/works/123/edit/")).toBe("/work/123")
+        expect(getPortfolioPreviewHref("/admin/categories")).toBe("/portfolio")
+        expect(getPortfolioPreviewHref("/admin/profile")).toBe("/about")
+        expect(getPortfolioPreviewHref("/admin")).toBe("/")
     })
 })
