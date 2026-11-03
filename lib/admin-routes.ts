@@ -19,7 +19,7 @@ export interface AdminRoute {
 export const ADMIN_NAV_ROUTES: readonly AdminRoute[] = [
     { label: "Przegląd", href: "/admin", icon: Home },
     { label: "Prace", href: "/admin/works", icon: ImageIcon },
-    { label: "Kategorie", href: "/admin/categories", icon: Folder },
+    { label: "Kategorie", href: "/admin/categories", icon: Folder, previewHref: "/portfolio" },
     { label: "Układ i Personalizacja", href: "/admin/appearance", icon: LayoutDashboard },
     { label: "Profil", href: "/admin/profile", icon: User, previewHref: "/about" },
 ]
