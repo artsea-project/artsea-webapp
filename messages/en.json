@@ -47,5 +47,20 @@
         "title": "Page not found",
         "description": "The page you are looking for does not exist or has been moved.",
         "backHome": "Back to the homepage"
+    },
+    "Portfolio": {
+        "title": "My work",
+        "heading": "My work.",
+        "empty": "There are no works to show yet.",
+        "allCategories": "All",
+        "categories": "Categories",
+        "tags": "Tags",
+        "tagsButton": "{count, plural, =0 {Tags} other {Tags (#)}}",
+        "showLess": "Less",
+        "showMore": "More (+{count})",
+        "loadMore": "Load more",
+        "drawerDescription": "We will show works that have all the selected tags.",
+        "applyFilters": "Apply filters",
+        "clearFilters": "Clear"
     }
 }

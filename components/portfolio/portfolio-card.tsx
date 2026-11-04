@@ -1,8 +1,9 @@
+import { useTranslations } from "next-intl"
 import Image from "next/image"
-import { Link } from "@/i18n/navigation"
 
 import { PortfolioGif } from "@/components/portfolio/portfolio-gif"
 import { PortfolioVideo } from "@/components/portfolio/portfolio-video"
+import { Link } from "@/i18n/navigation"
 import type { PortfolioCard as PortfolioCardData } from "@/lib/portfolio"
 
 type PortfolioCardProps = {
@@ -10,15 +11,17 @@ type PortfolioCardProps = {
     sizes: string
 }
 
-function CardMedia({ card, sizes }: PortfolioCardProps) {
+type CardMediaProps = PortfolioCardProps & { title: string }
+
+function CardMedia({ card, sizes, title }: CardMediaProps) {
     const { mediaId, fileType } = card.cover
 
-    if (fileType === "mp4") return <PortfolioVideo mediaId={mediaId} title={card.title} />
+    if (fileType === "mp4") return <PortfolioVideo mediaId={mediaId} title={title} />
     if (fileType === "gif") {
         return (
             <PortfolioGif
                 mediaId={mediaId}
-                title={card.title}
+                title={title}
                 width={card.width}
                 height={card.height}
                 sizes={sizes}
@@ -28,7 +31,7 @@ function CardMedia({ card, sizes }: PortfolioCardProps) {
     return (
         <Image
             src={`/media/${mediaId}`}
-            alt={card.title}
+            alt={title}
             width={card.width}
             height={card.height}
             sizes={sizes}
@@ -38,6 +41,8 @@ function CardMedia({ card, sizes }: PortfolioCardProps) {
 }
 
 export function PortfolioCard({ card, sizes }: PortfolioCardProps) {
+    const t = useTranslations("Artwork")
+    const title = card.title ?? t("untitled")
     const tags = card.tags.map((tag) => `#${tag}`).join("  ")
 
     return (
@@ -50,10 +55,10 @@ export function PortfolioCard({ card, sizes }: PortfolioCardProps) {
                     className="w-full overflow-hidden bg-muted"
                     style={{ aspectRatio: `${card.width} / ${card.height}` }}
                 >
-                    <CardMedia card={card} sizes={sizes} />
+                    <CardMedia card={card} sizes={sizes} title={title} />
                 </div>
                 <h2 className="mt-4 font-primary text-xl font-bold leading-tight text-foreground group-hover:underline group-focus-visible:underline">
-                    {card.title}
+                    {title}
                 </h2>
                 {(card.year || tags) && (
                     <p className="mt-1.5 font-secondary text-xs whitespace-pre-wrap">

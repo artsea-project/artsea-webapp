@@ -47,5 +47,20 @@
         "title": "Nie znaleziono strony",
         "description": "Strona, której szukasz, nie istnieje albo została przeniesiona.",
         "backHome": "Wróć na stronę główną"
+    },
+    "Portfolio": {
+        "title": "Moje prace",
+        "heading": "Moje prace.",
+        "empty": "Nie ma jeszcze żadnych prac do pokazania.",
+        "allCategories": "Wszystkie",
+        "categories": "Kategorie",
+        "tags": "Tagi",
+        "tagsButton": "{count, plural, =0 {Tagi} other {Tagi (#)}}",
+        "showLess": "Mniej",
+        "showMore": "Więcej (+{count})",
+        "loadMore": "Załaduj więcej",
+        "drawerDescription": "Pokażemy prace, które mają wszystkie zaznaczone tagi.",
+        "applyFilters": "Zastosuj filtry",
+        "clearFilters": "Wyczyść"
     }
 }

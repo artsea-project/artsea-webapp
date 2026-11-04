@@ -7,6 +7,7 @@ import type { Locale } from "@/i18n/routing"
 import { DESKTOP_GRID, MOBILE_GRID } from "@/lib/bento-grid"
 import { normalizeBentoLayout } from "@/lib/bento-layout"
 import { localizedKey } from "@/lib/i18n/localized-key"
+import { orderLabels } from "@/lib/localized-labels"
 import { isBentoMediaType } from "@/lib/media"
 import type { BentoBoxLayout, BentoLayoutItem } from "@/types/bento"
 
@@ -24,10 +25,6 @@ export type BentoData = {
 }
 
 type LayoutName = keyof BentoData
-
-export function orderBentoLabels(labels: string[], locale: Locale) {
-    return [...labels].sort((left, right) => left.localeCompare(right, locale))
-}
 
 async function loadBentoData(locale: Locale): Promise<BentoData> {
     "use cache"
@@ -99,7 +96,7 @@ async function loadBentoData(locale: Locale): Promise<BentoData> {
         if (name) tagsByArtwork.set(artPieceId, [...(tagsByArtwork.get(artPieceId) ?? []), name])
     }
     for (const [artPieceId, tagNames] of tagsByArtwork) {
-        tagsByArtwork.set(artPieceId, orderBentoLabels(tagNames, locale))
+        tagsByArtwork.set(artPieceId, orderLabels(tagNames, locale))
     }
 
     const cardsFor = (name: LayoutName) =>

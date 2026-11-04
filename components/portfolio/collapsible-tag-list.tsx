@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { useState } from "react"
 
 import { PILL_CLASS_NAME, TagPills, type TagLink } from "@/components/portfolio/tag-pill"
@@ -13,11 +14,12 @@ type CollapsibleTagListProps = {
 }
 
 export function CollapsibleTagList({ visible, hidden }: CollapsibleTagListProps) {
+    const t = useTranslations("Portfolio")
     const [isExpanded, setIsExpanded] = useState(false)
 
     return (
         <Collapsible open={isExpanded} onOpenChange={setIsExpanded} asChild>
-            <nav aria-label="Tagi" className="flex flex-wrap gap-2.5">
+            <nav aria-label={t("tags")} className="flex flex-wrap gap-2.5">
                 <TagPills links={visible} />
                 <CollapsibleContent className="contents">
                     <TagPills links={hidden} />
@@ -31,7 +33,7 @@ export function CollapsibleTagList({ visible, hidden }: CollapsibleTagListProps)
                                 "px-4 text-muted-foreground hover:bg-muted hover:text-foreground"
                             )}
                         >
-                            {isExpanded ? "Mniej" : `Więcej (+${hidden.length})`}
+                            {isExpanded ? t("showLess") : t("showMore", { count: hidden.length })}
                         </Button>
                     </CollapsibleTrigger>
                 )}

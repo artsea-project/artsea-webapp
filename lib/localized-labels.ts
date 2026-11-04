@@ -1,3 +1,5 @@
+import type { Locale } from "@/i18n/routing"
+
 export function resolveLocalizedLabel(
     polish: string | null,
     english: string | null,
@@ -6,6 +8,6 @@ export function resolveLocalizedLabel(
     return polish || english || fallback
 }
 
-export function orderBentoLabels(labels: string[]) {
-    return [...labels].sort((left, right) => left.localeCompare(right, "pl"))
+export function orderLabels(labels: string[], locale: Locale) {
+    return [...labels].sort((left, right) => left.localeCompare(right, locale))
 }

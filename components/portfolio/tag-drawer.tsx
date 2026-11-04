@@ -1,7 +1,7 @@
 "use client"
 
 import { SlidersHorizontalIcon } from "lucide-react"
-import { useRouter } from "@/i18n/navigation"
+import { useTranslations } from "next-intl"
 import { useState } from "react"
 
 import { PILL_CLASS_NAME } from "@/components/portfolio/tag-pill"
@@ -17,6 +17,7 @@ import {
     DrawerTrigger,
 } from "@/components/ui/drawer"
 import { Label } from "@/components/ui/label"
+import { useRouter } from "@/i18n/navigation"
 import { addOrRemoveTag, buildPortfolioUrl, type PortfolioQuery } from "@/lib/portfolio"
 import { cn } from "@/lib/utils"
 
@@ -50,6 +51,7 @@ function TagCheckboxList({ tags, checkedTags, onToggle }: TagCheckboxListProps) 
 }
 
 export function TagDrawer({ tags, query }: TagDrawerProps) {
+    const t = useTranslations("Portfolio")
     const router = useRouter()
     const [isOpen, setIsOpen] = useState(false)
     const [checkedTags, setCheckedTags] = useState(query.tags)
@@ -76,16 +78,15 @@ export function TagDrawer({ tags, query }: TagDrawerProps) {
                     className={cn(PILL_CLASS_NAME, "border-border px-4 text-foreground")}
                 >
                     <SlidersHorizontalIcon aria-hidden />
-                    Tagi
-                    {query.tags.length > 0 && ` (${query.tags.length})`}
+                    {t("tagsButton", { count: query.tags.length })}
                 </Button>
             </DrawerTrigger>
             <DrawerContent>
                 <DrawerHeader>
-                    <DrawerTitle className="font-primary text-2xl font-normal">Tagi</DrawerTitle>
-                    <DrawerDescription>
-                        Pokażemy prace, które mają wszystkie zaznaczone tagi.
-                    </DrawerDescription>
+                    <DrawerTitle className="font-primary text-2xl font-normal">
+                        {t("tags")}
+                    </DrawerTitle>
+                    <DrawerDescription>{t("drawerDescription")}</DrawerDescription>
                 </DrawerHeader>
                 <TagCheckboxList
                     tags={tags}
@@ -93,13 +94,13 @@ export function TagDrawer({ tags, query }: TagDrawerProps) {
                     onToggle={toggleCheckedTag}
                 />
                 <DrawerFooter>
-                    <Button onClick={applyCheckedTags}>Zastosuj filtry</Button>
+                    <Button onClick={applyCheckedTags}>{t("applyFilters")}</Button>
                     <Button
                         variant="ghost"
                         disabled={checkedTags.length === 0}
                         onClick={() => setCheckedTags([])}
                     >
-                        Wyczyść
+                        {t("clearFilters")}
                     </Button>
                 </DrawerFooter>
             </DrawerContent>

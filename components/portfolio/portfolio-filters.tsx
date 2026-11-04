@@ -1,8 +1,9 @@
-import { Link } from "@/i18n/navigation"
+import { useTranslations } from "next-intl"
 
 import { CollapsibleTagList } from "@/components/portfolio/collapsible-tag-list"
 import { TagDrawer } from "@/components/portfolio/tag-drawer"
 import { TagPills, type TagLink } from "@/components/portfolio/tag-pill"
+import { Link } from "@/i18n/navigation"
 import {
     addOrRemoveTag,
     buildPortfolioUrl,
@@ -20,8 +21,6 @@ type PortfolioFiltersProps = {
     view: FilterView
     tagsByCategory: TagsByCategory
 }
-
-const ALL_CATEGORIES_LABEL = "Wszystkie"
 
 const VISIBLE_TAG_COUNT = 10
 
@@ -70,13 +69,14 @@ function CategoryTab({ label, href, isActive }: CategoryTabProps) {
 }
 
 function CategoryTabs({ view, tagsByCategory }: PortfolioFiltersProps) {
+    const t = useTranslations("Portfolio")
     const tabs = [
-        { label: ALL_CATEGORIES_LABEL, category: null },
+        { label: t("allCategories"), category: null },
         ...view.categories.map((category) => ({ label: category, category })),
     ]
 
     return (
-        <nav aria-label="Kategorie" className="flex flex-wrap gap-x-8 gap-y-3 lg:gap-x-10">
+        <nav aria-label={t("categories")} className="flex flex-wrap gap-x-8 gap-y-3 lg:gap-x-10">
             {tabs.map(({ label, category }) => (
                 <CategoryTab
                     key={category ?? ""}

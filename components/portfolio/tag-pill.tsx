@@ -1,7 +1,7 @@
 import { XIcon } from "lucide-react"
-import { Link } from "@/i18n/navigation"
 
 import { Badge } from "@/components/ui/badge"
+import { Link } from "@/i18n/navigation"
 import { cn } from "@/lib/utils"
 
 export const PILL_CLASS_NAME = "h-8 rounded-full font-secondary text-xs font-normal shadow-none"

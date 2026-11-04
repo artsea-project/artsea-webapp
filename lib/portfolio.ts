@@ -1,4 +1,5 @@
-import { orderBentoLabels } from "@/lib/localized-labels"
+import type { Locale } from "@/i18n/routing"
+import { orderLabels } from "@/lib/localized-labels"
 import type { MediaType } from "@/lib/media"
 import type { MediaDimensions } from "@/lib/media-dimensions"
 
@@ -8,7 +9,7 @@ export const PORTFOLIO_CARD_TEXT_HEIGHT = 0.18
 
 export type PortfolioArtwork = {
     artPieceId: string
-    title: string
+    title: string | null
     year: number | null
     uploadedAt: Date
     category: string
@@ -89,8 +90,8 @@ export function sortArtworksNewestFirst(artworks: PortfolioArtwork[]) {
     )
 }
 
-export function removeDuplicatesAndSort(labels: string[]) {
-    return orderBentoLabels([...new Set(labels)])
+export function removeDuplicatesAndSort(labels: string[], locale: Locale) {
+    return orderLabels([...new Set(labels)], locale)
 }
 
 function keepIfKnown(value: string | null, known: string[]) {
@@ -115,13 +116,20 @@ function limitArtworksToLoadedPage(artworks: PortfolioArtwork[], requestedPage: 
 
 export function buildPortfolioView(
     artworks: PortfolioArtwork[],
-    requested: PortfolioQuery
+    requested: PortfolioQuery,
+    locale: Locale
 ): PortfolioView {
-    const categories = removeDuplicatesAndSort(artworks.map((artwork) => artwork.category))
+    const categories = removeDuplicatesAndSort(
+        artworks.map((artwork) => artwork.category),
+        locale
+    )
     const category = keepIfKnown(requested.category, categories)
 
     const inCategory = filterByCategory(artworks, category)
-    const tags = removeDuplicatesAndSort(inCategory.flatMap((artwork) => artwork.tags))
+    const tags = removeDuplicatesAndSort(
+        inCategory.flatMap((artwork) => artwork.tags),
+        locale
+    )
     const selectedTags = keepOnlyKnown(requested.tags, tags)
 
     const matching = sortArtworksNewestFirst(keepArtworksWithAllTags(inCategory, selectedTags))

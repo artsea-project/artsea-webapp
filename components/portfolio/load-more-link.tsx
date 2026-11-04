@@ -1,10 +1,13 @@
-import { Link } from "@/i18n/navigation"
 import { ChevronDown } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { Button } from "@/components/ui/button"
+import { Link } from "@/i18n/navigation"
 import { buildPortfolioUrl, type PortfolioQuery } from "@/lib/portfolio"
 
 export function LoadMoreLink({ query }: { query: PortfolioQuery }) {
+    const t = useTranslations("Portfolio")
+
     return (
         <div className="mt-16 flex justify-center lg:mt-28">
             <Button
@@ -17,7 +20,7 @@ export function LoadMoreLink({ query }: { query: PortfolioQuery }) {
                     replace
                     scroll={false}
                 >
-                    Załaduj więcej
+                    {t("loadMore")}
                     <ChevronDown aria-hidden="true" className="size-3.5" />
                 </Link>
             </Button>

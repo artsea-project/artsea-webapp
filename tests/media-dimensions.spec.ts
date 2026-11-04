@@ -5,7 +5,8 @@ import { expect, test } from "@playwright/test"
 
 import { readMediaDimensions } from "../lib/media-dimensions"
 
-const fixture = (name: string) => readFileSync(path.join(__dirname, "..", "db", "fixtures", name))
+const fixture = (name: string) =>
+    readFileSync(path.join(__dirname, "..", "db", "fixtures", "sample", name))
 
 function atom(type: string, payload: Buffer) {
     const header = Buffer.alloc(8)

@@ -34,7 +34,7 @@ function mediaRow(mediaId: string, artPieceId: string, orderIndex: number) {
 
 test.beforeAll(async () => {
     await db.insert(categories).values([
-        { categoryId, namePln: `Portfolio ${categoryId}`, nameEng: `Portfolio ${categoryId}` },
+        { categoryId, namePln: `Portfolio ${categoryId}`, nameEng: `Works ${categoryId}` },
         {
             categoryId: hiddenCategoryId,
             namePln: `Ukryta ${hiddenCategoryId}`,
@@ -96,7 +96,7 @@ test.afterAll(async () => {
 })
 
 test("lists only visible works with media, using the first media as cover", async () => {
-    const artworks = (await loadPortfolioArtworks()).filter((artwork) =>
+    const artworks = (await loadPortfolioArtworks("pl")).filter((artwork) =>
         insertedArtworkIds.includes(artwork.artPieceId)
     )
     const visible = artworks.find((artwork) => artwork.artPieceId === visibleWithMediaId)
@@ -114,7 +114,7 @@ test("lists only visible works with media, using the first media as cover", asyn
 })
 
 test("does not leak categories or tags used only by hidden works", async () => {
-    const artworks = await loadPortfolioArtworks()
+    const artworks = await loadPortfolioArtworks("pl")
 
     expect(artworks.some((artwork) => artwork.category === `Ukryta ${hiddenCategoryId}`)).toBe(
         false
@@ -124,14 +124,27 @@ test("does not leak categories or tags used only by hidden works", async () => {
     )
 })
 
-test("falls back to the English title", async () => {
-    const englishOnly = (await loadPortfolioArtworks()).find(
+test("does not fill a missing title from the other language", async () => {
+    const englishOnly = (await loadPortfolioArtworks("pl")).find(
         (artwork) => artwork.artPieceId === englishOnlyId
     )
 
     expect(englishOnly).toMatchObject({
-        title: "English only",
+        title: null,
         year: null,
         tags: [`polski-${englishTagId}`],
     })
+})
+
+test("reads titles, categories and tags in English", async () => {
+    const artworks = await loadPortfolioArtworks("en")
+    const visible = artworks.find((artwork) => artwork.artPieceId === visibleWithMediaId)
+    const englishOnly = artworks.find((artwork) => artwork.artPieceId === englishOnlyId)
+
+    expect(visible).toMatchObject({
+        title: "Visible",
+        category: `Works ${categoryId}`,
+        tags: [`shared-${sharedTagId}`],
+    })
+    expect(englishOnly).toMatchObject({ title: "English only", tags: [`english-${englishTagId}`] })
 })
