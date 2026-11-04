@@ -26,44 +26,48 @@ export const siteSettingsId = "a7f3bc01-0000-4000-8000-000000000004"
 
 export const sharedProfile = {
     profileId,
-    fullName: "Anna",
-    contactEmail: seedArtist.email,
+    fullName: "Niebajka",
+    contactEmail: "niebajka@gmail.com",
     bioPln: {
-        heading: "",
+        heading: "Ukształtowana w trudzie",
         intro: [
-            "Tworzę ilustracje i identyfikacje wizualne, łącząc organiczne formy z minimalistyczną precyzją. Działam w Gdańsku, inspirując się naturą i surową architekturą.",
+            "Po co jest cierpienie, jeżeli nie może zostać przekształcone w sztukę? Uważam że prawdziwe dzieła rodzą się w trudzie - w trudzie walki z materią, ale też w trudzie walki ze sobą i przeciwnościami życia. Dlatego tworzę. A raczej coś we mnie poprzez sztukę wyrywa się na zewnątrz…",
+            "Ukształtowana w trudzie… moja sztuka i ja sama.",
         ],
         highlight: [
-            "Cześć! Nazywam się Anna i jestem niezależną ilustratorką z Gdańska. Od ponad siedmiu lat pomagam markom tworzyć czystą, przemyślaną identyfikację.",
+            "Tworzę pod pseudonimem Niebajka (czyt. Nye-bye-kah). Nazwa ta jest inspirowana piosenką Łukasza Majewskiego, która w zaledwie trzy minuty oddaje historię mojego życia i moje spojrzenie na świat.",
         ],
         body: [
-            "Moja przygoda ze sztuką zaczęła się od tradycyjnego malarstwa, które nauczyło mnie szacunku do światła i barwy. Szybko jednak odkryłam, że cyfrowe płótno daje równie wielkie możliwości wyrazu. Dziś specjalizuję się w łączeniu geometrycznego rygoru z ciepłem organicznych kształtów.",
-            "Współpracowałam z wieloma instytucjami kultury, wydawnictwami i niezależnymi twórcami. Najbardziej cenię sobie projekty, które wymagają nieszablonowego myślenia oraz głębokiego wejścia w kontekst tworzonej opowieści.",
+            "Moja przygoda ze sztuką - a konkretnie z rzeźbą - zaczęła się dość późno. Gdy moje dzieci były w szkole podstawowej, zaprosiły mnie na dzień otwarty, a w szczególności na warsztaty ceramiczne. Spędziłam tam parę godzin, zmagając się z gliną, i uświadomiłam sobie, że były to najprzyjemniejsze godziny od bardzo dawna. Walka z materią pozwoliła mi oderwać się od codzienności.",
+            "Zaczęłam wtedy lepić postać - skuloną, obejmującą się ramionami. Siedzące obok dziecko zapytało swoją mamę, wskazując na moją pracę: „Mamo, czy tę panią boli brzuch?”. Na co mama odpowiedziała: „Nie, to jest ból istnienia”. W tym momencie dotarło do mnie, że pomimo braku doświadczenia i niedoskonałości warsztatu udało mi się przekazać dokładnie to, co czułam.",
+            "To doświadczenie dało mi ogromną siłę. Postanowiłam uczyć się dalej: najpierw w pracowni Marzeny Gawrysiak, a później u Oleny Dodatko w Gdańskiej Szkole Artystycznej.",
+            "Rzeźbię przede wszystkim człowieka. Nawet kiedy próbuję stworzyć zwykłe pudełko, jego pokrywka ostatecznie zyskuje kształt twarzy; gdy lepię talerz, zawsze pojawia się na nim sylwetka. Moje rzeźby są głęboko osobiste i pełne emocji - wyrastają wprost z moich przeżyć i zmagania z życiem.",
         ],
     },
     bioEng: {
-        heading: "",
+        heading: "Shaped by struggle",
         intro: [
-            "I create illustrations and visual identities, combining organic forms with minimalist precision. I work in Gdańsk, drawing inspiration from nature and raw architecture.",
+            "What is suffering for, if it cannot be turned into art? I believe that true masterpieces are born of struggle - the struggle against matter, but also against oneself and the adversities of life. That is why I create. Or rather, something within me breaks through to the surface through art…",
+            "Shaped by struggle… my art, and myself.",
         ],
         highlight: [
-            "Hi! My name is Anna and I am an independent illustrator based in Gdańsk. For over seven years I have been helping brands create clean, thoughtful identities.",
+            "I create under the name Niebajka (pronounced Nye-bye-kah, meaning unfairytale). The name is inspired by a song by Łukasz Majewski, which captures my life story and outlook on the world in just three minutes",
         ],
         body: [
-            "My adventure with art began with traditional painting, which taught me respect for light and color. However, I quickly discovered that the digital canvas offers equally great possibilities of expression. Today, I specialize in combining geometric rigor with the warmth of organic shapes.",
-            "I have collaborated with many cultural institutions, publishing houses, and independent creators. I value projects that require out-of-the-box thinking and a deep dive into the context of the story being created.",
+            "My journey with art - specifically with sculpture - began quite late in life. When my children were in primary school, they invited me to their school’s open day, and in particular to a ceramics workshop. I spent a couple of hours wrestling with clay and realized those were the most enjoyable hours I had experienced in a very long time. Wrestling with the physical medium gave me a much-needed break from the weight of everyday life.",
+            "During the workshop, I began sculpting a figure - curled up, wrapping its arms around itself. A child sitting nearby pointed at my work and asked their mother, “Mom, does this lady have a stomachache?”. To which the mother replied, “No, that is the pain of existence.” In that moment, I realized that despite my lack of experience and untrained hands, I had managed to convey exactly what I felt inside.",
+            "That experience was immensely empowering. I decided to pursue it further, taking lessons first in Marzena Gawrysiak’s studio, and later with Olena Dodatko at the Gdańsk School of Art (Gdańska Szkoła Artystyczna).",
+            "Above all, I sculpt the human form. Even when I try to make a simple box, the lid inevitably takes the shape of a face; when I shape a plate, a silhouette always emerges. My sculptures are deeply personal and emotional - born directly out of my own experiences and life’s struggles.",
         ],
     },
     contactPln: {
         paragraphs: [
-            "Jeśli podoba Ci się moje podejście do designu, napisz do mnie.",
-            "Zawsze jestem otwarta na nowe, interesujące wyzwania.",
+            "Poruszyła Cię moja praca? Chcesz zapytać o daną rzeźbę lub po prostu porozmawiać o sztuce? Napisz do mnie.",
         ],
     },
     contactEng: {
         paragraphs: [
-            "If you like my approach to design, feel free to write to me.",
-            "I am always open to new, interesting challenges.",
+            "Did a piece resonate with you? Whether you're interested in a sculpture or simply a conversation about art, feel free to reach out.",
         ],
     },
 }

@@ -23,7 +23,7 @@ test.describe("Polish browser", () => {
 
         await expect(page).toHaveURL("/en/about")
         await expect(page.locator("html")).toHaveAttribute("lang", "en")
-        await expect(page.getByRole("heading", { name: "About me" })).toBeVisible()
+        await expect(page.getByRole("heading", { name: "Shaped by struggle" })).toBeVisible()
     })
 
     test("shows a Polish 404 page", async ({ page }) => {
