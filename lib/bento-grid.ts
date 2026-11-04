@@ -49,6 +49,14 @@ export function fitsGrid(box: TileBox, grid: GridSpec): boolean {
     )
 }
 
+/** CSS grid placement of a tile, shared by the public bento and its admin previews. */
+export function gridPlacement(box: TileBox) {
+    return {
+        gridColumn: `${box.columnStart} / span ${box.columnSpan}`,
+        gridRow: `${box.rowStart} / span ${box.rowSpan}`,
+    }
+}
+
 export function overlaps(a: TileBox, b: TileBox): boolean {
     return (
         a.columnStart < b.columnStart + b.columnSpan &&
