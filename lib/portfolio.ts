@@ -126,13 +126,19 @@ export function buildPortfolioView(
     const category = keepIfKnown(requested.category, categories)
 
     const inCategory = filterByCategory(artworks, category)
-    const tags = removeDuplicatesAndSort(
+    const categoryTags = removeDuplicatesAndSort(
         inCategory.flatMap((artwork) => artwork.tags),
         locale
     )
-    const selectedTags = keepOnlyKnown(requested.tags, tags)
+    const selectedTags = keepOnlyKnown(requested.tags, categoryTags)
 
     const matching = sortArtworksNewestFirst(keepArtworksWithAllTags(inCategory, selectedTags))
+    // Only tags of the works still on the list, so adding a tag never empties it. Selected tags
+    // always stay, so a combination that matches nothing (e.g. from an old link) can be undone.
+    const tags = removeDuplicatesAndSort(
+        [...selectedTags, ...matching.flatMap((artwork) => artwork.tags)],
+        locale
+    )
     const { page, items, hasMore } = limitArtworksToLoadedPage(matching, requested.page)
 
     return { categories, tags, query: { category, tags: selectedTags, page }, items, hasMore }

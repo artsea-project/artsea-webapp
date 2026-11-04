@@ -148,6 +148,23 @@ test("returns no works when no work has all the selected tags", () => {
     expect(view.query.tags).toEqual(["3D", "typografia"])
     expect(view.items).toEqual([])
     expect(view.hasMore).toBe(false)
+    // The selected tags stay on the list so they can be unselected.
+    expect(view.tags).toEqual(["3D", "typografia"])
+})
+
+test("narrows the tag list to the tags of the works that match the selected tags", () => {
+    const view = buildPortfolioView(thirtyArtworks, query({ tags: ["natura"] }), "pl")
+
+    // Works tagged "natura" also carry "3D", but none carries "minimalizm" or "typografia".
+    expect(view.tags).toEqual(["3D", "natura"])
+    for (const tag of view.tags) {
+        const narrowed = buildPortfolioView(
+            thirtyArtworks,
+            query({ tags: addOrRemoveTag(view.query.tags, tag) }),
+            "pl"
+        )
+        expect(narrowed.items.length).toBeGreaterThan(0)
+    }
 })
 
 test("drops tags that the selected category does not use", () => {
