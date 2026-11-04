@@ -1,5 +1,6 @@
 import { useTranslations } from "next-intl"
 import Image from "next/image"
+import type { CSSProperties } from "react"
 
 import { Link } from "@/i18n/navigation"
 import type { BentoCardData } from "@/lib/bento"
@@ -19,7 +20,7 @@ export function bentoImageProps(mediaId: string, sizes: string) {
     } as const
 }
 
-export function BentoCard({ card, className, sizes }: BentoCardProps) {
+export function BentoCard({ card, className = "", sizes, style }: BentoCardProps) {
     const t = useTranslations("Artwork")
     const title = card.title ?? t("untitled")
     const visibleTags = card.tags.slice(0, 3)
