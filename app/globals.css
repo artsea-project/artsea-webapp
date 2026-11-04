@@ -66,9 +66,11 @@
     --primary: #0284c7;
 }
 
-/* Calculate these colors separately for the public and admin palettes. */
+/* Calculate these colors separately for the public and admin palettes, and for the theme preview
+   in the admin panel, which sets its own unsaved base colors. */
 :root,
-.admin-theme {
+.admin-theme,
+.theme-preview {
     --primary-foreground: var(--background);
     --muted-foreground: color-mix(in oklab, var(--foreground) 70%, var(--background));
     --accent: color-mix(in oklab, var(--primary) 12%, var(--background));
@@ -103,6 +105,26 @@
     --sidebar-accent-foreground: var(--accent-foreground);
     --sidebar-border: var(--border);
     --sidebar-ring: var(--ring);
+}
+
+/* The bento editor's drop target follows the theme instead of the grid library's default red.
+   The extra .bento-canvas class outranks the library stylesheet, which loads after this file. */
+.bento-canvas .react-grid-item.react-grid-placeholder {
+    background: var(--primary);
+    border-radius: 12px;
+}
+
+/* Resize handles never scroll the page; on touch screens they are always visible and finger-sized. */
+.bento-canvas .react-resizable-handle {
+    touch-action: none;
+}
+
+@media (pointer: coarse) {
+    .bento-canvas .react-grid-item > .react-resizable-handle {
+        width: 44px;
+        height: 44px;
+        opacity: 1;
+    }
 }
 
 @layer base {

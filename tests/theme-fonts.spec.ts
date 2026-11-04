@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test"
-import { resolveThemeFonts } from "@/lib/theme/fonts"
+import { resolveThemeFonts, selectableFontNames } from "@/lib/theme/fonts"
 
 test.describe("semantic theme fonts", () => {
     test("uses portfolio defaults when settings are unavailable", () => {
@@ -31,6 +31,37 @@ test.describe("semantic theme fonts", () => {
             "--site-font-mono":
                 "var(--font-geist-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace)",
         })
+    })
+
+    test("accepts every font added to the catalog", () => {
+        const resolved = resolveThemeFonts({
+            primaryFont: "Cormorant Garamond",
+            secondaryFont: "Montserrat",
+            additionalFont: "Lora",
+        })
+
+        expect(resolved.fontNames).toEqual([
+            "Cormorant Garamond",
+            "Montserrat",
+            "Lora",
+            "Geist Mono",
+        ])
+        expect(resolved.variables["--site-font-primary"]).toContain("--font-cormorant-garamond")
+        expect(resolved.variables["--site-font-secondary"]).toContain("--font-montserrat")
+        expect(resolved.variables["--site-font-body"]).toContain("--font-lora")
+    })
+
+    test("offers eight fonts to pick, serif first, without the monospace font", () => {
+        expect(selectableFontNames).toEqual([
+            "Playfair Display",
+            "Lora",
+            "Cormorant Garamond",
+            "Libre Baskerville",
+            "Inter",
+            "Poppins",
+            "Lato",
+            "Montserrat",
+        ])
     })
 
     test("falls back safely for unknown database values", () => {

@@ -204,24 +204,26 @@ test.describe("Database Config & Relations Integration Test", () => {
             desktop: {
                 items: [
                     {
+                        tileId: "a7f3bc01-0000-4000-8000-000000000501",
                         artPieceId: createdArtPieceId,
                         mediaId: "00000000-0000-0000-0000-000000000001",
                         columnStart: 1,
                         rowStart: 1,
-                        columnSpan: 4,
-                        rowSpan: 10,
+                        columnSpan: 3,
+                        rowSpan: 6,
                     },
                 ],
             },
             mobile: {
                 items: [
                     {
+                        tileId: "a7f3bc01-0000-4000-8000-000000000501",
                         artPieceId: createdArtPieceId,
                         mediaId: "00000000-0000-0000-0000-000000000001",
                         columnStart: 1,
                         rowStart: 1,
-                        columnSpan: 2,
-                        rowSpan: 8,
+                        columnSpan: 3,
+                        rowSpan: 6,
                     },
                 ],
             },

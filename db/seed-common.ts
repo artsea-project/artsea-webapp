@@ -80,30 +80,43 @@ export type BentoSeedItem = {
     mediaId: string
 }
 
+// [columnStart, rowStart, columnSpan, rowSpan] in cells on the 12 x 9 desktop and 6-column mobile
+// grids. Every tile is a preset (1:1, 2:1, 1:2, 2:2) on 3 x 3 cell fields.
 const desktopCoordinates = [
-    [1, 1, 4, 10],
-    [5, 1, 3, 5],
-    [5, 6, 3, 5],
-    [8, 1, 4, 10],
-    [1, 11, 3, 7],
-    [4, 11, 4, 7],
-    [8, 11, 4, 7],
+    [1, 1, 3, 6],
+    [4, 1, 3, 3],
+    [4, 4, 3, 3],
+    [7, 1, 6, 6],
+    [1, 7, 6, 3],
+    [7, 7, 3, 3],
+    [10, 7, 3, 3],
 ] as const
 
 const mobileCoordinates = [
-    [1, 1, 1, 8],
-    [2, 1, 1, 5],
-    [2, 6, 1, 3],
-    [1, 9, 2, 8],
-    [1, 17, 1, 6],
-    [2, 17, 1, 6],
-    [1, 23, 2, 8],
+    [1, 1, 3, 6],
+    [4, 1, 3, 3],
+    [4, 4, 3, 3],
+    [1, 7, 6, 6],
+    [1, 13, 6, 3],
+    [1, 16, 3, 3],
+    [4, 16, 3, 3],
+] as const
+
+const bentoTileIds = [
+    "a7f3bc01-0000-4000-8000-000000000501",
+    "a7f3bc01-0000-4000-8000-000000000502",
+    "a7f3bc01-0000-4000-8000-000000000503",
+    "a7f3bc01-0000-4000-8000-000000000504",
+    "a7f3bc01-0000-4000-8000-000000000505",
+    "a7f3bc01-0000-4000-8000-000000000506",
+    "a7f3bc01-0000-4000-8000-000000000507",
 ] as const
 
 export function buildBentoLayout(bentoItems: readonly BentoSeedItem[]): BentoBoxLayout {
     return {
         desktop: {
             items: bentoItems.map((item, index) => ({
+                tileId: bentoTileIds[index],
                 artPieceId: item.artPieceId,
                 mediaId: item.mediaId,
                 columnStart: desktopCoordinates[index][0],
@@ -114,6 +127,7 @@ export function buildBentoLayout(bentoItems: readonly BentoSeedItem[]): BentoBox
         },
         mobile: {
             items: bentoItems.map((item, index) => ({
+                tileId: bentoTileIds[index],
                 artPieceId: item.artPieceId,
                 mediaId: item.mediaId,
                 columnStart: mobileCoordinates[index][0],

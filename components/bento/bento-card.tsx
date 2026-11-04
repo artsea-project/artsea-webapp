@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -5,8 +6,9 @@ import type { BentoCardData } from "@/lib/bento"
 
 type BentoCardProps = {
     card: BentoCardData
-    className: string
+    className?: string
     sizes: string
+    style?: CSSProperties
 }
 
 export function bentoImageProps(mediaId: string, sizes: string) {
@@ -17,13 +19,14 @@ export function bentoImageProps(mediaId: string, sizes: string) {
     } as const
 }
 
-export function BentoCard({ card, className, sizes }: BentoCardProps) {
+export function BentoCard({ card, className = "", sizes, style }: BentoCardProps) {
     const visibleTags = card.tags.slice(0, 3)
     const hasTagOverflow = card.tags.length > visibleTags.length
 
     return (
         <article
             className={`relative isolate min-h-0 overflow-hidden rounded-[20px] bg-muted ${className}`}
+            style={style}
         >
             <Link
                 href={`/work/${card.artPieceId}`}
