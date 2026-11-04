@@ -6,7 +6,7 @@ import { artPieces, artPieceTags, media, siteSettings, tags } from "@/db/schema"
 import type { Locale } from "@/i18n/routing"
 import { DESKTOP_GRID, MOBILE_GRID } from "@/lib/bento-grid"
 import { normalizeBentoLayout } from "@/lib/bento-layout"
-import { orderBentoLabels, resolveLocalizedLabel } from "@/lib/localized-labels"
+import { localizedKey } from "@/lib/i18n/localized-key"
 import { isBentoMediaType } from "@/lib/media"
 import type { BentoBoxLayout, BentoLayoutItem } from "@/types/bento"
 
@@ -25,9 +25,11 @@ export type BentoData = {
 
 type LayoutName = keyof BentoData
 
-export { orderBentoLabels, resolveLocalizedLabel }
+export function orderBentoLabels(labels: string[], locale: Locale) {
+    return [...labels].sort((left, right) => left.localeCompare(right, locale))
+}
 
-async function loadBentoData(): Promise<BentoData> {
+async function loadBentoData(locale: Locale): Promise<BentoData> {
     "use cache"
 
     cacheLife("max")

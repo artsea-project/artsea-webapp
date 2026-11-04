@@ -5,7 +5,3 @@ export function resolveLocalizedLabel(
 ) {
     return polish || english || fallback
 }
-
-export function orderBentoLabels(labels: string[]) {
-    return [...labels].sort((left, right) => left.localeCompare(right, "pl"))
-}

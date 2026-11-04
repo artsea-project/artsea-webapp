@@ -10,13 +10,15 @@ export default function AdminShell({ children }: { children: ReactNode }) {
                 <AdminSidebar />
             </Suspense>
             <main className="min-w-0 flex-1 overflow-y-auto bg-surface">
-                <AdminPageHeader
-                    menu={
-                        <Suspense fallback={null}>
-                            <AdminSidebarContent />
-                        </Suspense>
-                    }
-                />
+                <Suspense fallback={null}>
+                    <AdminPageHeader
+                        menu={
+                            <Suspense fallback={null}>
+                                <AdminSidebarContent />
+                            </Suspense>
+                        }
+                    />
+                </Suspense>
                 {children}
             </main>
         </div>

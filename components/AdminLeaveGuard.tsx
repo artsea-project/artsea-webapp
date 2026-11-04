@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/alert-dialog"
 
 const GUARD_ROOT_SELECTOR = "[data-leave-guard-root]"
-const DEFAULT_LEAVE_MESSAGE = "Jeśli wyjdziesz, niezapisane zmiany w profilu przepadną."
 
 type PendingLeave =
     | { kind: "link"; href: string }
@@ -42,10 +41,7 @@ function readLeavingHref(event: MouseEvent): string | null {
     return `${url.pathname}${url.search}${url.hash}`
 }
 
-export function useLeaveGuard(
-    enabled: boolean,
-    message: string = DEFAULT_LEAVE_MESSAGE
-): ReactNode {
+export function useLeaveGuard(enabled: boolean, description: string): ReactNode {
     const router = useRouter()
     const [pending, setPending] = useState<PendingLeave | null>(null)
     const isLeaving = useRef(false)
@@ -118,7 +114,7 @@ export function useLeaveGuard(
             <AlertDialogContent className="admin-theme font-secondary text-foreground">
                 <AlertDialogHeader>
                     <AlertDialogTitle>Masz niezapisane zmiany</AlertDialogTitle>
-                    <AlertDialogDescription>{message}</AlertDialogDescription>
+                    <AlertDialogDescription>{description}</AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel onClick={cancel}>Zostań</AlertDialogCancel>
