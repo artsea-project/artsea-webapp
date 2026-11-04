@@ -26,7 +26,7 @@ function HeroSection({ fullName, heading, intro, profileImageSrc }: HeroSectionP
     const t = useTranslations("About")
 
     return (
-        <section className="max-w-[1440px] mx-auto px-10 md:px-32 pt-24 pb-32">
+        <section className="page-container pt-24 pb-32">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
                 <div className="md:col-span-6 flex flex-col">
                     <div className="flex flex-col mb-12">
@@ -87,7 +87,7 @@ function DetailedBioSection({ highlight, body }: DetailedBioSectionProps) {
     if (highlight.length === 0 && body.length === 0) return null
 
     return (
-        <section className="max-w-[1440px] mx-auto px-10 md:px-32 pt-32 pb-32">
+        <section className="page-container pt-32 pb-32">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 items-start">
                 <div className="md:col-span-5 text-foreground flex flex-col gap-6">
                     {highlight.map((paragraph, idx) => (
@@ -127,7 +127,7 @@ function ContactSection({ email, socialLinks, paragraphs }: ContactSectionProps)
     const t = useTranslations("About")
 
     return (
-        <section id="contact" className="max-w-[1440px] mx-auto px-10 md:px-32 pt-16 pb-32">
+        <section id="contact" className="page-container pt-16 pb-32">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 items-start">
                 <div className="md:col-span-5 flex flex-col gap-6">
                     <h2 className="font-primary text-[40px] md:text-[56px] leading-[1.1] font-normal text-foreground">
@@ -239,7 +239,7 @@ async function AboutContent() {
                 profileImageSrc={profileImageSrc}
             />
 
-            <div className="max-w-[1440px] mx-auto px-10 md:px-32 relative z-0">
+            <div className="page-container relative z-0">
                 <div className="w-full h-px bg-border" />
 
                 <div className="absolute right-0 md:-right-16 top-[-100px] -z-10 hidden md:block">
@@ -249,7 +249,7 @@ async function AboutContent() {
 
             <DetailedBioSection highlight={bio.highlight} body={bio.body} />
 
-            <div className="max-w-[1440px] mx-auto px-10 md:px-32">
+            <div className="page-container">
                 <div className="w-full h-px bg-border" />
             </div>
 

@@ -160,7 +160,7 @@ async function WorkDetails({ params }: PageProps) {
 
     return (
         <div className="min-h-screen bg-background text-foreground font-body transition-colors duration-200">
-            <div className="max-w-7xl mx-auto px-6 py-8 md:px-16 md:py-12">
+            <div className="page-container py-8 md:py-12">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-16 items-start">
                     <div className="md:col-span-7 w-full">
                         <ProjectGallery photos={galleryPhotos} />

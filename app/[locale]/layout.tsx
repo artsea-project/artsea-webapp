@@ -28,7 +28,9 @@ export default async function PublicLayout({ children, params }: PublicLayoutPro
     if (!hasLocale(routing.locales, locale)) notFound()
 
     return (
-        <HtmlShell lang={locale}>
+        // A stable scrollbar gutter keeps the centred header from shifting sideways when moving
+        // between pages that do and do not scroll.
+        <HtmlShell lang={locale} className="[scrollbar-gutter:stable]">
             <NextIntlClientProvider>
                 <div className="flex min-h-screen flex-col justify-between">
                     <Suspense fallback={null}>

@@ -127,6 +127,12 @@
     }
 }
 
+/* The single content column of the public site. The header, the footer and every page use it,
+   so the artist name and the page content share one left edge on every page. */
+@utility page-container {
+    @apply mx-auto w-full max-w-7xl px-6 md:px-16;
+}
+
 @layer base {
     * {
         @apply border-border outline-ring/50;

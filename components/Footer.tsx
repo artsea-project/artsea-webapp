@@ -57,8 +57,8 @@ export default async function Footer() {
     const [email, socialLinks] = await Promise.all([getContactEmail(), getOrderedLinks()])
 
     return (
-        <footer className="font-body border-t border-primary bg-foreground px-6 py-16 text-background transition-colors duration-300 md:px-16 md:py-24">
-            <div className="mx-auto flex max-w-7xl flex-col gap-12 items-start justify-between md:flex-row md:items-stretch md:gap-6">
+        <footer className="font-body border-t border-primary bg-foreground py-16 text-background transition-colors duration-300 md:py-24">
+            <div className="page-container flex flex-col gap-12 items-start justify-between md:flex-row md:items-stretch md:gap-6">
                 <ContactSection email={email} />
                 <SocialsSection socialLinks={socialLinks} />
             </div>
