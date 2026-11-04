@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "@/i18n/navigation"
 
 import { CollapsibleTagList } from "@/components/portfolio/collapsible-tag-list"
 import { TagDrawer } from "@/components/portfolio/tag-drawer"

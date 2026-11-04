@@ -1,5 +1,5 @@
 import Image from "next/image"
-import Link from "next/link"
+import { Link } from "@/i18n/navigation"
 
 import { PortfolioGif } from "@/components/portfolio/portfolio-gif"
 import { PortfolioVideo } from "@/components/portfolio/portfolio-video"

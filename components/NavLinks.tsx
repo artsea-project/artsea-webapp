@@ -8,13 +8,10 @@ import { Link, usePathname } from "@/i18n/navigation"
 import { routing } from "@/i18n/routing"
 
 const NAV_ITEMS = [
-    { name: "O MNIE", href: "/about" },
-    { name: "PORTFOLIO", href: "/portfolio" },
-    { name: "KONTAKT", href: "/about#contact" },
-]
-
-const LANGUAGES = ["PL", "EN"] as const
-type Language = (typeof LANGUAGES)[number]
+    { labelKey: "about", href: "/about" },
+    { labelKey: "portfolio", href: "/portfolio" },
+    { labelKey: "contact", href: "/about#contact" },
+] as const
 
 // Shared by the desktop bar and the mobile drawer so the two can't drift apart.
 const NAV_TYPOGRAPHY = "font-secondary text-xs font-normal uppercase tracking-widest"

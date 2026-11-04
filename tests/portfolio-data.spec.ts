@@ -42,9 +42,17 @@ test.beforeAll(async () => {
         },
     ])
     await db.insert(tags).values([
-        { tagId: sharedTagId, namePln: `wspólny-${sharedTagId}`, nameEng: null },
-        { tagId: hiddenOnlyTagId, namePln: `ukryty-${hiddenOnlyTagId}`, nameEng: null },
-        { tagId: englishTagId, namePln: null, nameEng: `english-${englishTagId}` },
+        { tagId: sharedTagId, namePln: `wspólny-${sharedTagId}`, nameEng: `shared-${sharedTagId}` },
+        {
+            tagId: hiddenOnlyTagId,
+            namePln: `ukryty-${hiddenOnlyTagId}`,
+            nameEng: `hidden-${hiddenOnlyTagId}`,
+        },
+        {
+            tagId: englishTagId,
+            namePln: `polski-${englishTagId}`,
+            nameEng: `english-${englishTagId}`,
+        },
     ])
     await db.insert(artPieces).values([
         {
@@ -116,7 +124,7 @@ test("does not leak categories or tags used only by hidden works", async () => {
     )
 })
 
-test("falls back to English titles and tags", async () => {
+test("falls back to the English title", async () => {
     const englishOnly = (await loadPortfolioArtworks()).find(
         (artwork) => artwork.artPieceId === englishOnlyId
     )
@@ -124,6 +132,6 @@ test("falls back to English titles and tags", async () => {
     expect(englishOnly).toMatchObject({
         title: "English only",
         year: null,
-        tags: [`english-${englishTagId}`],
+        tags: [`polski-${englishTagId}`],
     })
 })
