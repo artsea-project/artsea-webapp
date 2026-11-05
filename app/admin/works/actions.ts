@@ -74,7 +74,10 @@ function refreshViews(artPieceId?: string) {
         revalidatePath("/admin/works")
         revalidatePath("/admin/categories")
         revalidatePath("/")
-        if (artPieceId) revalidatePath(`/work/${artPieceId}`)
+        if (artPieceId) {
+            revalidatePath(`/work/${artPieceId}`)
+            revalidatePath(`/admin/works/${artPieceId}/edit`)
+        }
         revalidateTag(BENTO_CACHE_TAG, "max")
     } catch (error) {
         if (!isOutsideRequestContextError(error)) {
