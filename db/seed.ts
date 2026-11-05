@@ -168,23 +168,17 @@ async function main() {
                     titleEng,
                     titlePln: `${titleEng} (PL)`,
                     dimensions: "70 x 100 cm",
-                    miniDescriptionPln: {
-                        paragraphs: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit."],
-                    },
-                    miniDescriptionEng: {
-                        paragraphs: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit."],
-                    },
                     descriptionPln: {
                         technique:
-                            "<b>Lorem ipsum dolor sit amet</b>, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                         description:
-                            "Ut enim ad minim veniam, quis nostrud <i>exercitation ullamco laboris</i> nisi ut aliquip ex ea commodo consequat.",
+                            "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\n\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
                     },
                     descriptionEng: {
                         technique:
-                            "<b>Lorem ipsum dolor sit amet</b>, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                         description:
-                            "Ut enim ad minim veniam, quis nostrud <i>exercitation ullamco laboris</i> nisi ut aliquip ex ea commodo consequat.",
+                            "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\n\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
                     },
                     yearOfExecution,
                     isVisible: true,

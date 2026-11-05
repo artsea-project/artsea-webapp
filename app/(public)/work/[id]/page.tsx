@@ -3,7 +3,6 @@ import { notFound } from "next/navigation"
 import Link from "next/link"
 import { db } from "@/db"
 import { Ruler, MoveRight } from "lucide-react"
-import parse from "html-react-parser"
 import { ProjectGallery } from "@/components/ProjectGallery"
 import { isBentoMediaType } from "@/lib/media"
 
@@ -88,9 +87,9 @@ function DetailSection({ label, content }: DetailSectionProps) {
             <span className="text-[11px] font-bold tracking-widest text-muted-foreground uppercase font-secondary">
                 {label}
             </span>
-            <div className="text-foreground leading-relaxed text-base font-body">
-                {parse(content)}
-            </div>
+            <p className="text-foreground leading-relaxed text-base font-body whitespace-pre-line">
+                {content}
+            </p>
         </div>
     )
 }
