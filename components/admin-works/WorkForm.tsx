@@ -183,6 +183,7 @@ export default function WorkForm({ work, categories, tags }: WorkFormProps) {
 
             if (result.status === "success") {
                 router.push("/admin/works")
+                router.refresh()
             }
             return result
         },
@@ -374,7 +375,11 @@ export default function WorkForm({ work, categories, tags }: WorkFormProps) {
                     </div>
                 </FieldGroup>
 
-                <WorkMediaManager items={mediaItems} onChange={setMediaItems} />
+                <WorkMediaManager
+                    key={`${work?.artPieceId ?? "new"}-${state.savedAt ?? 0}`}
+                    items={mediaItems}
+                    onChange={setMediaItems}
+                />
 
                 {state.formError && (
                     <p role="alert" className="text-sm font-medium text-destructive">
