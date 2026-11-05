@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test"
 
+import { toInitialMediaItems } from "../components/admin-works/WorkMediaManager"
 import {
     buildWorkDescription,
     EMPTY_WORK_DESCRIPTION,
@@ -127,5 +128,36 @@ test.describe("work description helpers", () => {
             technique: "Fotografia",
             description: "Opis",
         })
+    })
+})
+
+test.describe("work media cover helpers", () => {
+    test("promotes the first image to cover when the first item is an mp4", () => {
+        const items = toInitialMediaItems([
+            { mediaId: "1", fileType: "mp4", orderIndex: 0, sizeBytes: 100 },
+            { mediaId: "2", fileType: "jpg", orderIndex: 1, sizeBytes: 200 },
+            { mediaId: "3", fileType: "png", orderIndex: 2, sizeBytes: 300 },
+        ])
+
+        expect(items.map((item) => item.fileType)).toEqual(["jpg", "mp4", "png"])
+        expect(items[0].key).toBe("existing:2")
+    })
+
+    test("keeps existing order when the cover is already an image", () => {
+        const items = toInitialMediaItems([
+            { mediaId: "1", fileType: "jpg", orderIndex: 0, sizeBytes: 100 },
+            { mediaId: "2", fileType: "mp4", orderIndex: 1, sizeBytes: 200 },
+        ])
+
+        expect(items.map((item) => item.fileType)).toEqual(["jpg", "mp4"])
+    })
+
+    test("leaves list unchanged if all items are videos", () => {
+        const items = toInitialMediaItems([
+            { mediaId: "1", fileType: "mp4", orderIndex: 0, sizeBytes: 100 },
+            { mediaId: "2", fileType: "mp4", orderIndex: 1, sizeBytes: 200 },
+        ])
+
+        expect(items.map((item) => item.fileType)).toEqual(["mp4", "mp4"])
     })
 })

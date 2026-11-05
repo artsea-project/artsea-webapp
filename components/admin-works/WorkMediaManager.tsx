@@ -35,7 +35,7 @@ export type EditableMediaItem =
           previewUrl: string
       }
 
-function promoteFirstImageAsCover(items: EditableMediaItem[]): EditableMediaItem[] {
+export function promoteFirstImageAsCover(items: EditableMediaItem[]): EditableMediaItem[] {
     if (items[0]?.fileType !== "mp4") return items
 
     const firstImageIndex = items.findIndex((item) => item.fileType !== "mp4")
@@ -48,15 +48,17 @@ function promoteFirstImageAsCover(items: EditableMediaItem[]): EditableMediaItem
 }
 
 export function toInitialMediaItems(items: WorkMediaItem[]): EditableMediaItem[] {
-    return items.map((item, index) => ({
-        key: `existing:${item.mediaId}`,
-        kind: "existing",
-        mediaId: item.mediaId,
-        fileName: `plik-${index + 1}.${item.fileType}`,
-        fileType: item.fileType,
-        sizeBytes: item.sizeBytes,
-        previewUrl: `/admin/media/${item.mediaId}`,
-    }))
+    return promoteFirstImageAsCover(
+        items.map((item, index) => ({
+            key: `existing:${item.mediaId}`,
+            kind: "existing",
+            mediaId: item.mediaId,
+            fileName: `plik-${index + 1}.${item.fileType}`,
+            fileType: item.fileType,
+            sizeBytes: item.sizeBytes,
+            previewUrl: `/admin/media/${item.mediaId}`,
+        }))
+    )
 }
 
 interface WorkMediaManagerProps {
