@@ -32,6 +32,7 @@ import type { AdminTag } from "@/lib/categories/queries"
 import { resolveLocalizedLabel } from "@/lib/localized-labels"
 import { initialWorkFormState, type WorkField, type WorkFormState } from "@/lib/works/form-state"
 import type { WorkCategoryOption, WorkForEdit } from "@/lib/works/queries"
+import { checkWorkMediaTotalSize } from "@/lib/works/validation"
 
 interface WorkFormProps {
     work?: WorkForEdit
@@ -158,6 +159,18 @@ export default function WorkForm({ work, categories, tags }: WorkFormProps) {
             formData.set("mediaOrderSubmitted", "1")
             formData.delete("mediaOrder")
             formData.delete("newMedia")
+
+            const newFiles = mediaItems.filter(
+                (item): item is EditableMediaItem & { kind: "new" } => item.kind === "new"
+            )
+            const totalSizeError = checkWorkMediaTotalSize(newFiles)
+            if (totalSizeError) {
+                return {
+                    status: "error",
+                    fieldErrors: {},
+                    formError: totalSizeError,
+                }
+            }
 
             let newIndex = 0
             for (const item of mediaItems) {
