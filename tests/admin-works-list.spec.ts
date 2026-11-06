@@ -4,6 +4,7 @@ import { expect, test } from "@playwright/test"
 import { eq } from "drizzle-orm"
 
 import { GET } from "../app/admin/media/[mediaId]/route"
+import { formatUploadedDate } from "../components/admin-works/WorkCard"
 import { getVisiblePages } from "../components/admin-works/WorksPagination"
 import { getPortfolioPreviewHref } from "../lib/admin-routes"
 import { db } from "../db"
@@ -81,5 +82,11 @@ test.describe("admin media route and pagination helpers", () => {
         expect(getPortfolioPreviewHref("/admin/categories")).toBe("/portfolio")
         expect(getPortfolioPreviewHref("/admin/profile")).toBe("/about")
         expect(getPortfolioPreviewHref("/admin")).toBe("/")
+    })
+
+    test("formats uploaded date in Europe/Warsaw timezone regardless of local timezone", () => {
+        // 2026-11-06 23:30 UTC is 2026-11-07 00:30 in Europe/Warsaw (UTC+1)
+        const date = new Date("2026-11-06T23:30:00Z")
+        expect(formatUploadedDate(date)).toBe("07.11.2026")
     })
 })
