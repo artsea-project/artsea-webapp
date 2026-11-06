@@ -8,7 +8,7 @@ import { db } from "../db"
 import { artPieces, artPieceTags, categories, tags } from "../db/schema"
 import { initialWorkFormState } from "../lib/works/form-state"
 import { getWorkForEdit } from "../lib/works/queries"
-import { COVER_MEDIA_TYPE_ERROR } from "../lib/works/validation"
+import { COVER_MEDIA_TYPE_ERROR, TOTAL_MEDIA_SIZE_ERROR } from "../lib/works/validation"
 
 const suffix = randomUUID().slice(0, 8)
 const marker = `acttest${suffix}`
@@ -323,6 +323,24 @@ test.describe("works server actions", () => {
             status: "error",
             fieldErrors: {},
             formError: COVER_MEDIA_TYPE_ERROR,
+        })
+
+        const oversizedTotalForm = makeFormData({
+            titlePln: `${marker} oversized total media`,
+            categoryId,
+            mediaOrderSubmitted: "1",
+            mediaOrder: Array.from({ length: 11 }, (_, i) => `new:${i}`),
+        })
+        for (let i = 0; i < 11; i += 1) {
+            oversizedTotalForm.append(
+                "newMedia",
+                new File([Buffer.alloc(1.9 * 1024 * 1024)], `file-${i}.png`, { type: "image/png" })
+            )
+        }
+        expect(await createWork(initialWorkFormState, oversizedTotalForm)).toEqual({
+            status: "error",
+            fieldErrors: {},
+            formError: TOTAL_MEDIA_SIZE_ERROR,
         })
     })
 })

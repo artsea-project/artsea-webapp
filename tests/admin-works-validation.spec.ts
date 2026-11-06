@@ -10,15 +10,18 @@ import {
     checkCoverMediaType,
     checkWorkCategory,
     checkWorkMediaFile,
+    checkWorkMediaTotalSize,
     checkWorkTitles,
     checkYearOfExecution,
     COVER_MEDIA_TYPE_ERROR,
     escapeLikePattern,
     MAX_MEDIA_FILE_BYTES,
+    MAX_TOTAL_MEDIA_BYTES,
     normalizeSearchQuery,
     parsePage,
     parseTagIds,
     parseYearOfExecution,
+    TOTAL_MEDIA_SIZE_ERROR,
 } from "../lib/works/validation"
 
 const VALID_UUID = "6f1c2b3e-4d5a-4b6c-8d7e-9f0a1b2c3d4e"
@@ -92,6 +95,23 @@ test.describe("work validation helpers", () => {
         expect(checkCoverMediaType("jpg")).toBeNull()
         expect(checkCoverMediaType("gif")).toBeNull()
         expect(checkCoverMediaType("mp4")).toBe(COVER_MEDIA_TYPE_ERROR)
+    })
+
+    test("validates cumulative media total size up to 20 MB", () => {
+        expect(MAX_TOTAL_MEDIA_BYTES).toBe(20 * 1024 * 1024)
+        expect(checkWorkMediaTotalSize([])).toBeNull()
+        expect(
+            checkWorkMediaTotalSize([
+                { size: 10 * 1024 * 1024 },
+                { size: 10 * 1024 * 1024 },
+            ])
+        ).toBeNull()
+        expect(
+            checkWorkMediaTotalSize([
+                { sizeBytes: 10 * 1024 * 1024 },
+                { sizeBytes: 10 * 1024 * 1024 + 1 },
+            ])
+        ).toBe(TOTAL_MEDIA_SIZE_ERROR)
     })
 
     test("normalizes search query and page number", () => {
