@@ -11,8 +11,11 @@ import type { WorkMediaItem } from "@/lib/works/queries"
 import {
     checkCoverMediaType,
     checkWorkMediaFile,
+    checkWorkMediaTotalSize,
     formatFileSize,
+    MAX_TOTAL_MEDIA_BYTES,
     resolveUploadedFileType,
+    TOTAL_MEDIA_SIZE_ERROR,
 } from "@/lib/works/validation"
 
 export type EditableMediaItem =
@@ -72,12 +75,28 @@ export default function WorkMediaManager({ items, onChange }: WorkMediaManagerPr
     const [isDropActive, setIsDropActive] = useState(false)
     const [uploadError, setUploadError] = useState<string | null>(null)
 
+    function validateItems(itemsToValidate: EditableMediaItem[]): string | null {
+        const coverError = itemsToValidate[0]
+            ? checkCoverMediaType(itemsToValidate[0].fileType)
+            : null
+        const totalError = checkWorkMediaTotalSize(
+            itemsToValidate.filter((item) => item.kind === "new")
+        )
+        const errors = [coverError, totalError].filter(Boolean)
+        return errors.length > 0 ? errors.join(" ") : null
+    }
+
     function addFiles(fileList: FileList | null) {
         if (!fileList || fileList.length === 0) return
         setUploadError(null)
 
         const nextItems = [...items]
         const errors: string[] = []
+        let currentNewBytes = items.reduce(
+            (sum, item) => sum + (item.kind === "new" ? item.sizeBytes : 0),
+            0
+        )
+
         for (const file of Array.from(fileList)) {
             const error = checkWorkMediaFile(file)
             if (error) {
@@ -85,9 +104,17 @@ export default function WorkMediaManager({ items, onChange }: WorkMediaManagerPr
                 continue
             }
 
+            if (currentNewBytes + file.size > MAX_TOTAL_MEDIA_BYTES) {
+                if (!errors.includes(TOTAL_MEDIA_SIZE_ERROR)) {
+                    errors.push(TOTAL_MEDIA_SIZE_ERROR)
+                }
+                continue
+            }
+
             const fileType = resolveUploadedFileType(file.type, file.name)
             if (!fileType) continue
 
+            currentNewBytes += file.size
             nextItems.push({
                 key: `new:${crypto.randomUUID()}`,
                 kind: "new",
@@ -120,8 +147,7 @@ export default function WorkMediaManager({ items, onChange }: WorkMediaManagerPr
         const nextItems = promoteFirstImageAsCover(
             items.filter((_, itemIndex) => itemIndex !== index)
         )
-        const coverError = nextItems[0] ? checkCoverMediaType(nextItems[0].fileType) : null
-        setUploadError(coverError)
+        setUploadError(validateItems(nextItems))
         onChange(nextItems)
     }
 
@@ -149,9 +175,9 @@ export default function WorkMediaManager({ items, onChange }: WorkMediaManagerPr
         reordered.splice(targetIndex, 0, moved)
         setDraggedIndex(null)
 
-        const coverError = reordered[0] ? checkCoverMediaType(reordered[0].fileType) : null
-        if (coverError) {
-            setUploadError(coverError)
+        const validationError = validateItems(reordered)
+        if (validationError) {
+            setUploadError(validationError)
             return
         }
 
@@ -167,9 +193,9 @@ export default function WorkMediaManager({ items, onChange }: WorkMediaManagerPr
         const [moved] = reordered.splice(fromIndex, 1)
         reordered.splice(targetIndex, 0, moved)
 
-        const coverError = reordered[0] ? checkCoverMediaType(reordered[0].fileType) : null
-        if (coverError) {
-            setUploadError(coverError)
+        const validationError = validateItems(reordered)
+        if (validationError) {
+            setUploadError(validationError)
             return
         }
 
@@ -226,7 +252,7 @@ export default function WorkMediaManager({ items, onChange }: WorkMediaManagerPr
                         </button>
                     </p>
                     <p className="text-[11px] text-muted-foreground">
-                        PNG, JPG, GIF, MP4. Maks. 2 MB.
+                        PNG, JPG, GIF, MP4. Maks. 2 MB na plik, łącznie maks. 20 MB.
                     </p>
                     <input
                         ref={fileInputRef}

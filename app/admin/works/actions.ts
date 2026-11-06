@@ -14,6 +14,7 @@ import {
     checkCoverMediaType,
     checkWorkCategory,
     checkWorkMediaFile,
+    checkWorkMediaTotalSize,
     checkWorkTitles,
     checkYearOfExecution,
     COVER_MEDIA_TYPE_ERROR,
@@ -153,6 +154,11 @@ async function readMediaOrder(
 
     if (rawOrder.length === 0 && uploadedFiles.length === 0) {
         return { items: [], hasOrderField: formData.has("mediaOrderSubmitted") }
+    }
+
+    const totalSizeError = checkWorkMediaTotalSize(uploadedFiles)
+    if (totalSizeError) {
+        return { error: totalSizeError }
     }
 
     const orderTokens =
