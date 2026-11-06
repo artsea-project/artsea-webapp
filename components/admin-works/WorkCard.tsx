@@ -12,12 +12,16 @@ interface WorkCardProps {
     onDelete: (work: AdminWork) => void
 }
 
-function formatUploadedDate(date: Date): string {
+const uploadedDateFormatter = new Intl.DateTimeFormat("pl-PL", {
+    timeZone: "Europe/Warsaw",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+})
+
+export function formatUploadedDate(date: Date): string {
     const value = date instanceof Date ? date : new Date(date)
-    const day = String(value.getDate()).padStart(2, "0")
-    const month = String(value.getMonth() + 1).padStart(2, "0")
-    const year = value.getFullYear()
-    return `${day}.${month}.${year}`
+    return uploadedDateFormatter.format(value)
 }
 
 export default function WorkCard({
