@@ -57,16 +57,27 @@ export interface WorkFormOptions {
 
 const IMAGE_FILE_TYPES = ["png", "jpg", "gif"] as const
 
-function buildSearchFilter(search: string) {
-    if (!search) return undefined
+function buildSearchFilter(search: string, categoryId?: string) {
+    const conditions = []
 
-    const pattern = `%${escapeLikePattern(search)}%`
-    return or(
-        ilike(artPieces.titlePln, pattern),
-        ilike(artPieces.titleEng, pattern),
-        ilike(categories.namePln, pattern),
-        ilike(categories.nameEng, pattern)
-    )
+    if (search) {
+        const pattern = `%${escapeLikePattern(search)}%`
+        conditions.push(
+            or(
+                ilike(artPieces.titlePln, pattern),
+                ilike(artPieces.titleEng, pattern),
+                ilike(categories.namePln, pattern),
+                ilike(categories.nameEng, pattern)
+            )
+        )
+    }
+
+    if (categoryId) {
+        conditions.push(eq(artPieces.categoryId, categoryId))
+    }
+
+    if (conditions.length === 0) return undefined
+    return conditions.length === 1 ? conditions[0] : and(...conditions)
 }
 
 async function getCoverMediaIds(artPieceIds: string[]): Promise<Map<string, string>> {
@@ -92,12 +103,14 @@ async function getCoverMediaIds(artPieceIds: string[]): Promise<Map<string, stri
 
 export async function getAdminWorks({
     search,
+    categoryId,
     page,
 }: {
     search: string
+    categoryId?: string
     page: number
 }): Promise<AdminWorksPage> {
-    const filter = buildSearchFilter(search)
+    const filter = buildSearchFilter(search, categoryId)
 
     const [{ value: totalValue }] = await db
         .select({ value: count() })
@@ -183,18 +196,19 @@ export async function getWorkForEdit(artPieceId: string): Promise<WorkForEdit | 
     }
 }
 
+export async function getWorkCategories(): Promise<WorkCategoryOption[]> {
+    return db
+        .select({
+            categoryId: categories.categoryId,
+            namePln: categories.namePln,
+            nameEng: categories.nameEng,
+        })
+        .from(categories)
+        .orderBy(asc(sql`lower(${categories.namePln})`))
+}
+
 export async function getWorkFormOptions(): Promise<WorkFormOptions> {
-    const [categoryRows, tagRows] = await Promise.all([
-        db
-            .select({
-                categoryId: categories.categoryId,
-                namePln: categories.namePln,
-                nameEng: categories.nameEng,
-            })
-            .from(categories)
-            .orderBy(asc(sql`lower(${categories.namePln})`)),
-        getOrderedTags(),
-    ])
+    const [categoryRows, tagRows] = await Promise.all([getWorkCategories(), getOrderedTags()])
 
     return { categories: categoryRows, tags: tagRows }
 }

@@ -7,12 +7,22 @@ interface WorksPaginationProps {
     page: number
     pageCount: number
     search: string
+    categoryId?: string
 }
 
-function buildPageHref(page: number, search: string): string {
+export function buildWorksHref({
+    search,
+    categoryId,
+    page,
+}: {
+    search?: string
+    categoryId?: string
+    page?: number
+}): string {
     const params = new URLSearchParams()
     if (search) params.set("q", search)
-    if (page > 1) params.set("page", String(page))
+    if (categoryId) params.set("category", categoryId)
+    if (page && page > 1) params.set("page", String(page))
     const queryString = params.toString()
     return queryString ? `/admin/works?${queryString}` : "/admin/works"
 }
@@ -28,7 +38,12 @@ export function getVisiblePages(page: number, pageCount: number): number[] {
     return Array.from({ length: maxButtons }, (_, index) => start + index)
 }
 
-export default function WorksPagination({ page, pageCount, search }: WorksPaginationProps) {
+export default function WorksPagination({
+    page,
+    pageCount,
+    search,
+    categoryId,
+}: WorksPaginationProps) {
     if (pageCount <= 1) return null
 
     const pages = getVisiblePages(page, pageCount)
@@ -42,7 +57,7 @@ export default function WorksPagination({ page, pageCount, search }: WorksPagina
         <nav aria-label="Paginacja prac" className="flex items-center justify-center gap-2 pt-2">
             {hasPrevious ? (
                 <Link
-                    href={buildPageHref(page - 1, search)}
+                    href={buildWorksHref({ page: page - 1, search, categoryId })}
                     aria-label="Poprzednia strona"
                     className={cn(
                         itemBase,
@@ -68,7 +83,7 @@ export default function WorksPagination({ page, pageCount, search }: WorksPagina
                 return (
                     <Link
                         key={pageNumber}
-                        href={buildPageHref(pageNumber, search)}
+                        href={buildWorksHref({ page: pageNumber, search, categoryId })}
                         aria-current={isActive ? "page" : undefined}
                         className={cn(
                             itemBase,
@@ -84,7 +99,7 @@ export default function WorksPagination({ page, pageCount, search }: WorksPagina
 
             {hasNext ? (
                 <Link
-                    href={buildPageHref(page + 1, search)}
+                    href={buildWorksHref({ page: page + 1, search, categoryId })}
                     aria-label="Następna strona"
                     className={cn(
                         itemBase,
