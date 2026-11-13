@@ -85,10 +85,7 @@ export default function BilingualNameFormCard({
                     setNamePln("")
                     setNameEng("")
                 }
-                onDone(
-                    item ? copy.updatedMessage : copy.createdMessage,
-                    result.createdId ?? result.categoryId ?? result.tagId
-                )
+                onDone(item ? copy.updatedMessage : copy.createdMessage, result.createdId)
             }
             return result
         },

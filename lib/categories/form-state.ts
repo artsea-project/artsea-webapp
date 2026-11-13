@@ -7,8 +7,6 @@ export type BilingualNameFormState = {
     fieldErrors: Partial<Record<BilingualNameField, string>>
     formError?: string
     savedAt?: number
-    categoryId?: string
-    tagId?: string
     createdId?: string
 }
 

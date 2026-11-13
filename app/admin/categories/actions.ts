@@ -44,21 +44,12 @@ function failedConflict(fieldErrors: FieldErrors<BilingualNameField>, fallbackEr
     return failed(fieldErrors, hasFieldErrors ? undefined : fallbackError)
 }
 
-function succeeded(extra?: string | { categoryId?: string; tagId?: string }) {
-    if (!extra) {
-        return { status: "success" as const, fieldErrors: {}, savedAt: Date.now() }
-    }
-    const id = typeof extra === "string" ? extra : (extra.categoryId ?? extra.tagId)
-    const categoryId = typeof extra === "string" ? extra : extra.categoryId
-    const tagId = typeof extra === "string" ? extra : extra.tagId
-
+function succeeded(createdId?: string) {
     return {
         status: "success" as const,
         fieldErrors: {},
         savedAt: Date.now(),
-        ...(categoryId ? { categoryId } : {}),
-        ...(tagId ? { tagId } : {}),
-        ...(id ? { createdId: id } : {}),
+        ...(createdId ? { createdId } : {}),
     }
 }
 
@@ -189,7 +180,7 @@ export async function createCategory(
     }
 
     refreshViews()
-    return succeeded({ categoryId: createdId })
+    return succeeded(createdId)
 }
 
 export async function updateCategory(
@@ -310,7 +301,7 @@ export async function createTag(
     }
 
     refreshViews()
-    return succeeded({ tagId: createdId })
+    return succeeded(createdId)
 }
 
 export async function updateTag(

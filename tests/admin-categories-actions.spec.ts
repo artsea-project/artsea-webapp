@@ -168,6 +168,7 @@ test.describe("category and tag server actions", () => {
             where: eq(categories.namePln, namePln),
         })
         expect(created).toBeDefined()
+        expect(createResult.createdId).toBe(created!.categoryId)
 
         const updateResult = await updateCategory(
             initialCategoryFormState,
@@ -246,6 +247,7 @@ test.describe("category and tag server actions", () => {
         })
         expect(savedTag).toBeDefined()
         expect(savedTag?.nameEng).toBe(nameEng)
+        expect(createResult.createdId).toBe(savedTag!.tagId)
 
         const secondTagResult = await createTag(
             initialTagFormState,
