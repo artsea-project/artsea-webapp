@@ -1,7 +1,6 @@
 "use server"
 
 import { and, eq, ne, sql, type AnyColumn, type SQL } from "drizzle-orm"
-import { revalidatePath, revalidateTag } from "next/cache"
 
 import { db } from "@/db"
 import { categories, tags } from "@/db/schema"
@@ -20,30 +19,24 @@ import {
     checkTagNamePln,
     normalizeTagName,
 } from "@/lib/categories/validation"
+import {
+    failed,
+    getPostgresErrorCode,
+    readText,
+    revalidateViews,
+    type FieldErrors,
+} from "@/lib/server/actions"
 import { isUuid } from "@/lib/uuid"
 
 const CATEGORY_SAVE_ERROR = "Nie udało się zapisać kategorii. Spróbuj ponownie."
 const TAG_SAVE_ERROR = "Nie udało się zapisać tagu. Spróbuj ponownie."
 
-type FieldErrors<Field extends string> = Partial<Record<Field, string>>
-
 export type DeleteResult = { status: "success" } | { status: "error"; error: string }
 export type DeleteCategoryResult = DeleteResult
 export type DeleteTagResult = DeleteResult
 
-function readText(formData: FormData, name: string): string {
-    const value = formData.get(name)
-    return typeof value === "string" ? value : ""
-}
-
 function equalsIgnoreCase(column: AnyColumn, value: string) {
     return sql`lower(${column}) = lower(${value})`
-}
-
-function failed<Field extends string>(fieldErrors: FieldErrors<Field>, formError?: string) {
-    return formError
-        ? { status: "error" as const, fieldErrors, formError }
-        : { status: "error" as const, fieldErrors }
 }
 
 function failedConflict(fieldErrors: FieldErrors<BilingualNameField>, fallbackError: string) {
@@ -69,32 +62,11 @@ function succeeded(extra?: string | { categoryId?: string; tagId?: string }) {
     }
 }
 
-function getPostgresErrorCode(error: unknown): string | undefined {
-    if (!error || typeof error !== "object") return undefined
-    if ("code" in error && typeof error.code === "string") return error.code
-    if ("cause" in error) return getPostgresErrorCode(error.cause)
-    return undefined
-}
-
-function isOutsideRequestContextError(error: unknown): boolean {
-    return (
-        error instanceof Error &&
-        typeof error.message === "string" &&
-        error.message.includes("static generation store missing")
-    )
-}
-
 function refreshViews() {
-    try {
-        revalidatePath("/admin/categories")
-        revalidatePath("/admin/works", "layout")
-        revalidatePath("/")
-        revalidateTag(BENTO_CACHE_TAG, "max")
-    } catch (error) {
-        if (!isOutsideRequestContextError(error)) {
-            console.error("Failed to revalidate cache:", error)
-        }
-    }
+    revalidateViews({
+        paths: ["/admin/categories", { path: "/admin/works", type: "layout" }, "/"],
+        tags: [BENTO_CACHE_TAG],
+    })
 }
 
 async function hasMatchingRow(

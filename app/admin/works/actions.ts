@@ -3,11 +3,19 @@
 import { createHash } from "node:crypto"
 
 import { and, eq, notInArray } from "drizzle-orm"
-import { revalidatePath, revalidateTag } from "next/cache"
 
 import { db } from "@/db"
 import { artPieces, artPieceTags, media } from "@/db/schema"
 import { BENTO_CACHE_TAG } from "@/lib/bento"
+import {
+    failed,
+    getPostgresConstraintName,
+    getPostgresErrorCode,
+    readText,
+    readTextList,
+    revalidateViews,
+    type FieldErrors,
+} from "@/lib/server/actions"
 import { buildWorkDescription } from "@/lib/works/description"
 import type { WorkField, WorkFormState } from "@/lib/works/form-state"
 import {
@@ -24,67 +32,23 @@ import {
     resolveUploadedFileType,
 } from "@/lib/works/validation"
 
-type FieldErrors<Field extends string> = Partial<Record<Field, string>>
-
 export type DeleteWorkResult = { status: "success" } | { status: "error"; error: string }
 export type SetWorkVisibilityResult = { status: "success" } | { status: "error"; error: string }
-
-function readText(formData: FormData, name: string): string {
-    const value = formData.get(name)
-    return typeof value === "string" ? value : ""
-}
-
-function readTextList(formData: FormData, name: string): string[] {
-    return formData.getAll(name).filter((value): value is string => typeof value === "string")
-}
-
-function failed<Field extends string>(fieldErrors: FieldErrors<Field>, formError?: string) {
-    return formError
-        ? { status: "error" as const, fieldErrors, formError }
-        : { status: "error" as const, fieldErrors }
-}
 
 function succeeded(workId?: string) {
     return { status: "success" as const, fieldErrors: {}, savedAt: Date.now(), workId }
 }
 
-function getPostgresErrorCode(error: unknown): string | undefined {
-    if (!error || typeof error !== "object") return undefined
-    if ("code" in error && typeof error.code === "string") return error.code
-    if ("cause" in error) return getPostgresErrorCode(error.cause)
-    return undefined
-}
-
-function getPostgresConstraintName(error: unknown): string | undefined {
-    if (!error || typeof error !== "object") return undefined
-    if ("constraint" in error && typeof error.constraint === "string") return error.constraint
-    if ("cause" in error) return getPostgresConstraintName(error.cause)
-    return undefined
-}
-
-function isOutsideRequestContextError(error: unknown): boolean {
-    return (
-        error instanceof Error &&
-        typeof error.message === "string" &&
-        error.message.includes("static generation store missing")
-    )
-}
-
 function refreshViews(artPieceId?: string) {
-    try {
-        revalidatePath("/admin/works")
-        revalidatePath("/admin/categories")
-        revalidatePath("/")
-        if (artPieceId) {
-            revalidatePath(`/work/${artPieceId}`)
-            revalidatePath(`/admin/works/${artPieceId}/edit`)
-        }
-        revalidateTag(BENTO_CACHE_TAG, "max")
-    } catch (error) {
-        if (!isOutsideRequestContextError(error)) {
-            console.error("Failed to revalidate cache:", error)
-        }
-    }
+    revalidateViews({
+        paths: [
+            { path: "/admin/works", type: "layout" },
+            "/admin/categories",
+            "/",
+            ...(artPieceId ? [`/work/${artPieceId}`] : []),
+        ],
+        tags: [BENTO_CACHE_TAG],
+    })
 }
 
 function readWork(formData: FormData) {
