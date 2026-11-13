@@ -1,7 +1,7 @@
 "use client"
 
 import { ChevronDown, ChevronUp, CloudUpload, GripVertical, Trash2 } from "lucide-react"
-import { useRef, useState, type DragEvent } from "react"
+import { useEffect, useRef, useState, type DragEvent } from "react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -74,6 +74,15 @@ export default function WorkMediaManager({ items, onChange }: WorkMediaManagerPr
     const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
     const [isDropActive, setIsDropActive] = useState(false)
     const [uploadError, setUploadError] = useState<string | null>(null)
+    const objectUrlsRef = useRef(new Set<string>())
+
+    useEffect(() => {
+        const objectUrls = objectUrlsRef.current
+        return () => {
+            objectUrls.forEach((url) => URL.revokeObjectURL(url))
+            objectUrls.clear()
+        }
+    }, [])
 
     function validateItems(itemsToValidate: EditableMediaItem[]): string | null {
         const coverError = itemsToValidate[0]
@@ -115,6 +124,8 @@ export default function WorkMediaManager({ items, onChange }: WorkMediaManagerPr
             if (!fileType) continue
 
             currentNewBytes += file.size
+            const previewUrl = URL.createObjectURL(file)
+            objectUrlsRef.current.add(previewUrl)
             nextItems.push({
                 key: `new:${crypto.randomUUID()}`,
                 kind: "new",
@@ -122,7 +133,7 @@ export default function WorkMediaManager({ items, onChange }: WorkMediaManagerPr
                 fileName: file.name,
                 fileType,
                 sizeBytes: file.size,
-                previewUrl: URL.createObjectURL(file),
+                previewUrl,
             })
         }
 
@@ -143,6 +154,7 @@ export default function WorkMediaManager({ items, onChange }: WorkMediaManagerPr
         const removed = items[index]
         if (removed?.kind === "new") {
             URL.revokeObjectURL(removed.previewUrl)
+            objectUrlsRef.current.delete(removed.previewUrl)
         }
         const nextItems = promoteFirstImageAsCover(
             items.filter((_, itemIndex) => itemIndex !== index)
