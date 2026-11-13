@@ -20,8 +20,7 @@ import {
     checkTagNamePln,
     normalizeTagName,
 } from "@/lib/categories/validation"
-
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+import { isUuid } from "@/lib/uuid"
 
 const CATEGORY_SAVE_ERROR = "Nie udało się zapisać kategorii. Spróbuj ponownie."
 const TAG_SAVE_ERROR = "Nie udało się zapisać tagu. Spróbuj ponownie."
@@ -226,7 +225,7 @@ export async function updateCategory(
     formData: FormData
 ): Promise<CategoryFormState> {
     const categoryId = readText(formData, "categoryId")
-    if (!UUID_PATTERN.test(categoryId)) {
+    if (!isUuid(categoryId)) {
         return failed({}, "Nieprawidłowy identyfikator kategorii.")
     }
 
@@ -267,7 +266,7 @@ export async function updateCategory(
 }
 
 export async function deleteCategory(categoryId: string): Promise<DeleteCategoryResult> {
-    if (!UUID_PATTERN.test(categoryId)) {
+    if (!isUuid(categoryId)) {
         return { status: "error", error: "Nieprawidłowy identyfikator kategorii." }
     }
 
@@ -347,7 +346,7 @@ export async function updateTag(
     formData: FormData
 ): Promise<TagFormState> {
     const tagId = readText(formData, "tagId")
-    if (!UUID_PATTERN.test(tagId)) {
+    if (!isUuid(tagId)) {
         return failed({}, "Nieprawidłowy identyfikator tagu.")
     }
 
@@ -379,7 +378,7 @@ export async function updateTag(
 }
 
 export async function deleteTag(tagId: string): Promise<DeleteTagResult> {
-    if (!UUID_PATTERN.test(tagId)) {
+    if (!isUuid(tagId)) {
         return { status: "error", error: "Nieprawidłowy identyfikator tagu." }
     }
 
