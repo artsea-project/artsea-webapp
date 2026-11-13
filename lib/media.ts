@@ -1,3 +1,7 @@
+import { NextResponse } from "next/server"
+
+import { isUuid } from "@/lib/uuid"
+
 export const MEDIA_TYPES = {
     png: "image/png",
     jpg: "image/jpeg",
@@ -28,4 +32,63 @@ export function mediaHeaders(record: {
         ETag: `"${record.contentHash}"`,
         "X-Content-Type-Options": "nosniff",
     }
+}
+
+export type StoredMediaMetadata = {
+    contentHash: string
+    fileType: string
+}
+
+export type StoredMediaRecord = StoredMediaMetadata & {
+    content: Buffer
+}
+
+function notFound() {
+    return new NextResponse(null, { status: 404 })
+}
+
+function hasSupportedMediaType<T extends { fileType: string }>(
+    record: T
+): record is T & { fileType: MediaType } {
+    return isMediaType(record.fileType)
+}
+
+function hasMatchingEtag(ifNoneMatch: string | null, contentHash: string) {
+    return ifNoneMatch === `"${contentHash}"`
+}
+
+export function mediaResponse(record: StoredMediaRecord) {
+    if (!hasSupportedMediaType(record)) {
+        return notFound()
+    }
+
+    return new NextResponse(new Uint8Array(record.content), {
+        headers: mediaHeaders(record),
+    })
+}
+
+export async function serveMedia(
+    request: Request,
+    mediaId: string,
+    loadMetadata: (mediaId: string) => Promise<StoredMediaMetadata | undefined>,
+    loadRecord: (mediaId: string) => Promise<StoredMediaRecord | undefined>
+): Promise<NextResponse> {
+    if (!isUuid(mediaId)) {
+        return notFound()
+    }
+
+    const metadata = await loadMetadata(mediaId)
+    if (!metadata || !hasSupportedMediaType(metadata)) {
+        return notFound()
+    }
+
+    if (hasMatchingEtag(request.headers.get("if-none-match"), metadata.contentHash)) {
+        return new NextResponse(null, {
+            status: 304,
+            headers: mediaHeaders(metadata),
+        })
+    }
+
+    const record = await loadRecord(mediaId)
+    return record ? mediaResponse(record) : notFound()
 }
