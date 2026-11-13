@@ -114,6 +114,11 @@ export function normalizeSearchQuery(raw: string | string[] | undefined): string
     return (value ?? "").trim().replace(/\s+/g, " ")
 }
 
+export function parseCategoryFilter(raw: string | string[] | undefined): string {
+    const value = (Array.isArray(raw) ? raw[0] : raw)?.trim() ?? ""
+    return isUuid(value) ? value : ""
+}
+
 export function parsePage(raw: string | string[] | undefined): number {
     const value = Array.isArray(raw) ? raw[0] : raw
     const page = Number(value)

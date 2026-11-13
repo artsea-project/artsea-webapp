@@ -112,6 +112,16 @@ test.describe("works queries", () => {
         expect(wildcard.total).toBe(0)
     })
 
+    test("filters works by explicit categoryId", async () => {
+        await createWork({ titlePln: `${marker} kategoria filtr` })
+
+        const matching = await getAdminWorks({ search: "", categoryId, page: 1 })
+        expect(matching.total).toBeGreaterThanOrEqual(1)
+
+        const missing = await getAdminWorks({ search: "", categoryId: randomUUID(), page: 1 })
+        expect(missing.total).toBe(0)
+    })
+
     test("clamps out-of-range pages and respects the page size", async () => {
         for (let index = 0; index < WORKS_PER_PAGE; index += 1) {
             await createWork({ titlePln: `${marker} paginacja ${index}` })

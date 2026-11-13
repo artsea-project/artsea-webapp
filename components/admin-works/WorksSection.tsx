@@ -21,16 +21,25 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import type { AdminWork } from "@/lib/works/queries"
+import type { AdminWork, WorkCategoryOption } from "@/lib/works/queries"
 
 interface WorksSectionProps {
     works: AdminWork[]
+    categories: WorkCategoryOption[]
     page: number
     pageCount: number
     search: string
+    selectedCategoryId: string
 }
 
-export default function WorksSection({ works, page, pageCount, search }: WorksSectionProps) {
+export default function WorksSection({
+    works,
+    categories,
+    page,
+    pageCount,
+    search,
+    selectedCategoryId,
+}: WorksSectionProps) {
     const [notice, setNotice] = useState<StatusNotice | null>(null)
     const [workToDelete, setWorkToDelete] = useState<AdminWork | null>(null)
     const [savingWorkId, setSavingWorkId] = useState<string | null>(null)
@@ -133,11 +142,16 @@ export default function WorksSection({ works, page, pageCount, search }: WorksSe
                 {notice?.text ?? ""}
             </p>
 
-            <WorksSearchBar key={search} initialSearch={search} />
+            <WorksSearchBar
+                key={`${search}:${selectedCategoryId}`}
+                initialSearch={search}
+                selectedCategoryId={selectedCategoryId}
+                categories={categories}
+            />
 
             {optimisticWorks.length === 0 ? (
                 <div className="flex min-h-48 items-center justify-center rounded-xl border border-dashed border-border bg-background p-8 text-sm text-muted-foreground">
-                    {search
+                    {search || selectedCategoryId
                         ? "Nie znaleziono prac pasujących do wyszukiwanej frazy."
                         : "Nie dodano jeszcze żadnych prac."}
                 </div>
@@ -158,7 +172,12 @@ export default function WorksSection({ works, page, pageCount, search }: WorksSe
                 </div>
             )}
 
-            <WorksPagination page={page} pageCount={pageCount} search={search} />
+            <WorksPagination
+                page={page}
+                pageCount={pageCount}
+                search={search}
+                categoryId={selectedCategoryId}
+            />
 
             <AlertDialog
                 open={workToDelete !== null}
