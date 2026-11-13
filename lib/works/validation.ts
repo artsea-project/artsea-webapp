@@ -1,3 +1,7 @@
+import { isUuid } from "@/lib/uuid"
+
+export { isUuid }
+
 export const WORKS_PER_PAGE = 6
 export const MIN_YEAR_OF_EXECUTION = 1000
 export const MAX_MEDIA_FILE_BYTES = 2 * 1024 * 1024
@@ -20,12 +24,6 @@ const EXTENSION_TO_FILE_TYPE: Record<string, "png" | "jpg" | "gif" | "mp4"> = {
     jpeg: "jpg",
     gif: "gif",
     mp4: "mp4",
-}
-
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-
-export function isUuid(value: string): boolean {
-    return UUID_PATTERN.test(value)
 }
 
 export function resolveUploadedFileType(

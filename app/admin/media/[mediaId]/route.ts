@@ -1,34 +1,10 @@
 import { eq } from "drizzle-orm"
-import { NextResponse } from "next/server"
 
-import { mediaResponse } from "@/app/media/[mediaId]/route"
 import { db } from "@/db"
 import { media } from "@/db/schema"
-import { isMediaType, mediaHeaders } from "@/lib/media"
-import type { MediaType } from "@/lib/media"
-import { isUuid } from "@/lib/works/validation"
+import { serveMedia } from "@/lib/media"
 
-function notFound() {
-    return new NextResponse(null, { status: 404 })
-}
-
-function hasSupportedMediaType<T extends { fileType: string }>(
-    record: T
-): record is T & { fileType: MediaType } {
-    return isMediaType(record.fileType)
-}
-
-function hasMatchingEtag(ifNoneMatch: string | null, contentHash: string) {
-    return ifNoneMatch === `"${contentHash}"`
-}
-
-export async function GET(request: Request, { params }: { params: Promise<{ mediaId: string }> }) {
-    const { mediaId } = await params
-
-    if (!isUuid(mediaId)) {
-        return notFound()
-    }
-
+async function loadAdminMediaMetadata(mediaId: string) {
     const [metadata] = await db
         .select({
             contentHash: media.contentHash,
@@ -37,17 +13,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ medi
         .from(media)
         .where(eq(media.mediaId, mediaId))
 
-    if (!metadata || !hasSupportedMediaType(metadata)) {
-        return notFound()
-    }
+    return metadata
+}
 
-    if (hasMatchingEtag(request.headers.get("if-none-match"), metadata.contentHash)) {
-        return new NextResponse(null, {
-            status: 304,
-            headers: mediaHeaders(metadata),
-        })
-    }
-
+async function loadAdminMediaRecord(mediaId: string) {
     const [record] = await db
         .select({
             content: media.content,
@@ -57,5 +26,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ medi
         .from(media)
         .where(eq(media.mediaId, mediaId))
 
-    return record ? mediaResponse(record) : notFound()
+    return record
+}
+
+export async function GET(request: Request, { params }: { params: Promise<{ mediaId: string }> }) {
+    const { mediaId } = await params
+    return serveMedia(request, mediaId, loadAdminMediaMetadata, loadAdminMediaRecord)
 }
