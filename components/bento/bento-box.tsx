@@ -1,3 +1,5 @@
+import { useTranslations } from "next-intl"
+
 import type { BentoCardData, BentoData } from "@/lib/bento"
 
 import { BentoCard } from "./bento-card"
@@ -119,13 +121,13 @@ function cardClasses(card: BentoCardData, kind: LayoutKind) {
 }
 
 function Layout({ cards, kind }: { cards: BentoCardData[]; kind: LayoutKind }) {
+    const t = useTranslations("Home")
+
     if (cards.length === 0) {
         const emptyStateClasses = kind === "desktop" ? "hidden py-16 md:block" : "py-16 md:hidden"
 
         return (
-            <p className={`${emptyStateClasses} text-base text-muted-foreground`}>
-                Selected works will appear here soon.
-            </p>
+            <p className={`${emptyStateClasses} text-base text-muted-foreground`}>{t("empty")}</p>
         )
     }
 
