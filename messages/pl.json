@@ -26,7 +26,8 @@
         "slideCounter": "{index} z {total}"
     },
     "Home": {
-        "heading": "Wybrane prace."
+        "heading": "Wybrane prace.",
+        "empty": "Wybrane prace pojawią się tu wkrótce."
     },
     "Metadata": {
         "title": "Artsea Portfolio",
