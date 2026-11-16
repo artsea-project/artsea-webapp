@@ -23,6 +23,25 @@ export type TilePosition = { columnStart: number; rowStart: number }
 
 export type TileBox = Pick<BentoLayoutItem, "columnStart" | "rowStart" | "columnSpan" | "rowSpan">
 
+function isFieldSpan(span: number): boolean {
+    return span === FIELD_SIZE || span === 2 * FIELD_SIZE
+}
+
+function isFieldStart(start: number): boolean {
+    return start >= 1 && (start - 1) % FIELD_SIZE === 0
+}
+
+export function fitsGrid(box: TileBox, grid: GridSpec): boolean {
+    return (
+        isFieldStart(box.columnStart) &&
+        isFieldStart(box.rowStart) &&
+        isFieldSpan(box.columnSpan) &&
+        isFieldSpan(box.rowSpan) &&
+        box.columnStart + box.columnSpan - 1 <= grid.columns &&
+        box.rowStart + box.rowSpan - 1 <= grid.rows
+    )
+}
+
 export function describePreset(box: TileBox): TilePreset | null {
     return (
         (Object.keys(TILE_PRESETS) as TilePreset[]).find(
