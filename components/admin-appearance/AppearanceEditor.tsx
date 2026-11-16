@@ -1,5 +1,8 @@
 import type { ReactNode } from "react"
 
+import { ThemeEditor } from "@/components/admin-appearance/ThemeEditor"
+import type { AppearanceData } from "@/lib/appearance/queries"
+
 function Section({ id, title, children }: { id: string; title: string; children?: ReactNode }) {
     return (
         <section aria-labelledby={id} className="flex flex-col gap-4">
@@ -11,11 +14,13 @@ function Section({ id, title, children }: { id: string; title: string; children?
     )
 }
 
-export function AppearanceEditor() {
+export function AppearanceEditor({ data }: { data: AppearanceData }) {
     return (
         <div className="flex max-w-5xl flex-col gap-10">
             <Section id="bento-heading" title="Kafelki BentoBox - strona główna" />
-            <Section id="theme-heading" title="Czcionki i kolorystyka" />
+            <Section id="theme-heading" title="Czcionki i kolorystyka">
+                <ThemeEditor saved={data.theme} />
+            </Section>
         </div>
     )
 }
