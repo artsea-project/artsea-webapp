@@ -4,6 +4,7 @@ import { cacheLife, cacheTag } from "next/cache"
 import { db } from "@/db"
 import { artPieces, artPieceTags, media, siteSettings, tags } from "@/db/schema"
 import type { Locale } from "@/i18n/routing"
+import { DESKTOP_GRID, MOBILE_GRID } from "@/lib/bento-grid"
 import { normalizeBentoLayout } from "@/lib/bento-layout"
 import { localizedKey } from "@/lib/i18n/localized-key"
 import { isBentoMediaType } from "@/lib/media"
@@ -44,8 +45,8 @@ async function loadBentoData(locale: Locale): Promise<BentoData> {
 
     const layout = settings.layoutBentoBox as BentoBoxLayout
     const normalized = {
-        desktop: normalizeBentoLayout(layout.desktop, 11),
-        mobile: normalizeBentoLayout(layout.mobile, 2),
+        desktop: normalizeBentoLayout(layout.desktop, DESKTOP_GRID),
+        mobile: normalizeBentoLayout(layout.mobile, MOBILE_GRID),
     } satisfies Record<LayoutName, BentoLayoutItem[]>
     const artworkIds = [
         ...new Set(

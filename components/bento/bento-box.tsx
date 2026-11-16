@@ -12,8 +12,8 @@ const VISIBILITY_CLASSES: Record<LayoutKind, string> = {
 }
 
 const GRID_CLASSES: Record<LayoutKind, string> = {
-    desktop: "grid grid-cols-11 auto-rows-[21px] gap-x-[21px] gap-y-8",
-    mobile: "grid grid-cols-2 auto-rows-[28px] gap-3",
+    desktop: "grid grid-cols-12 gap-[21px] auto-rows-[calc((100cqw-231px)/12)]",
+    mobile: "grid grid-cols-6 gap-3 auto-rows-[calc((100cqw-60px)/6)]",
 }
 
 const IMAGE_SIZES: Record<LayoutKind, string> = {
@@ -40,7 +40,7 @@ function Layout({ cards, kind }: { cards: BentoCardData[]; kind: LayoutKind }) {
     }
 
     return (
-        <div className={VISIBILITY_CLASSES[kind]}>
+        <div className={`${VISIBILITY_CLASSES[kind]} @container`}>
             <div className={GRID_CLASSES[kind]}>
                 {cards.map((card) => (
                     <BentoCard
