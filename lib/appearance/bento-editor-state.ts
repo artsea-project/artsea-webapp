@@ -29,6 +29,7 @@ type AddTileAction = { type: "add"; tileId: string; preset: TilePreset } & TileC
 
 export type BentoEditorAction =
     | { type: "move"; view: BentoView; tileId: string; box: TileBox }
+    | { type: "swap"; view: BentoView; sourceId: string; targetIds: string[] }
     | AddTileAction
     | ({ type: "replaceContent"; tileId: string } & TileContent)
     | { type: "remove"; tileId: string }
@@ -89,6 +90,99 @@ export function findDisplacedTiles(
         .map((item) => item.tileId)
 }
 
+type Offset = { columns: number; rows: number }
+
+type SwapPlan = { source: TileBox; groupOffset: Offset }
+
+type Axis = {
+    start: "columnStart" | "rowStart"
+    span: "columnSpan" | "rowSpan"
+    offset: keyof Offset
+}
+
+const COLUMNS: Axis = { start: "columnStart", span: "columnSpan", offset: "columns" }
+const ROWS: Axis = { start: "rowStart", span: "rowSpan", offset: "rows" }
+
+function boundingBox(boxes: TileBox[]): TileBox {
+    const columnStart = Math.min(...boxes.map((box) => box.columnStart))
+    const rowStart = Math.min(...boxes.map((box) => box.rowStart))
+    const columnEnd = Math.max(...boxes.map((box) => box.columnStart + box.columnSpan))
+    const rowEnd = Math.max(...boxes.map((box) => box.rowStart + box.rowSpan))
+    return {
+        columnStart,
+        rowStart,
+        columnSpan: columnEnd - columnStart,
+        rowSpan: rowEnd - rowStart,
+    }
+}
+
+function swapWithinBand(
+    source: TileBox,
+    group: TileBox,
+    along: Axis,
+    across: Axis
+): SwapPlan | null {
+    const sameBand =
+        source[across.start] === group[across.start] && source[across.span] === group[across.span]
+    if (!sameBand) return null
+
+    const noOffset = { columns: 0, rows: 0 }
+    if (group[along.start] === source[along.start] + source[along.span]) {
+        return {
+            source: { ...source, [along.start]: source[along.start] + group[along.span] },
+            groupOffset: { ...noOffset, [along.offset]: source[along.start] - group[along.start] },
+        }
+    }
+    if (source[along.start] === group[along.start] + group[along.span]) {
+        return {
+            source: { ...source, [along.start]: group[along.start] },
+            groupOffset: { ...noOffset, [along.offset]: source[along.span] },
+        }
+    }
+    return null
+}
+
+function swapCorners(source: TileBox, group: TileBox): SwapPlan {
+    return {
+        source: { ...source, columnStart: group.columnStart, rowStart: group.rowStart },
+        groupOffset: {
+            columns: source.columnStart - group.columnStart,
+            rows: source.rowStart - group.rowStart,
+        },
+    }
+}
+
+function planSwap(source: TileBox, group: TileBox): SwapPlan {
+    return (
+        swapWithinBand(source, group, COLUMNS, ROWS) ??
+        swapWithinBand(source, group, ROWS, COLUMNS) ??
+        swapCorners(source, group)
+    )
+}
+
+export function swapWithTiles(
+    items: BentoLayoutItem[],
+    sourceId: string,
+    targetIds: string[],
+    grid: GridSpec
+): BentoLayoutItem[] | null {
+    const source = items.find((item) => item.tileId === sourceId)
+    const group = items.filter((item) => targetIds.includes(item.tileId))
+    if (!source || group.length === 0 || group.length !== targetIds.length) return null
+
+    const plan = planSwap(source, boundingBox(group))
+    const swapped = items.map((item) => {
+        if (item === source) return { ...item, ...plan.source }
+        if (!group.includes(item)) return item
+        return {
+            ...item,
+            columnStart: item.columnStart + plan.groupOffset.columns,
+            rowStart: item.rowStart + plan.groupOffset.rows,
+        }
+    })
+    return isValidLayout(swapped, grid) ? swapped : null
+}
+
 function updateView(
     state: BentoEditorState,
     view: BentoView,
@@ -106,6 +200,12 @@ export function bentoEditorReducer(
             const { view, tileId, box } = action
             const items = state.draft[view].items
             return updateView(state, view, moveTile(items, tileId, box, BENTO_VIEW_GRIDS[view]))
+        }
+        case "swap": {
+            const { view, sourceId, targetIds } = action
+            const items = state.draft[view].items
+            const grid = BENTO_VIEW_GRIDS[view]
+            return updateView(state, view, swapWithTiles(items, sourceId, targetIds, grid))
         }
         case "add":
             return { ...state, draft: addTile(state.draft, action) }
