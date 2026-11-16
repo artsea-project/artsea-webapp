@@ -24,7 +24,12 @@ export type TileContent = { artPieceId: string; mediaId: string }
 
 type AddTileAction = { type: "add"; tileId: string; preset: TilePreset } & TileContent
 
-export type BentoEditorAction = AddTileAction | { type: "revert" } | { type: "saved" }
+export type BentoEditorAction =
+    | AddTileAction
+    | ({ type: "replaceContent"; tileId: string } & TileContent)
+    | { type: "remove"; tileId: string }
+    | { type: "revert" }
+    | { type: "saved" }
 
 function mapViews(
     layout: BentoBoxLayout,
@@ -63,6 +68,24 @@ export function bentoEditorReducer(
     switch (action.type) {
         case "add":
             return { ...state, draft: addTile(state.draft, action) }
+        case "replaceContent": {
+            const { tileId, artPieceId, mediaId } = action
+            return {
+                ...state,
+                draft: mapViews(state.draft, (items) =>
+                    items.map((item) =>
+                        item.tileId === tileId ? { ...item, artPieceId, mediaId } : item
+                    )
+                ),
+            }
+        }
+        case "remove":
+            return {
+                ...state,
+                draft: mapViews(state.draft, (items) =>
+                    items.filter((item) => item.tileId !== action.tileId)
+                ),
+            }
         case "revert":
             return { ...state, draft: state.saved }
         case "saved":
