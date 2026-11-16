@@ -1,6 +1,6 @@
 "use client"
 
-import { useReducer, useState } from "react"
+import { useEffect, useReducer, useState } from "react"
 import { Pipette } from "lucide-react"
 
 import { saveSiteTheme } from "@/app/admin/appearance/actions"
@@ -148,10 +148,19 @@ function ColorSwatch({
     )
 }
 
-export function ThemeEditor({ saved }: { saved: ThemeDraft }) {
+export function ThemeEditor({
+    saved,
+    onDirtyChange,
+}: {
+    saved: ThemeDraft
+    onDirtyChange: (isDirty: boolean) => void
+}) {
     const [state, dispatch] = useReducer(themeEditorReducer, { saved, draft: saved })
     const [errors, setErrors] = useState<ThemeErrors>({})
     const { isSaving, isSaved, error, save, reset } = useSectionSave()
+    const isDirty = isThemeDirty(state)
+
+    useEffect(() => onDirtyChange(isDirty), [isDirty, onDirtyChange])
 
     function clearError(field: ThemeField) {
         if (errors[field]) setErrors({ ...errors, [field]: undefined })
@@ -213,7 +222,7 @@ export function ThemeEditor({ saved }: { saved: ThemeDraft }) {
                 </div>
             </div>
             <SaveBar
-                isDirty={isThemeDirty(state)}
+                isDirty={isDirty}
                 isSaving={isSaving}
                 isSaved={isSaved}
                 error={error}
