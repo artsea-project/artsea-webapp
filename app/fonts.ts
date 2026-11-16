@@ -81,18 +81,22 @@ const geistMono = Geist_Mono({
     fallback: ["ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "monospace"],
 })
 
-const fontVariableClasses: Record<FontName, string> = {
-    "Playfair Display": playfairDisplay.variable,
-    Lora: lora.variable,
-    "Cormorant Garamond": cormorantGaramond.variable,
-    "Libre Baskerville": libreBaskerville.variable,
-    Inter: inter.variable,
-    Poppins: poppins.variable,
-    Lato: lato.variable,
-    Montserrat: montserrat.variable,
-    "Geist Mono": geistMono.variable,
+const fontsByName: Record<FontName, { variable: string; className: string }> = {
+    "Playfair Display": playfairDisplay,
+    Lora: lora,
+    "Cormorant Garamond": cormorantGaramond,
+    "Libre Baskerville": libreBaskerville,
+    Inter: inter,
+    Poppins: poppins,
+    Lato: lato,
+    Montserrat: montserrat,
+    "Geist Mono": geistMono,
 }
 
 export function getFontVariableClasses(fontNames: readonly FontName[]): string {
-    return fontNames.map((fontName) => fontVariableClasses[fontName]).join(" ")
+    return fontNames.map((fontName) => fontsByName[fontName].variable).join(" ")
+}
+
+export function getFontClassName(fontName: FontName): string {
+    return fontsByName[fontName].className
 }
