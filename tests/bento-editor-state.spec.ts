@@ -104,3 +104,26 @@ test("a full desktop grid blocks adding and leaves the draft unchanged", () => {
         }).draft
     ).toBe(full)
 })
+
+test("removing a tile removes it from both views", () => {
+    const state = bentoEditorReducer(initial, { type: "remove", tileId: first })
+
+    expect(state.draft.desktop.items.map((tile) => tile.tileId)).toEqual([second])
+    expect(state.draft.mobile.items.map((tile) => tile.tileId)).toEqual([second])
+})
+
+test("replacing the content keeps positions and sizes in both views", () => {
+    const state = bentoEditorReducer(initial, {
+        type: "replaceContent",
+        tileId: second,
+        artPieceId: otherArtPieceId,
+        mediaId: otherMediaId,
+    })
+
+    for (const view of ["desktop", "mobile"] as const) {
+        expect(state.draft[view].items).toEqual([
+            item(first, 1, 1),
+            { ...item(second, 4, 1), artPieceId: otherArtPieceId, mediaId: otherMediaId },
+        ])
+    }
+})
