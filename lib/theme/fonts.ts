@@ -7,9 +7,33 @@ export const fontCatalog = {
         category: "serif",
         family: 'var(--font-playfair-display, Georgia, "Times New Roman", serif)',
     },
+    Lora: {
+        category: "serif",
+        family: 'var(--font-lora, Georgia, "Times New Roman", serif)',
+    },
+    "Cormorant Garamond": {
+        category: "serif",
+        family: 'var(--font-cormorant-garamond, Georgia, "Times New Roman", serif)',
+    },
+    "Libre Baskerville": {
+        category: "serif",
+        family: 'var(--font-libre-baskerville, Georgia, "Times New Roman", serif)',
+    },
     Inter: {
         category: "sans-serif",
         family: "var(--font-inter, Arial, Helvetica, sans-serif)",
+    },
+    Poppins: {
+        category: "sans-serif",
+        family: "var(--font-poppins, Arial, Helvetica, sans-serif)",
+    },
+    Lato: {
+        category: "sans-serif",
+        family: "var(--font-lato, Arial, Helvetica, sans-serif)",
+    },
+    Montserrat: {
+        category: "sans-serif",
+        family: "var(--font-montserrat, Arial, Helvetica, sans-serif)",
     },
     "Geist Mono": {
         category: "monospace",
