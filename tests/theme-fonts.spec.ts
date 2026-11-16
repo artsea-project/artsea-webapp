@@ -34,7 +34,47 @@ test.describe("semantic theme fonts", () => {
     })
 
     test("offers every catalog font to pick, serif first, without the monospace font", () => {
-        expect(selectableFontNames).toEqual(["Playfair Display", "Inter"])
+        expect(selectableFontNames).toEqual([
+            "Playfair Display",
+            "Lora",
+            "Cormorant Garamond",
+            "Libre Baskerville",
+            "Inter",
+            "Poppins",
+            "Lato",
+            "Montserrat",
+        ])
+    })
+
+    test("accepts the serif fonts added to the catalog", () => {
+        const resolved = resolveThemeFonts({
+            primaryFont: "Cormorant Garamond",
+            secondaryFont: "Libre Baskerville",
+            additionalFont: "Lora",
+        })
+
+        expect(resolved.fontNames).toEqual([
+            "Cormorant Garamond",
+            "Libre Baskerville",
+            "Lora",
+            "Geist Mono",
+        ])
+        expect(resolved.variables["--site-font-primary"]).toContain("--font-cormorant-garamond")
+        expect(resolved.variables["--site-font-secondary"]).toContain("--font-libre-baskerville")
+        expect(resolved.variables["--site-font-body"]).toContain("--font-lora")
+    })
+
+    test("accepts the sans-serif fonts added to the catalog", () => {
+        const resolved = resolveThemeFonts({
+            primaryFont: "Montserrat",
+            secondaryFont: "Poppins",
+            additionalFont: "Lato",
+        })
+
+        expect(resolved.fontNames).toEqual(["Montserrat", "Poppins", "Lato", "Geist Mono"])
+        expect(resolved.variables["--site-font-primary"]).toContain("--font-montserrat")
+        expect(resolved.variables["--site-font-secondary"]).toContain("--font-poppins")
+        expect(resolved.variables["--site-font-body"]).toContain("--font-lato")
     })
 
     test("recognises only the fonts the artist can pick", () => {
