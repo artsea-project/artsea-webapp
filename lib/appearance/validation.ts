@@ -3,21 +3,40 @@ import { hasSameTiles, normalizeBentoLayout } from "@/lib/bento-layout"
 import { isHexColor } from "@/lib/theme/colors"
 import { isSelectableFontName } from "@/lib/theme/fonts"
 import { isRecord } from "@/lib/theme/record"
-import type { BentoBoxLayout } from "@/types/bento"
+import type { BentoBoxLayout, BentoLayoutItem } from "@/types/bento"
 import type { SiteThemeColors, SiteThemeFonts } from "@/types/theme"
+
+export type ArtworkCatalog = {
+    visibleArtPieceIds: Set<string>
+    mediaArtPiece: Map<string, string>
+}
 
 export type BentoValidationResult =
     | { ok: true; layout: BentoBoxLayout }
     | { ok: false; message: string }
 
 const INVALID_LAYOUT = "Układ kafelków jest niepoprawny. Odśwież stronę i spróbuj ponownie."
+const UNAVAILABLE_CONTENT = "Jedna z wybranych prac albo jedno ze zdjęć nie jest już dostępne."
+
+function hasValidContent(
+    item: BentoLayoutItem,
+    savedTileIds: Set<string>,
+    catalog: ArtworkCatalog
+): boolean {
+    if (catalog.mediaArtPiece.get(item.mediaId) !== item.artPieceId) return false
+    return savedTileIds.has(item.tileId) || catalog.visibleArtPieceIds.has(item.artPieceId)
+}
 
 function readViewItems(layout: unknown, view: keyof BentoBoxLayout): unknown[] | null {
     const items = isRecord(layout) && isRecord(layout[view]) ? layout[view].items : undefined
     return Array.isArray(items) ? items : null
 }
 
-export function validateBentoLayout(next: unknown): BentoValidationResult {
+export function validateBentoLayout(
+    next: unknown,
+    savedTileIds: Set<string>,
+    catalog: ArtworkCatalog
+): BentoValidationResult {
     const desktopItems = readViewItems(next, "desktop")
     const mobileItems = readViewItems(next, "mobile")
     if (!desktopItems || !mobileItems) return { ok: false, message: INVALID_LAYOUT }
@@ -28,6 +47,9 @@ export function validateBentoLayout(next: unknown): BentoValidationResult {
         desktop.length !== desktopItems.length || mobile.length !== mobileItems.length
     if (droppedAnyTile || !hasSameTiles(desktop, mobile)) {
         return { ok: false, message: INVALID_LAYOUT }
+    }
+    if (!desktop.every((item) => hasValidContent(item, savedTileIds, catalog))) {
+        return { ok: false, message: UNAVAILABLE_CONTENT }
     }
 
     return { ok: true, layout: { desktop: { items: desktop }, mobile: { items: mobile } } }
