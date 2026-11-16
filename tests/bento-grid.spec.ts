@@ -5,6 +5,8 @@ import {
     MOBILE_GRID,
     describePreset,
     fitsGrid,
+    hasOverlaps,
+    overlaps,
     type TileBox,
 } from "../lib/bento-grid"
 
@@ -21,6 +23,14 @@ test("fitsGrid accepts only preset sizes on field boundaries inside the grid", (
     expect(fitsGrid(box(1, 1, 4, 5), DESKTOP_GRID)).toBe(false)
     expect(fitsGrid(box(1, 1, 9, 3), DESKTOP_GRID)).toBe(false)
     expect(fitsGrid(box(1, 88, 6, 3), MOBILE_GRID)).toBe(true)
+})
+
+test("overlaps treats touching edges as free", () => {
+    expect(overlaps(box(1, 1, 3, 3), box(4, 1, 3, 3))).toBe(false)
+    expect(overlaps(box(1, 1, 3, 3), box(1, 4, 3, 3))).toBe(false)
+    expect(overlaps(box(1, 1, 3, 3), box(3, 3, 3, 3))).toBe(true)
+    expect(hasOverlaps([box(1, 1, 3, 3), box(4, 1, 3, 3), box(6, 2, 2, 2)])).toBe(true)
+    expect(hasOverlaps([box(1, 1, 3, 3), box(4, 1, 3, 3)])).toBe(false)
 })
 
 test("describePreset names the preset of a tile", () => {
