@@ -23,6 +23,18 @@ export const fontCatalog = {
         category: "sans-serif",
         family: "var(--font-inter, Arial, Helvetica, sans-serif)",
     },
+    Poppins: {
+        category: "sans-serif",
+        family: "var(--font-poppins, Arial, Helvetica, sans-serif)",
+    },
+    Lato: {
+        category: "sans-serif",
+        family: "var(--font-lato, Arial, Helvetica, sans-serif)",
+    },
+    Montserrat: {
+        category: "sans-serif",
+        family: "var(--font-montserrat, Arial, Helvetica, sans-serif)",
+    },
     "Geist Mono": {
         category: "monospace",
         family: "var(--font-geist-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace)",

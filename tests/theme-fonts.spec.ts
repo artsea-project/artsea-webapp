@@ -40,6 +40,9 @@ test.describe("semantic theme fonts", () => {
             "Cormorant Garamond",
             "Libre Baskerville",
             "Inter",
+            "Poppins",
+            "Lato",
+            "Montserrat",
         ])
     })
 
@@ -59,6 +62,19 @@ test.describe("semantic theme fonts", () => {
         expect(resolved.variables["--site-font-primary"]).toContain("--font-cormorant-garamond")
         expect(resolved.variables["--site-font-secondary"]).toContain("--font-libre-baskerville")
         expect(resolved.variables["--site-font-body"]).toContain("--font-lora")
+    })
+
+    test("accepts the sans-serif fonts added to the catalog", () => {
+        const resolved = resolveThemeFonts({
+            primaryFont: "Montserrat",
+            secondaryFont: "Poppins",
+            additionalFont: "Lato",
+        })
+
+        expect(resolved.fontNames).toEqual(["Montserrat", "Poppins", "Lato", "Geist Mono"])
+        expect(resolved.variables["--site-font-primary"]).toContain("--font-montserrat")
+        expect(resolved.variables["--site-font-secondary"]).toContain("--font-poppins")
+        expect(resolved.variables["--site-font-body"]).toContain("--font-lato")
     })
 
     test("recognises only the fonts the artist can pick", () => {

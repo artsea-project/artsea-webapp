@@ -2,9 +2,12 @@ import {
     Cormorant_Garamond,
     Geist_Mono,
     Inter,
+    Lato,
     Libre_Baskerville,
     Lora,
+    Montserrat,
     Playfair_Display,
+    Poppins,
 } from "next/font/google"
 import type { FontName } from "@/lib/theme/fonts"
 
@@ -48,6 +51,30 @@ const inter = Inter({
     preload: false,
 })
 
+const poppins = Poppins({
+    variable: "--font-poppins",
+    subsets: ["latin", "latin-ext"],
+    weight: ["400", "600", "700"],
+    fallback: ["Arial", "Helvetica", "sans-serif"],
+    preload: false,
+})
+
+const lato = Lato({
+    variable: "--font-lato",
+    subsets: ["latin", "latin-ext"],
+    weight: ["400", "700"],
+    fallback: ["Arial", "Helvetica", "sans-serif"],
+    preload: false,
+})
+
+const montserrat = Montserrat({
+    variable: "--font-montserrat",
+    subsets: ["latin", "latin-ext"],
+    weight: ["400", "600", "700"],
+    fallback: ["Arial", "Helvetica", "sans-serif"],
+    preload: false,
+})
+
 const geistMono = Geist_Mono({
     variable: "--font-geist-mono",
     subsets: ["latin"],
@@ -60,6 +87,9 @@ const fontVariableClasses: Record<FontName, string> = {
     "Cormorant Garamond": cormorantGaramond.variable,
     "Libre Baskerville": libreBaskerville.variable,
     Inter: inter.variable,
+    Poppins: poppins.variable,
+    Lato: lato.variable,
+    Montserrat: montserrat.variable,
     "Geist Mono": geistMono.variable,
 }
 
