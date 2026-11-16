@@ -42,6 +42,19 @@ export function fitsGrid(box: TileBox, grid: GridSpec): boolean {
     )
 }
 
+export function overlaps(a: TileBox, b: TileBox): boolean {
+    return (
+        a.columnStart < b.columnStart + b.columnSpan &&
+        b.columnStart < a.columnStart + a.columnSpan &&
+        a.rowStart < b.rowStart + b.rowSpan &&
+        b.rowStart < a.rowStart + a.rowSpan
+    )
+}
+
+export function hasOverlaps(boxes: TileBox[]): boolean {
+    return boxes.some((box, index) => boxes.slice(index + 1).some((other) => overlaps(box, other)))
+}
+
 export function describePreset(box: TileBox): TilePreset | null {
     return (
         (Object.keys(TILE_PRESETS) as TilePreset[]).find(
