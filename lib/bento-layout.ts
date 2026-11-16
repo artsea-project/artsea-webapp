@@ -2,6 +2,10 @@ import type { BentoLayoutItem } from "@/types/bento"
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
+function isUuid(value: unknown): value is string {
+    return typeof value === "string" && UUID_PATTERN.test(value)
+}
+
 function isLayoutItem(value: unknown, columnCount: number): value is BentoLayoutItem {
     if (!value || typeof value !== "object") return false
 
@@ -9,10 +13,8 @@ function isLayoutItem(value: unknown, columnCount: number): value is BentoLayout
     const numericFields = ["columnStart", "rowStart", "columnSpan", "rowSpan"] as const
 
     return (
-        typeof item.artPieceId === "string" &&
-        UUID_PATTERN.test(item.artPieceId) &&
-        typeof item.mediaId === "string" &&
-        UUID_PATTERN.test(item.mediaId) &&
+        isUuid(item.artPieceId) &&
+        isUuid(item.mediaId) &&
         numericFields.every((field) => Number.isInteger(item[field]) && Number(item[field]) > 0) &&
         Number(item.columnStart) + Number(item.columnSpan) - 1 <= columnCount &&
         Number(item.rowStart) + Number(item.rowSpan) - 1 <= 32
