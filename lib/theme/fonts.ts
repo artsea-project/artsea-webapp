@@ -7,6 +7,18 @@ export const fontCatalog = {
         category: "serif",
         family: 'var(--font-playfair-display, Georgia, "Times New Roman", serif)',
     },
+    Lora: {
+        category: "serif",
+        family: 'var(--font-lora, Georgia, "Times New Roman", serif)',
+    },
+    "Cormorant Garamond": {
+        category: "serif",
+        family: 'var(--font-cormorant-garamond, Georgia, "Times New Roman", serif)',
+    },
+    "Libre Baskerville": {
+        category: "serif",
+        family: 'var(--font-libre-baskerville, Georgia, "Times New Roman", serif)',
+    },
     Inter: {
         category: "sans-serif",
         family: "var(--font-inter, Arial, Helvetica, sans-serif)",
