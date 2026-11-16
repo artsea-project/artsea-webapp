@@ -1,6 +1,7 @@
 "use client"
 
 import { useReducer } from "react"
+import { Pipette } from "lucide-react"
 
 import { getFontClassName } from "@/app/fonts"
 import { Field, FieldLabel } from "@/components/ui/field"
@@ -90,14 +91,50 @@ function ColorField({
     return (
         <Field>
             <FieldLabel htmlFor={id}>{label}</FieldLabel>
-            <Input
-                id={id}
-                value={value}
-                onChange={(event) => onChange(event.target.value.trim())}
-                spellCheck={false}
-                className="font-mono"
-            />
+            <div className="flex items-center gap-2">
+                <Input
+                    id={id}
+                    value={value}
+                    onChange={(event) => onChange(event.target.value.trim())}
+                    spellCheck={false}
+                    className="font-mono"
+                />
+                <ColorSwatch label={label} value={value} onChange={onChange} />
+            </div>
         </Field>
+    )
+}
+
+function toPickerValue(value: string): string {
+    const short = /^#([\da-f])([\da-f])([\da-f])$/i.exec(value)
+    const long = short
+        ? `#${short[1]}${short[1]}${short[2]}${short[2]}${short[3]}${short[3]}`
+        : value
+    return /^#[\da-f]{6}$/i.test(long) ? long : "#000000"
+}
+
+function ColorSwatch({
+    label,
+    value,
+    onChange,
+}: {
+    label: string
+    value: string
+    onChange: (value: string) => void
+}) {
+    return (
+        <span className="relative size-9 shrink-0">
+            <input
+                type="color"
+                value={toPickerValue(value)}
+                onChange={(event) => onChange(event.target.value.toUpperCase())}
+                aria-label={`${label}: próbnik`}
+                className="block size-full cursor-pointer appearance-none rounded-md border border-border bg-background p-0.5 [&::-moz-color-swatch]:rounded-sm [&::-moz-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-sm [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch-wrapper]:p-0"
+            />
+            <span className="pointer-events-none absolute -right-1.5 -bottom-1.5 flex size-5 items-center justify-center rounded-full border border-border bg-background text-foreground shadow-sm">
+                <Pipette className="size-3" aria-hidden />
+            </span>
+        </span>
     )
 }
 
