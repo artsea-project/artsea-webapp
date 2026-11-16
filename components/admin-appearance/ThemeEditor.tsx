@@ -4,6 +4,7 @@ import { useReducer } from "react"
 
 import { getFontClassName } from "@/app/fonts"
 import { Field, FieldLabel } from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
 import {
     Select,
     SelectContent,
@@ -15,12 +16,18 @@ import {
 } from "@/components/ui/select"
 import { themeEditorReducer, type ThemeDraft } from "@/lib/appearance/theme-editor-state"
 import { fontCatalog, selectableFontNames } from "@/lib/theme/fonts"
-import type { SiteThemeFonts } from "@/types/theme"
+import type { SiteThemeColors, SiteThemeFonts } from "@/types/theme"
 
 const FONT_FIELDS: { field: keyof SiteThemeFonts; label: string }[] = [
     { field: "primaryFont", label: "Czcionka podstawowa - nagłówki" },
     { field: "secondaryFont", label: "Czcionka pomocnicza - nawigacja i akcenty" },
     { field: "additionalFont", label: "Czcionka tekstu" },
+]
+
+const COLOR_FIELDS: { field: keyof SiteThemeColors; label: string }[] = [
+    { field: "foregroundColor", label: "Kolor tekstu" },
+    { field: "backgroundColor", label: "Kolor tła" },
+    { field: "accentColor", label: "Kolor akcentu" },
 ]
 
 const FONT_GROUPS = [
@@ -67,6 +74,33 @@ function FontSelect({
     )
 }
 
+function ColorField({
+    field,
+    label,
+    value,
+    onChange,
+}: {
+    field: keyof SiteThemeColors
+    label: string
+    value: string
+    onChange: (value: string) => void
+}) {
+    const id = `theme-${field}`
+
+    return (
+        <Field>
+            <FieldLabel htmlFor={id}>{label}</FieldLabel>
+            <Input
+                id={id}
+                value={value}
+                onChange={(event) => onChange(event.target.value.trim())}
+                spellCheck={false}
+                className="font-mono"
+            />
+        </Field>
+    )
+}
+
 export function ThemeEditor({ saved }: { saved: ThemeDraft }) {
     const [state, dispatch] = useReducer(themeEditorReducer, { saved, draft: saved })
 
@@ -80,6 +114,17 @@ export function ThemeEditor({ saved }: { saved: ThemeDraft }) {
                         label={label}
                         value={state.draft.fonts[field]}
                         onChange={(value) => dispatch({ type: "setFont", field, value })}
+                    />
+                ))}
+            </div>
+            <div className="flex flex-col gap-4">
+                {COLOR_FIELDS.map(({ field, label }) => (
+                    <ColorField
+                        key={field}
+                        field={field}
+                        label={label}
+                        value={state.draft.colors[field]}
+                        onChange={(value) => dispatch({ type: "setColor", field, value })}
                     />
                 ))}
             </div>
