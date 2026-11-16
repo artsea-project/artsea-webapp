@@ -11,7 +11,7 @@ import TagFormCard from "@/components/admin-categories/TagFormCard"
 import BilingualTextField, {
     type BilingualTexts,
 } from "@/components/admin-profile/BilingualTextField"
-import { useLeaveGuard } from "@/components/admin-profile/LeaveGuard"
+import { useLeaveGuard } from "@/components/AdminLeaveGuard"
 import SearchableOptionList, {
     type ChecklistOption,
 } from "@/components/admin-works/SearchableOptionList"
