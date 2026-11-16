@@ -8,7 +8,7 @@ import BilingualTextField, {
     type BilingualTexts,
     type Language,
 } from "@/components/admin-profile/BilingualTextField"
-import { useLeaveGuard } from "@/components/admin-profile/LeaveGuard"
+import { useLeaveGuard } from "@/components/AdminLeaveGuard"
 import {
     bioBodyFieldCopy,
     bioHeadingFieldCopy,
