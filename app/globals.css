@@ -66,9 +66,11 @@
     --primary: #0284c7;
 }
 
-/* Calculate these colors separately for the public and admin palettes. */
+/* Calculate these colors separately for the public and admin palettes, and for the theme preview
+   in the admin panel, which sets its own unsaved base colors. */
 :root,
-.admin-theme {
+.admin-theme,
+.theme-preview {
     --primary-foreground: var(--background);
     --muted-foreground: color-mix(in oklab, var(--foreground) 70%, var(--background));
     --accent: color-mix(in oklab, var(--primary) 12%, var(--background));
