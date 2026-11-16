@@ -1,3 +1,4 @@
+import { fitsGrid, overlaps, type GridSpec } from "@/lib/bento-grid"
 import type { BentoLayoutItem } from "@/types/bento"
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -6,7 +7,7 @@ function isUuid(value: unknown): value is string {
     return typeof value === "string" && UUID_PATTERN.test(value)
 }
 
-function isLayoutItem(value: unknown, columnCount: number): value is BentoLayoutItem {
+function isLayoutItem(value: unknown, grid: GridSpec): value is BentoLayoutItem {
     if (!value || typeof value !== "object") return false
 
     const item = value as Record<string, unknown>
@@ -16,24 +17,32 @@ function isLayoutItem(value: unknown, columnCount: number): value is BentoLayout
         isUuid(item.tileId) &&
         isUuid(item.artPieceId) &&
         isUuid(item.mediaId) &&
-        numericFields.every((field) => Number.isInteger(item[field]) && Number(item[field]) > 0) &&
-        Number(item.columnStart) + Number(item.columnSpan) - 1 <= columnCount &&
-        Number(item.rowStart) + Number(item.rowSpan) - 1 <= 32
+        numericFields.every((field) => Number.isInteger(item[field])) &&
+        fitsGrid(item as unknown as BentoLayoutItem, grid)
     )
 }
 
-export function normalizeBentoLayout(layout: unknown, columnCount: number): BentoLayoutItem[] {
-    if (
-        !layout ||
-        typeof layout !== "object" ||
-        !Array.isArray((layout as { items?: unknown }).items)
-    ) {
-        return []
+function pickLayoutItem(item: BentoLayoutItem): BentoLayoutItem {
+    const { tileId, artPieceId, mediaId, columnStart, rowStart, columnSpan, rowSpan } = item
+    return { tileId, artPieceId, mediaId, columnStart, rowStart, columnSpan, rowSpan }
+}
+
+function readItems(layout: unknown): unknown[] {
+    const items = layout && typeof layout === "object" && (layout as { items?: unknown }).items
+    return Array.isArray(items) ? items : []
+}
+
+export function normalizeBentoLayout(layout: unknown, grid: GridSpec): BentoLayoutItem[] {
+    const kept: BentoLayoutItem[] = []
+    for (const candidate of readItems(layout)) {
+        if (!isLayoutItem(candidate, grid)) continue
+        if (kept.some((item) => item.tileId === candidate.tileId || overlaps(item, candidate))) {
+            continue
+        }
+        kept.push(pickLayoutItem(candidate))
     }
 
-    return (layout as { items: unknown[] }).items.filter((item): item is BentoLayoutItem =>
-        isLayoutItem(item, columnCount)
-    )
+    return kept
 }
 
 function contentKey(item: BentoLayoutItem): string {
