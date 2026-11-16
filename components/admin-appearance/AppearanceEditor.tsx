@@ -1,5 +1,8 @@
-import type { ReactNode } from "react"
+"use client"
 
+import { useState, type ReactNode } from "react"
+
+import { useLeaveGuard } from "@/components/AdminLeaveGuard"
 import { ThemeEditor } from "@/components/admin-appearance/ThemeEditor"
 import type { AppearanceData } from "@/lib/appearance/queries"
 
@@ -15,12 +18,19 @@ function Section({ id, title, children }: { id: string; title: string; children?
 }
 
 export function AppearanceEditor({ data }: { data: AppearanceData }) {
+    const [isThemeDirty, setIsThemeDirty] = useState(false)
+    const leaveDialog = useLeaveGuard(
+        isThemeDirty,
+        "Jeśli wyjdziesz, niezapisane zmiany w układzie i personalizacji przepadną."
+    )
+
     return (
         <div className="flex max-w-5xl flex-col gap-10">
             <Section id="bento-heading" title="Kafelki BentoBox - strona główna" />
             <Section id="theme-heading" title="Czcionki i kolorystyka">
-                <ThemeEditor saved={data.theme} />
+                <ThemeEditor saved={data.theme} onDirtyChange={setIsThemeDirty} />
             </Section>
+            {leaveDialog}
         </div>
     )
 }
