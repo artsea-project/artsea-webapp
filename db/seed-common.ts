@@ -100,10 +100,21 @@ const mobileCoordinates = [
     [1, 23, 2, 8],
 ] as const
 
+const bentoTileIds = [
+    "a7f3bc01-0000-4000-8000-000000000501",
+    "a7f3bc01-0000-4000-8000-000000000502",
+    "a7f3bc01-0000-4000-8000-000000000503",
+    "a7f3bc01-0000-4000-8000-000000000504",
+    "a7f3bc01-0000-4000-8000-000000000505",
+    "a7f3bc01-0000-4000-8000-000000000506",
+    "a7f3bc01-0000-4000-8000-000000000507",
+] as const
+
 export function buildBentoLayout(bentoItems: readonly BentoSeedItem[]): BentoBoxLayout {
     return {
         desktop: {
             items: bentoItems.map((item, index) => ({
+                tileId: bentoTileIds[index],
                 artPieceId: item.artPieceId,
                 mediaId: item.mediaId,
                 columnStart: desktopCoordinates[index][0],
@@ -114,6 +125,7 @@ export function buildBentoLayout(bentoItems: readonly BentoSeedItem[]): BentoBox
         },
         mobile: {
             items: bentoItems.map((item, index) => ({
+                tileId: bentoTileIds[index],
                 artPieceId: item.artPieceId,
                 mediaId: item.mediaId,
                 columnStart: mobileCoordinates[index][0],

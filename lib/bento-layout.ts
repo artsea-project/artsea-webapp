@@ -13,6 +13,7 @@ function isLayoutItem(value: unknown, columnCount: number): value is BentoLayout
     const numericFields = ["columnStart", "rowStart", "columnSpan", "rowSpan"] as const
 
     return (
+        isUuid(item.tileId) &&
         isUuid(item.artPieceId) &&
         isUuid(item.mediaId) &&
         numericFields.every((field) => Number.isInteger(item[field]) && Number(item[field]) > 0) &&
