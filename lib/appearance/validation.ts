@@ -1,7 +1,37 @@
+import { DESKTOP_GRID, MOBILE_GRID } from "@/lib/bento-grid"
+import { hasSameTiles, normalizeBentoLayout } from "@/lib/bento-layout"
 import { isHexColor } from "@/lib/theme/colors"
 import { isSelectableFontName } from "@/lib/theme/fonts"
 import { isRecord } from "@/lib/theme/record"
+import type { BentoBoxLayout } from "@/types/bento"
 import type { SiteThemeColors, SiteThemeFonts } from "@/types/theme"
+
+export type BentoValidationResult =
+    | { ok: true; layout: BentoBoxLayout }
+    | { ok: false; message: string }
+
+const INVALID_LAYOUT = "Układ kafelków jest niepoprawny. Odśwież stronę i spróbuj ponownie."
+
+function readViewItems(layout: unknown, view: keyof BentoBoxLayout): unknown[] | null {
+    const items = isRecord(layout) && isRecord(layout[view]) ? layout[view].items : undefined
+    return Array.isArray(items) ? items : null
+}
+
+export function validateBentoLayout(next: unknown): BentoValidationResult {
+    const desktopItems = readViewItems(next, "desktop")
+    const mobileItems = readViewItems(next, "mobile")
+    if (!desktopItems || !mobileItems) return { ok: false, message: INVALID_LAYOUT }
+
+    const desktop = normalizeBentoLayout({ items: desktopItems }, DESKTOP_GRID)
+    const mobile = normalizeBentoLayout({ items: mobileItems }, MOBILE_GRID)
+    const droppedAnyTile =
+        desktop.length !== desktopItems.length || mobile.length !== mobileItems.length
+    if (droppedAnyTile || !hasSameTiles(desktop, mobile)) {
+        return { ok: false, message: INVALID_LAYOUT }
+    }
+
+    return { ok: true, layout: { desktop: { items: desktop }, mobile: { items: mobile } } }
+}
 
 export type ThemeField = keyof SiteThemeFonts | keyof SiteThemeColors
 
