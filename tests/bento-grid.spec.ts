@@ -3,7 +3,9 @@ import { expect, test } from "@playwright/test"
 import {
     DESKTOP_GRID,
     MOBILE_GRID,
+    TILE_PRESETS,
     describePreset,
+    findFreeSpot,
     fitsGrid,
     hasOverlaps,
     overlaps,
@@ -31,6 +33,45 @@ test("overlaps treats touching edges as free", () => {
     expect(overlaps(box(1, 1, 3, 3), box(3, 3, 3, 3))).toBe(true)
     expect(hasOverlaps([box(1, 1, 3, 3), box(4, 1, 3, 3), box(6, 2, 2, 2)])).toBe(true)
     expect(hasOverlaps([box(1, 1, 3, 3), box(4, 1, 3, 3)])).toBe(false)
+})
+
+test("findFreeSpot starts an empty grid in the top left corner", () => {
+    expect(findFreeSpot([], TILE_PRESETS["1:1"], DESKTOP_GRID)).toEqual({
+        columnStart: 1,
+        rowStart: 1,
+    })
+})
+
+test("findFreeSpot places a tile right below the lowest one when it fits", () => {
+    expect(findFreeSpot([box(1, 1, 12, 3)], TILE_PRESETS["2:1"], DESKTOP_GRID)).toEqual({
+        columnStart: 1,
+        rowStart: 4,
+    })
+    expect(
+        findFreeSpot([box(1, 1, 3, 6), box(4, 1, 3, 3)], TILE_PRESETS["1:1"], MOBILE_GRID)
+    ).toEqual({ columnStart: 1, rowStart: 7 })
+})
+
+test("findFreeSpot fills a gap from the bottom up when nothing fits below", () => {
+    const boxes = [box(1, 1, 12, 3), box(1, 4, 6, 6), box(10, 4, 3, 6)]
+
+    expect(findFreeSpot(boxes, TILE_PRESETS["1:1"], DESKTOP_GRID)).toEqual({
+        columnStart: 7,
+        rowStart: 7,
+    })
+})
+
+test("twelve 1:1 tiles fill the desktop grid and a thirteenth has no room", () => {
+    const boxes: TileBox[] = []
+    for (let index = 0; index < 12; index++) {
+        const spot = findFreeSpot(boxes, TILE_PRESETS["1:1"], DESKTOP_GRID)
+        expect(spot).not.toBeNull()
+        boxes.push({ ...spot!, ...TILE_PRESETS["1:1"] })
+    }
+
+    expect(hasOverlaps(boxes)).toBe(false)
+    expect(findFreeSpot(boxes, TILE_PRESETS["1:1"], DESKTOP_GRID)).toBeNull()
+    expect(findFreeSpot(boxes, { columnSpan: 2, rowSpan: 2 }, DESKTOP_GRID)).toBeNull()
 })
 
 test("describePreset names the preset of a tile", () => {
