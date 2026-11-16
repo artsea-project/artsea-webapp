@@ -127,3 +127,34 @@ test("replacing the content keeps positions and sizes in both views", () => {
         ])
     }
 })
+
+test("moving tiles changes only the given view", () => {
+    const state = bentoEditorReducer(initial, {
+        type: "move",
+        view: "desktop",
+        tileId: first,
+        box: { columnStart: 1, rowStart: 4, columnSpan: 6, rowSpan: 6 },
+    })
+
+    expect(state.draft.desktop.items[0]).toMatchObject({ rowStart: 4, columnSpan: 6, rowSpan: 6 })
+    expect(state.draft.mobile.items[0]).toEqual(item(first, 1, 1))
+    expect(isBentoDirty(state)).toBe(true)
+})
+
+test("a move onto another tile or out of the grid is ignored", () => {
+    const onto = bentoEditorReducer(initial, {
+        type: "move",
+        view: "desktop",
+        tileId: first,
+        box: { columnStart: 4, rowStart: 1, columnSpan: 3, rowSpan: 3 },
+    })
+    const outside = bentoEditorReducer(initial, {
+        type: "move",
+        view: "desktop",
+        tileId: first,
+        box: { columnStart: 1, rowStart: 7, columnSpan: 3, rowSpan: 6 },
+    })
+
+    expect(onto).toBe(initial)
+    expect(outside).toBe(initial)
+})
