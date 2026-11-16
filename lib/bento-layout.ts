@@ -35,3 +35,14 @@ export function normalizeBentoLayout(layout: unknown, columnCount: number): Bent
         isLayoutItem(item, columnCount)
     )
 }
+
+function contentKey(item: BentoLayoutItem): string {
+    return `${item.tileId}:${item.artPieceId}:${item.mediaId}`
+}
+
+export function hasSameTiles(desktop: BentoLayoutItem[], mobile: BentoLayoutItem[]): boolean {
+    if (desktop.length !== mobile.length) return false
+
+    const mobileKeys = new Set(mobile.map(contentKey))
+    return desktop.every((item) => mobileKeys.has(contentKey(item)))
+}
