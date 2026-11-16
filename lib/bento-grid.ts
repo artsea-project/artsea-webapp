@@ -55,6 +55,39 @@ export function hasOverlaps(boxes: TileBox[]): boolean {
     return boxes.some((box, index) => boxes.slice(index + 1).some((other) => overlaps(box, other)))
 }
 
+function isFree(box: TileBox, boxes: TileBox[], grid: GridSpec): boolean {
+    return fitsGrid(box, grid) && !boxes.some((other) => overlaps(box, other))
+}
+
+function fieldStarts(lineCount: number, span: number): number[] {
+    const starts: number[] = []
+    for (let start = 1; start + span - 1 <= lineCount; start += FIELD_SIZE) starts.push(start)
+    return starts
+}
+
+export function findFreeSpot(
+    boxes: TileBox[],
+    size: TileSize,
+    grid: GridSpec
+): TilePosition | null {
+    const bottom = Math.max(0, ...boxes.map((box) => box.rowStart + box.rowSpan - 1))
+    const belowLowestTile = { columnStart: 1, rowStart: bottom + 1 }
+    const fieldsFromBottomUp = fieldStarts(grid.rows, size.rowSpan)
+        .reverse()
+        .flatMap((rowStart) =>
+            fieldStarts(grid.columns, size.columnSpan).map((columnStart) => ({
+                columnStart,
+                rowStart,
+            }))
+        )
+
+    return (
+        [belowLowestTile, ...fieldsFromBottomUp].find((spot) =>
+            isFree({ ...spot, ...size }, boxes, grid)
+        ) ?? null
+    )
+}
+
 export function describePreset(box: TileBox): TilePreset | null {
     return (
         (Object.keys(TILE_PRESETS) as TilePreset[]).find(
