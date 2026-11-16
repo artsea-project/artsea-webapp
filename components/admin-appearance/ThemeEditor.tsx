@@ -6,6 +6,7 @@ import { Pipette } from "lucide-react"
 import { saveSiteTheme } from "@/app/admin/appearance/actions"
 import { getFontClassName } from "@/app/fonts"
 import { SaveBar, useSectionSave } from "@/components/admin-appearance/SaveBar"
+import { ThemePreview } from "@/components/admin-appearance/ThemePreview"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import {
@@ -204,6 +205,7 @@ export function ThemeEditor({
                             }}
                         />
                     ))}
+                    <ThemePreview draft={state.draft} />
                 </div>
                 <div className="flex flex-col gap-4">
                     {COLOR_FIELDS.map(({ field, label }) => (
