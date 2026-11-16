@@ -3,6 +3,8 @@ import {
     MOBILE_GRID,
     TILE_PRESETS,
     findFreeSpot,
+    fitsGrid,
+    hasOverlaps,
     type GridSpec,
     type TileBox,
     type TilePreset,
@@ -25,6 +27,7 @@ export type TileContent = { artPieceId: string; mediaId: string }
 type AddTileAction = { type: "add"; tileId: string; preset: TilePreset } & TileContent
 
 export type BentoEditorAction =
+    | { type: "move"; view: BentoView; tileId: string; box: TileBox }
     | AddTileAction
     | ({ type: "replaceContent"; tileId: string } & TileContent)
     | { type: "remove"; tileId: string }
@@ -61,11 +64,38 @@ function addTile(draft: BentoBoxLayout, action: AddTileAction): BentoBoxLayout {
     })
 }
 
+function isValidLayout(items: BentoLayoutItem[], grid: GridSpec): boolean {
+    return items.every((item) => fitsGrid(item, grid)) && !hasOverlaps(items)
+}
+
+export function moveTile(
+    items: BentoLayoutItem[],
+    tileId: string,
+    box: TileBox,
+    grid: GridSpec
+): BentoLayoutItem[] | null {
+    const moved = items.map((item) => (item.tileId === tileId ? { ...item, ...box } : item))
+    return isValidLayout(moved, grid) ? moved : null
+}
+
+function updateView(
+    state: BentoEditorState,
+    view: BentoView,
+    items: BentoLayoutItem[] | null
+): BentoEditorState {
+    return items ? { ...state, draft: { ...state.draft, [view]: { items } } } : state
+}
+
 export function bentoEditorReducer(
     state: BentoEditorState,
     action: BentoEditorAction
 ): BentoEditorState {
     switch (action.type) {
+        case "move": {
+            const { view, tileId, box } = action
+            const items = state.draft[view].items
+            return updateView(state, view, moveTile(items, tileId, box, BENTO_VIEW_GRIDS[view]))
+        }
         case "add":
             return { ...state, draft: addTile(state.draft, action) }
         case "replaceContent": {
