@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test"
-import { resolveThemeFonts } from "@/lib/theme/fonts"
+import { isSelectableFontName, resolveThemeFonts, selectableFontNames } from "@/lib/theme/fonts"
 
 test.describe("semantic theme fonts", () => {
     test("uses portfolio defaults when settings are unavailable", () => {
@@ -31,6 +31,19 @@ test.describe("semantic theme fonts", () => {
             "--site-font-mono":
                 "var(--font-geist-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace)",
         })
+    })
+
+    test("offers every catalog font to pick, serif first, without the monospace font", () => {
+        expect(selectableFontNames).toEqual(["Playfair Display", "Inter"])
+    })
+
+    test("recognises only the fonts the artist can pick", () => {
+        expect(isSelectableFontName("Playfair Display")).toBe(true)
+        expect(isSelectableFontName("Inter")).toBe(true)
+        expect(isSelectableFontName("Geist Mono")).toBe(false)
+        expect(isSelectableFontName("inter")).toBe(false)
+        expect(isSelectableFontName("Unknown Font")).toBe(false)
+        expect(isSelectableFontName(null)).toBe(false)
     })
 
     test("falls back safely for unknown database values", () => {

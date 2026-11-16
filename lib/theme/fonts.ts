@@ -19,6 +19,14 @@ export const fontCatalog = {
 
 export type FontName = keyof typeof fontCatalog
 
+export const selectableFontNames: FontName[] = (Object.keys(fontCatalog) as FontName[]).filter(
+    (name) => fontCatalog[name].category !== "monospace"
+)
+
+export function isSelectableFontName(value: unknown): value is FontName {
+    return typeof value === "string" && (selectableFontNames as string[]).includes(value)
+}
+
 export const defaultThemeFonts = {
     primaryFont: "Playfair Display",
     secondaryFont: "Inter",
