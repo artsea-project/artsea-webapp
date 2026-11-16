@@ -1,16 +1,21 @@
 import type { SiteThemeFonts } from "@/types/theme"
 
+export type FontCategory = "serif" | "sans-serif" | "monospace"
+
 export const fontCatalog = {
     "Playfair Display": {
+        category: "serif",
         family: 'var(--font-playfair-display, Georgia, "Times New Roman", serif)',
     },
     Inter: {
+        category: "sans-serif",
         family: "var(--font-inter, Arial, Helvetica, sans-serif)",
     },
     "Geist Mono": {
+        category: "monospace",
         family: "var(--font-geist-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace)",
     },
-} as const
+} as const satisfies Record<string, { category: FontCategory; family: string }>
 
 export type FontName = keyof typeof fontCatalog
 
