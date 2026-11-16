@@ -2,6 +2,7 @@
 
 import { useReducer } from "react"
 
+import { getFontClassName } from "@/app/fonts"
 import { Field, FieldLabel } from "@/components/ui/field"
 import {
     Select,
@@ -55,7 +56,7 @@ function FontSelect({
                                 .filter((name) => fontCatalog[name].category === group.category)
                                 .map((name) => (
                                     <SelectItem key={name} value={name}>
-                                        {name}
+                                        <span className={getFontClassName(name)}>{name}</span>
                                     </SelectItem>
                                 ))}
                         </SelectGroup>
