@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test"
 import {
     bentoEditorReducer,
     canAddTile,
+    findDisplacedTiles,
     isBentoDirty,
     type BentoEditorState,
 } from "../lib/appearance/bento-editor-state"
@@ -157,4 +158,21 @@ test("a move onto another tile or out of the grid is ignored", () => {
 
     expect(onto).toBe(initial)
     expect(outside).toBe(initial)
+})
+
+test("no tiles are displaced when a tile is dropped on free cells", () => {
+    const items = [item(first, 1, 1), item(second, 4, 1)]
+    expect(
+        findDisplacedTiles(items, first, { columnStart: 7, rowStart: 1, columnSpan: 3, rowSpan: 3 })
+    ).toEqual([])
+})
+
+test("a dragged tile displaces every tile under it except itself", () => {
+    const items = [item(first, 1, 1), item(second, 4, 1), item(added, 1, 4)]
+    expect(
+        findDisplacedTiles(items, first, { columnStart: 1, rowStart: 1, columnSpan: 6, rowSpan: 3 })
+    ).toEqual([second])
+    expect(
+        findDisplacedTiles(items, first, { columnStart: 1, rowStart: 1, columnSpan: 6, rowSpan: 6 })
+    ).toEqual([second, added])
 })
