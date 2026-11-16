@@ -1,4 +1,5 @@
 export interface BentoLayoutItem {
+    tileId: string
     artPieceId: string
     mediaId: string
     columnStart: number
