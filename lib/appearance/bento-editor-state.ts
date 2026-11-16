@@ -5,6 +5,7 @@ import {
     findFreeSpot,
     fitsGrid,
     hasOverlaps,
+    overlaps,
     type GridSpec,
     type TileBox,
     type TilePreset,
@@ -76,6 +77,16 @@ export function moveTile(
 ): BentoLayoutItem[] | null {
     const moved = items.map((item) => (item.tileId === tileId ? { ...item, ...box } : item))
     return isValidLayout(moved, grid) ? moved : null
+}
+
+export function findDisplacedTiles(
+    items: BentoLayoutItem[],
+    sourceId: string,
+    box: TileBox
+): string[] {
+    return items
+        .filter((item) => item.tileId !== sourceId && overlaps(item, box))
+        .map((item) => item.tileId)
 }
 
 function updateView(
