@@ -1,36 +1,51 @@
 import { expect, test } from "@playwright/test"
 
-import { validateBentoLayout, validateThemeInput } from "../lib/appearance/validation"
+import {
+    validateBentoLayout,
+    validateThemeInput,
+    type ArtworkCatalog,
+} from "../lib/appearance/validation"
 import type { BentoBoxLayout, BentoLayoutItem } from "../types/bento"
 
-const work = "a7f3bc01-0000-4000-8000-000000000101"
-const image = "a7f3bc01-0000-4000-8000-000000000201"
+const visibleWork = "a7f3bc01-0000-4000-8000-000000000101"
+const hiddenWork = "a7f3bc01-0000-4000-8000-000000000102"
+const visibleImage = "a7f3bc01-0000-4000-8000-000000000201"
+const hiddenImage = "a7f3bc01-0000-4000-8000-000000000202"
 const firstTile = "a7f3bc01-0000-4000-8000-000000000501"
 const secondTile = "a7f3bc01-0000-4000-8000-000000000502"
 
-function tile(tileId: string, columnStart = 1): BentoLayoutItem {
-    return {
-        tileId,
-        artPieceId: work,
-        mediaId: image,
-        columnStart,
-        rowStart: 1,
-        columnSpan: 3,
-        rowSpan: 3,
-    }
+const catalog: ArtworkCatalog = {
+    visibleArtPieceIds: new Set([visibleWork]),
+    mediaArtPiece: new Map([
+        [visibleImage, visibleWork],
+        [hiddenImage, hiddenWork],
+    ]),
+}
+
+function tile(
+    tileId: string,
+    columnStart = 1,
+    artPieceId = visibleWork,
+    mediaId = visibleImage
+): BentoLayoutItem {
+    return { tileId, artPieceId, mediaId, columnStart, rowStart: 1, columnSpan: 3, rowSpan: 3 }
 }
 
 function both(...items: BentoLayoutItem[]): BentoBoxLayout {
     return { desktop: { items }, mobile: { items: items.map((item) => ({ ...item })) } }
 }
 
+function validate(layout: unknown, savedTileIds: string[] = []) {
+    return validateBentoLayout(layout, new Set(savedTileIds), catalog)
+}
+
 test("accepts a layout with the same tiles in both views", () => {
     const layout = both(tile(firstTile), tile(secondTile, 4))
-    expect(validateBentoLayout(layout)).toEqual({ ok: true, layout })
+    expect(validate(layout)).toEqual({ ok: true, layout })
 })
 
 test("accepts an empty layout", () => {
-    expect(validateBentoLayout(both()).ok).toBe(true)
+    expect(validate(both()).ok).toBe(true)
 })
 
 test("rejects different tile sets in the two views", () => {
@@ -38,17 +53,34 @@ test("rejects different tile sets in the two views", () => {
         desktop: { items: [tile(firstTile)] },
         mobile: { items: [] },
     }
-    expect(validateBentoLayout(layout).ok).toBe(false)
+    expect(validate(layout).ok).toBe(false)
 })
 
 test("rejects tiles outside the grid or overlapping instead of dropping them", () => {
-    expect(validateBentoLayout(both(tile(firstTile, 11))).ok).toBe(false)
-    expect(validateBentoLayout(both(tile(firstTile), tile(secondTile))).ok).toBe(false)
+    expect(validate(both(tile(firstTile, 11))).ok).toBe(false)
+    expect(validate(both(tile(firstTile), tile(secondTile))).ok).toBe(false)
 })
 
 test("rejects a layout without both views", () => {
-    expect(validateBentoLayout({ desktop: { items: [] } }).ok).toBe(false)
-    expect(validateBentoLayout(null).ok).toBe(false)
+    expect(validate({ desktop: { items: [] } }).ok).toBe(false)
+    expect(validate(null).ok).toBe(false)
+})
+
+test("rejects an image that belongs to another work or no longer exists", () => {
+    expect(validate(both(tile(firstTile, 1, visibleWork, hiddenImage))).ok).toBe(false)
+    expect(
+        validate(both(tile(firstTile, 1, visibleWork, "a7f3bc01-0000-4000-8000-000000000299")))
+    ).toEqual({
+        ok: false,
+        message: "Jedna z wybranych prac albo jedno ze zdjęć nie jest już dostępne.",
+    })
+})
+
+test("rejects a new tile with a hidden work but keeps an already saved one", () => {
+    const hiddenTile = both(tile(firstTile, 1, hiddenWork, hiddenImage))
+
+    expect(validate(hiddenTile).ok).toBe(false)
+    expect(validate(hiddenTile, [firstTile]).ok).toBe(true)
 })
 
 const validTheme = {
