@@ -1,10 +1,12 @@
 "use client"
 
-import { useReducer } from "react"
+import { useReducer, useState } from "react"
 import { Pipette } from "lucide-react"
 
+import { saveSiteTheme } from "@/app/admin/appearance/actions"
 import { getFontClassName } from "@/app/fonts"
-import { Field, FieldLabel } from "@/components/ui/field"
+import { SaveBar, useSectionSave } from "@/components/admin-appearance/SaveBar"
+import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import {
     Select,
@@ -15,7 +17,12 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { themeEditorReducer, type ThemeDraft } from "@/lib/appearance/theme-editor-state"
+import {
+    isThemeDirty,
+    themeEditorReducer,
+    type ThemeDraft,
+} from "@/lib/appearance/theme-editor-state"
+import type { ThemeErrors, ThemeField } from "@/lib/appearance/validation"
 import { fontCatalog, selectableFontNames } from "@/lib/theme/fonts"
 import type { SiteThemeColors, SiteThemeFonts } from "@/types/theme"
 
@@ -36,24 +43,28 @@ const FONT_GROUPS = [
     { label: "Bezszeryfowe", category: "sans-serif" },
 ] as const
 
+type ThemeFieldProps<Field extends ThemeField> = {
+    field: Field
+    label: string
+    value: string
+    error?: string
+    onChange: (value: string) => void
+}
+
 function FontSelect({
     field,
     label,
     value,
+    error,
     onChange,
-}: {
-    field: keyof SiteThemeFonts
-    label: string
-    value: string
-    onChange: (value: string) => void
-}) {
+}: ThemeFieldProps<keyof SiteThemeFonts>) {
     const id = `theme-${field}`
 
     return (
-        <Field>
+        <Field data-invalid={Boolean(error)}>
             <FieldLabel htmlFor={id}>{label}</FieldLabel>
             <Select value={value} onValueChange={onChange}>
-                <SelectTrigger id={id} className="w-full">
+                <SelectTrigger id={id} className="w-full" aria-invalid={Boolean(error)}>
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="admin-theme font-secondary">
@@ -71,6 +82,7 @@ function FontSelect({
                     ))}
                 </SelectContent>
             </Select>
+            <FieldError>{error}</FieldError>
         </Field>
     )
 }
@@ -79,28 +91,26 @@ function ColorField({
     field,
     label,
     value,
+    error,
     onChange,
-}: {
-    field: keyof SiteThemeColors
-    label: string
-    value: string
-    onChange: (value: string) => void
-}) {
+}: ThemeFieldProps<keyof SiteThemeColors>) {
     const id = `theme-${field}`
 
     return (
-        <Field>
+        <Field data-invalid={Boolean(error)}>
             <FieldLabel htmlFor={id}>{label}</FieldLabel>
             <div className="flex items-center gap-2">
                 <Input
                     id={id}
                     value={value}
                     onChange={(event) => onChange(event.target.value.trim())}
+                    aria-invalid={Boolean(error)}
                     spellCheck={false}
                     className="font-mono"
                 />
                 <ColorSwatch label={label} value={value} onChange={onChange} />
             </div>
+            <FieldError>{error}</FieldError>
         </Field>
     )
 }
@@ -140,31 +150,76 @@ function ColorSwatch({
 
 export function ThemeEditor({ saved }: { saved: ThemeDraft }) {
     const [state, dispatch] = useReducer(themeEditorReducer, { saved, draft: saved })
+    const [errors, setErrors] = useState<ThemeErrors>({})
+    const { isSaving, isSaved, error, save, reset } = useSectionSave()
+
+    function clearError(field: ThemeField) {
+        if (errors[field]) setErrors({ ...errors, [field]: undefined })
+    }
+
+    function handleSave() {
+        save(
+            async () => {
+                const result = await saveSiteTheme(state.draft)
+                if (result.status === "success") return null
+                setErrors(result.errors)
+                return "Popraw zaznaczone pola."
+            },
+            () => {
+                setErrors({})
+                dispatch({ type: "saved" })
+            }
+        )
+    }
+
+    function handleRevert() {
+        dispatch({ type: "revert" })
+        setErrors({})
+        reset()
+    }
 
     return (
-        <div className="grid gap-6 lg:grid-cols-2">
-            <div className="flex flex-col gap-4">
-                {FONT_FIELDS.map(({ field, label }) => (
-                    <FontSelect
-                        key={field}
-                        field={field}
-                        label={label}
-                        value={state.draft.fonts[field]}
-                        onChange={(value) => dispatch({ type: "setFont", field, value })}
-                    />
-                ))}
+        <div className="flex flex-col gap-6">
+            <div className="grid gap-6 lg:grid-cols-2">
+                <div className="flex flex-col gap-4">
+                    {FONT_FIELDS.map(({ field, label }) => (
+                        <FontSelect
+                            key={field}
+                            field={field}
+                            label={label}
+                            value={state.draft.fonts[field]}
+                            error={errors[field]}
+                            onChange={(value) => {
+                                dispatch({ type: "setFont", field, value })
+                                clearError(field)
+                            }}
+                        />
+                    ))}
+                </div>
+                <div className="flex flex-col gap-4">
+                    {COLOR_FIELDS.map(({ field, label }) => (
+                        <ColorField
+                            key={field}
+                            field={field}
+                            label={label}
+                            value={state.draft.colors[field]}
+                            error={errors[field]}
+                            onChange={(value) => {
+                                dispatch({ type: "setColor", field, value })
+                                clearError(field)
+                            }}
+                        />
+                    ))}
+                </div>
             </div>
-            <div className="flex flex-col gap-4">
-                {COLOR_FIELDS.map(({ field, label }) => (
-                    <ColorField
-                        key={field}
-                        field={field}
-                        label={label}
-                        value={state.draft.colors[field]}
-                        onChange={(value) => dispatch({ type: "setColor", field, value })}
-                    />
-                ))}
-            </div>
+            <SaveBar
+                isDirty={isThemeDirty(state)}
+                isSaving={isSaving}
+                isSaved={isSaved}
+                error={error}
+                onSave={handleSave}
+                onRevert={handleRevert}
+            />
         </div>
     )
 }
