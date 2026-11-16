@@ -157,7 +157,10 @@ export default function ProfileForm({ saved }: ProfileFormProps) {
     }
 
     const isDirty = photo !== null || differsFromSaved(draft, savedDraft)
-    const leaveDialog = useLeaveGuard(isDirty)
+    const leaveDialog = useLeaveGuard(
+        isDirty,
+        "Jeśli wyjdziesz, niezapisane zmiany w profilu przepadną."
+    )
     const savedPhotoSrc = saved?.imageHash ? profileImagePath(saved.imageHash) : null
 
     function renderTextField({ key, copy }: TextField) {
