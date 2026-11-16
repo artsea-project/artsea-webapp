@@ -6,7 +6,7 @@ import { Pipette } from "lucide-react"
 import { saveSiteTheme } from "@/app/admin/appearance/actions"
 import { getFontClassName } from "@/app/fonts"
 import { SaveBar, useSectionSave } from "@/components/admin-appearance/SaveBar"
-import { ThemePreview } from "@/components/admin-appearance/ThemePreview"
+import { ThemePreview, ThemeScope } from "@/components/admin-appearance/ThemePreview"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import {
@@ -25,6 +25,7 @@ import {
 } from "@/lib/appearance/theme-editor-state"
 import type { ThemeErrors, ThemeField } from "@/lib/appearance/validation"
 import { fontCatalog, selectableFontNames } from "@/lib/theme/fonts"
+import { THEME_PRESETS, type ThemePresetId } from "@/lib/theme/presets"
 import type { SiteThemeColors, SiteThemeFonts } from "@/types/theme"
 
 const FONT_FIELDS: { field: keyof SiteThemeFonts; label: string }[] = [
@@ -149,6 +150,41 @@ function ColorSwatch({
     )
 }
 
+function PresetPicker({ onPick }: { onPick: (preset: ThemePresetId) => void }) {
+    return (
+        <div className="@container flex flex-col gap-3">
+            <p className="text-sm font-medium">Motywy domyślne</p>
+            <div className="grid grid-cols-1 gap-3 @md:grid-cols-3">
+                {(Object.keys(THEME_PRESETS) as ThemePresetId[]).map((id) => (
+                    <button
+                        key={id}
+                        type="button"
+                        onClick={() => onPick(id)}
+                        className="rounded-lg text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                    >
+                        <ThemeScope
+                            theme={THEME_PRESETS[id]}
+                            className="flex h-full flex-col gap-1 rounded-lg border p-3"
+                        >
+                            <span className="h-2 w-8 rounded-full bg-primary" />
+                            <span className="font-primary text-lg leading-tight">
+                                {THEME_PRESETS[id].label}
+                            </span>
+                            <span className="font-body text-xs text-muted-foreground">
+                                {THEME_PRESETS[id].fonts.primaryFont} /{" "}
+                                {THEME_PRESETS[id].fonts.additionalFont}
+                            </span>
+                        </ThemeScope>
+                    </button>
+                ))}
+            </div>
+            <p className="text-xs text-muted-foreground">
+                Motyw wypełnia formularz. Zapisz zmiany, żeby pojawiły się na stronie.
+            </p>
+        </div>
+    )
+}
+
 export function ThemeEditor({
     saved,
     onDirtyChange,
@@ -221,6 +257,13 @@ export function ThemeEditor({
                             }}
                         />
                     ))}
+                    <PresetPicker
+                        onPick={(preset) => {
+                            dispatch({ type: "applyPreset", preset })
+                            setErrors({})
+                            reset()
+                        }}
+                    />
                 </div>
             </div>
             <SaveBar
