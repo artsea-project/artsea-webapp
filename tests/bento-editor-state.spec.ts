@@ -5,8 +5,10 @@ import {
     canAddTile,
     findDisplacedTiles,
     isBentoDirty,
+    swapWithTiles,
     type BentoEditorState,
 } from "../lib/appearance/bento-editor-state"
+import { DESKTOP_GRID } from "../lib/bento-grid"
 import { hasSameTiles } from "../lib/bento-layout"
 import type { BentoBoxLayout, BentoLayoutItem } from "../types/bento"
 
@@ -175,4 +177,95 @@ test("a dragged tile displaces every tile under it except itself", () => {
     expect(
         findDisplacedTiles(items, first, { columnStart: 1, rowStart: 1, columnSpan: 6, rowSpan: 6 })
     ).toEqual([second, added])
+})
+
+function box(
+    tileId: string,
+    columnStart: number,
+    rowStart: number,
+    columnSpan: number,
+    rowSpan: number
+): BentoLayoutItem {
+    return { tileId, artPieceId, mediaId, columnStart, rowStart, columnSpan, rowSpan }
+}
+
+// The sample seed desktop layout: twelve fields, fully used.
+const seedDesktop = [
+    box("a", 1, 1, 3, 6),
+    box("b", 4, 1, 3, 3),
+    box("c", 4, 4, 3, 3),
+    box("d", 7, 1, 6, 6),
+    box("e", 1, 7, 6, 3),
+    box("f", 7, 7, 3, 3),
+    box("g", 10, 7, 3, 3),
+]
+
+function positions(items: BentoLayoutItem[]) {
+    return Object.fromEntries(items.map((item) => [item.tileId, [item.columnStart, item.rowStart]]))
+}
+
+test("a tall tile dropped on two stacked tiles swaps places with both", () => {
+    const covered = findDisplacedTiles(seedDesktop, "a", {
+        columnStart: 4,
+        rowStart: 1,
+        columnSpan: 3,
+        rowSpan: 6,
+    })
+    expect(covered).toEqual(["b", "c"])
+
+    const swapped = swapWithTiles(seedDesktop, "a", covered, DESKTOP_GRID)!
+    expect(positions(swapped)).toMatchObject({ a: [4, 1], b: [1, 1], c: [1, 4], d: [7, 1] })
+    expect(swapped.find((item) => item.tileId === "a")).toMatchObject({
+        columnSpan: 3,
+        rowSpan: 6,
+    })
+})
+
+test("one of two stacked tiles alone cannot trade places with a taller tile", () => {
+    expect(swapWithTiles(seedDesktop, "b", ["a"], DESKTOP_GRID)).toBeNull()
+})
+
+test("side by side tiles of different widths swap order in their row", () => {
+    const swapped = swapWithTiles(seedDesktop, "e", ["f"], DESKTOP_GRID)!
+    expect(positions(swapped)).toMatchObject({ f: [1, 7], e: [4, 7], g: [10, 7] })
+})
+
+test("equal tiles that are not neighbours swap corners", () => {
+    const swapped = swapWithTiles(seedDesktop, "f", ["b"], DESKTOP_GRID)!
+    expect(positions(swapped)).toMatchObject({ f: [4, 1], b: [7, 7], c: [4, 4] })
+})
+
+test("a swap that does not fit leaves the layout unchanged", () => {
+    const state: BentoEditorState = {
+        saved: layout,
+        draft: { ...layout, desktop: { items: seedDesktop } },
+    }
+
+    expect(swapWithTiles(seedDesktop, "a", ["g"], DESKTOP_GRID)).toBeNull()
+    expect(
+        bentoEditorReducer(state, {
+            type: "swap",
+            view: "desktop",
+            sourceId: "a",
+            targetIds: ["g"],
+        })
+    ).toBe(state)
+})
+
+test("the swap action updates only the given view", () => {
+    const state = bentoEditorReducer(
+        { saved: layout, draft: { ...layout, desktop: { items: seedDesktop } } },
+        { type: "swap", view: "desktop", sourceId: "e", targetIds: ["f"] }
+    )
+
+    expect(positions(state.draft.desktop.items)).toMatchObject({ f: [1, 7], e: [4, 7] })
+    expect(state.draft.mobile).toBe(layout.mobile)
+})
+
+test("stacked tiles of different heights swap order in their column", () => {
+    const stacked = [box("x", 1, 1, 6, 3), box("y", 1, 4, 6, 6)]
+    const expected = { x: [1, 7], y: [1, 1] }
+
+    expect(positions(swapWithTiles(stacked, "x", ["y"], DESKTOP_GRID)!)).toEqual(expected)
+    expect(positions(swapWithTiles(stacked, "y", ["x"], DESKTOP_GRID)!)).toEqual(expected)
 })
