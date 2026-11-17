@@ -193,52 +193,56 @@ export function BentoEditor({ saved, artworkMeta, artworks, onDirtyChange }: Ben
     return (
         <div className="flex flex-col gap-6">
             <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-                <Tabs
-                    value={view}
-                    onValueChange={(value) => setView(value as BentoView)}
-                    className="min-w-0"
-                >
-                    <TabsList>
-                        {VIEWS.map((name) => (
-                            <TabsTrigger key={name} value={name}>
-                                {VIEW_LABELS[name]}
-                            </TabsTrigger>
-                        ))}
-                    </TabsList>
-                    <div ref={frameAreaRef}>
-                        {VIEWS.map((name) => (
-                            <TabsContent
-                                key={name}
-                                value={name}
-                                className="flex flex-col gap-4 pt-4"
-                            >
-                                <ViewFrame view={name} phoneSize={phoneSize}>
-                                    <BentoGridCanvas
-                                        view={name}
-                                        items={state.draft[name].items}
-                                        artworkMeta={artworkMeta}
-                                        onMove={(tileId, box) =>
-                                            dispatch({ type: "move", view: name, tileId, box })
-                                        }
-                                        onSwap={(sourceId, targetIds) =>
-                                            dispatch({
-                                                type: "swap",
-                                                view: name,
-                                                sourceId,
-                                                targetIds,
-                                            })
-                                        }
-                                    />
-                                </ViewFrame>
-                                <p className="text-xs text-muted-foreground">
-                                    Przeciągnij kafelek na wolne miejsce, żeby go przesunąć, albo na
-                                    inny kafelek, żeby zamienić je miejscami. Uchwytami na rogach i
-                                    krawędziach zmienisz jego rozmiar.
-                                </p>
-                            </TabsContent>
-                        ))}
-                    </div>
-                </Tabs>
+                <div className="flex min-w-0 flex-col gap-6">
+                    <Tabs value={view} onValueChange={(value) => setView(value as BentoView)}>
+                        <TabsList>
+                            {VIEWS.map((name) => (
+                                <TabsTrigger key={name} value={name}>
+                                    {VIEW_LABELS[name]}
+                                </TabsTrigger>
+                            ))}
+                        </TabsList>
+                        <div ref={frameAreaRef}>
+                            {VIEWS.map((name) => (
+                                <TabsContent
+                                    key={name}
+                                    value={name}
+                                    className="flex flex-col gap-4 pt-4"
+                                >
+                                    <ViewFrame view={name} phoneSize={phoneSize}>
+                                        <BentoGridCanvas
+                                            view={name}
+                                            items={state.draft[name].items}
+                                            artworkMeta={artworkMeta}
+                                            onMove={(tileId, box) =>
+                                                dispatch({ type: "move", view: name, tileId, box })
+                                            }
+                                            onSwap={(sourceId, targetIds) =>
+                                                dispatch({
+                                                    type: "swap",
+                                                    view: name,
+                                                    sourceId,
+                                                    targetIds,
+                                                })
+                                            }
+                                        />
+                                    </ViewFrame>
+                                    <p className="text-xs text-muted-foreground">
+                                        Przeciągnij kafelek na wolne miejsce, żeby go przesunąć,
+                                        albo na inny kafelek, żeby zamienić je miejscami. Uchwytami
+                                        na rogach i krawędziach zmienisz jego rozmiar.
+                                    </p>
+                                </TabsContent>
+                            ))}
+                        </div>
+                    </Tabs>
+                    <AddTileControls
+                        preset={preset}
+                        canAdd={canAddTile(state.draft, preset)}
+                        onPresetChange={setPreset}
+                        onAdd={() => setPickerTarget({ kind: "add" })}
+                    />
+                </div>
                 <TileList
                     items={state.draft[view].items}
                     maxHeight={previewHeight}
@@ -247,12 +251,6 @@ export function BentoEditor({ saved, artworkMeta, artworks, onDirtyChange }: Ben
                     onRemove={(tileId) => dispatch({ type: "remove", tileId })}
                 />
             </div>
-            <AddTileControls
-                preset={preset}
-                canAdd={canAddTile(state.draft, preset)}
-                onPresetChange={setPreset}
-                onAdd={() => setPickerTarget({ kind: "add" })}
-            />
             <SaveBar
                 isDirty={isDirty}
                 isSaving={isSaving}
