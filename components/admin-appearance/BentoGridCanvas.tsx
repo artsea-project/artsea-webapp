@@ -1,15 +1,24 @@
 "use client"
 
+import { useState } from "react"
 import Image from "next/image"
-import ReactGridLayout, { noCompactor, useContainerWidth, type Layout } from "react-grid-layout"
+import ReactGridLayout, {
+    noCompactor,
+    useContainerWidth,
+    type EventCallback,
+    type Layout,
+    type LayoutItem,
+} from "react-grid-layout"
 import "react-grid-layout/css/styles.css"
 import "react-resizable/css/styles.css"
 
 import { bentoImageProps } from "@/components/bento/bento-card"
-import { BENTO_VIEW_GRIDS, type BentoView } from "@/lib/appearance/bento-editor-state"
+import { BENTO_VIEW_GRIDS, moveTile, type BentoView } from "@/lib/appearance/bento-editor-state"
 import type { ArtworkMeta } from "@/lib/appearance/queries"
-import { FIELD_SIZE } from "@/lib/bento-grid"
+import { FIELD_SIZE, type TileBox } from "@/lib/bento-grid"
 import type { BentoLayoutItem } from "@/types/bento"
+
+const compactor = { ...noCompactor, allowOverlap: true }
 
 const PUBLIC_GAP: Record<BentoView, { width: number; gap: number }> = {
     desktop: { width: 1155, gap: 21 },
@@ -39,11 +48,20 @@ function toGridItems(items: BentoLayoutItem[]): Layout {
     }))
 }
 
+function toBox(item: LayoutItem): TileBox {
+    return {
+        columnStart: item.x * FIELD_SIZE + 1,
+        rowStart: item.y * FIELD_SIZE + 1,
+        columnSpan: item.w * FIELD_SIZE,
+        rowSpan: item.h * FIELD_SIZE,
+    }
+}
+
 function Tile({ item, meta }: { item: BentoLayoutItem; meta?: ArtworkMeta }) {
     const title = meta?.title ?? "Bez tytułu"
 
     return (
-        <div className="relative size-full overflow-hidden rounded-xl bg-muted">
+        <div className="relative size-full cursor-grab overflow-hidden rounded-xl bg-muted transition-shadow hover:ring-2 hover:ring-primary/60 hover:ring-offset-2">
             <Image
                 {...bentoImageProps(item.mediaId, "(min-width: 1024px) 25vw, 50vw")}
                 alt={title}
@@ -63,10 +81,12 @@ type BentoGridCanvasProps = {
     view: BentoView
     items: BentoLayoutItem[]
     artworkMeta: Record<string, ArtworkMeta>
+    onMove: (tileId: string, box: TileBox) => void
 }
 
-export function BentoGridCanvas({ view, items, artworkMeta }: BentoGridCanvasProps) {
+export function BentoGridCanvas({ view, items, artworkMeta, onMove }: BentoGridCanvasProps) {
     const { width, containerRef, mounted } = useContainerWidth()
+    const [revision, setRevision] = useState(0)
     const grid = BENTO_VIEW_GRIDS[view]
     const gap = editorGap(view, width)
     const fieldColumns = grid.columns / FIELD_SIZE
@@ -74,10 +94,24 @@ export function BentoGridCanvas({ view, items, artworkMeta }: BentoGridCanvasPro
     const rowHeight = (width - (fieldColumns - 1) * gap) / fieldColumns
     const height = fieldRows * rowHeight + (fieldRows - 1) * gap
 
+    const handleDragStop: EventCallback = (_layout, _oldItem, newItem) => {
+        const box = newItem && toBox(newItem)
+        if (newItem && box && moveTile(items, newItem.i, box, grid)) {
+            onMove(newItem.i, box)
+        } else {
+            setRevision(revision + 1)
+        }
+    }
+
     return (
-        <div ref={containerRef} className="relative w-full" style={{ minHeight: height }}>
+        <div
+            ref={containerRef}
+            className="bento-canvas relative w-full"
+            style={{ minHeight: height }}
+        >
             {mounted && (
                 <ReactGridLayout
+                    key={revision}
                     width={width}
                     autoSize={false}
                     style={{ height }}
@@ -89,9 +123,10 @@ export function BentoGridCanvas({ view, items, artworkMeta }: BentoGridCanvasPro
                         containerPadding: [0, 0],
                         maxRows: fieldRows,
                     }}
-                    dragConfig={{ enabled: false }}
+                    dragConfig={{ enabled: true, bounded: true, threshold: 3 }}
                     resizeConfig={{ enabled: false }}
-                    compactor={noCompactor}
+                    compactor={compactor}
+                    onDragStop={handleDragStop}
                 >
                     {items.map((item) => (
                         <div key={item.tileId}>
