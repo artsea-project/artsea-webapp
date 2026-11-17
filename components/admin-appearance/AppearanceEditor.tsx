@@ -19,16 +19,21 @@ function Section({ id, title, children }: { id: string; title: string; children?
 }
 
 export function AppearanceEditor({ data }: { data: AppearanceData }) {
+    const [isBentoDirty, setIsBentoDirty] = useState(false)
     const [isThemeDirty, setIsThemeDirty] = useState(false)
     const leaveDialog = useLeaveGuard(
-        isThemeDirty,
+        isBentoDirty || isThemeDirty,
         "Jeśli wyjdziesz, niezapisane zmiany w układzie i personalizacji przepadną."
     )
 
     return (
         <div className="flex max-w-5xl flex-col gap-10">
             <Section id="bento-heading" title="Kafelki BentoBox - strona główna">
-                <BentoEditor saved={data.layout} artworkMeta={data.artworkMeta} />
+                <BentoEditor
+                    saved={data.layout}
+                    artworkMeta={data.artworkMeta}
+                    onDirtyChange={setIsBentoDirty}
+                />
             </Section>
             <Section id="theme-heading" title="Czcionki i kolorystyka">
                 <ThemeEditor saved={data.theme} onDirtyChange={setIsThemeDirty} />
