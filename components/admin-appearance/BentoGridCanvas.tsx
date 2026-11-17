@@ -209,7 +209,7 @@ export function BentoGridCanvas({
     onMove,
     onSwap,
 }: BentoGridCanvasProps) {
-    const { width, containerRef, mounted } = useContainerWidth()
+    const { width, containerRef, mounted } = useContainerWidth({ measureBeforeMount: true })
     const autoScroll = useEdgeAutoScroll(containerRef)
     const isCoarsePointer = useCoarsePointer()
     const [revision, setRevision] = useState(0)
@@ -263,7 +263,7 @@ export function BentoGridCanvas({
         <div
             ref={containerRef}
             className="bento-canvas relative w-full"
-            style={{ minHeight: height }}
+            style={{ minHeight: mounted ? height : undefined }}
         >
             {mounted && (
                 <ReactGridLayout
