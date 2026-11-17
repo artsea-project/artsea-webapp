@@ -1,8 +1,8 @@
 import { expect, test } from "@playwright/test"
 
-import { isHexColor } from "@/lib/theme/colors"
+import { isHexColor, isSameColor } from "@/lib/theme/colors"
 import { isSelectableFontName } from "@/lib/theme/fonts"
-import { THEME_PRESETS } from "@/lib/theme/presets"
+import { THEME_PRESETS, findMatchingPreset } from "@/lib/theme/presets"
 import { defaultSiteTheme } from "@/lib/theme/theme"
 
 test("every preset uses selectable fonts and valid hex colors", () => {
@@ -24,4 +24,23 @@ test("isHexColor accepts #rgb and #rrggbb only", () => {
     expect(isHexColor("A8A29E")).toBe(false)
     expect(isHexColor("#A8A29E80")).toBe(false)
     expect(isHexColor(undefined)).toBe(false)
+})
+
+test("isSameColor ignores letter case and the short form", () => {
+    expect(isSameColor("#1c1917", "#1C1917")).toBe(true)
+    expect(isSameColor("#abc", "#AABBCC")).toBe(true)
+    expect(isSameColor("#1C1917", "#1C1918")).toBe(false)
+})
+
+test("findMatchingPreset names the preset whose fonts and colors were saved", () => {
+    const dark = THEME_PRESETS.dark
+    const lowercaseDark = {
+        fonts: dark.fonts,
+        colors: { ...dark.colors, backgroundColor: dark.colors.backgroundColor.toLowerCase() },
+    }
+    const customized = { ...dark, fonts: { ...dark.fonts, primaryFont: "Lora" } }
+
+    expect(findMatchingPreset(dark)).toBe("dark")
+    expect(findMatchingPreset(lowercaseDark)).toBe("dark")
+    expect(findMatchingPreset(customized)).toBe(null)
 })
