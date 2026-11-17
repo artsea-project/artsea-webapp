@@ -1,4 +1,4 @@
-import type { BentoLayoutItem } from "@/types/bento"
+import type { BentoBoxLayout, BentoLayoutItem } from "@/types/bento"
 
 export type GridSpec = { columns: number; rows: number }
 
@@ -7,6 +7,16 @@ export const FIELD_SIZE = 3
 export const DESKTOP_GRID: GridSpec = { columns: 12, rows: 9 }
 
 export const MOBILE_GRID: GridSpec = { columns: 6, rows: 90 }
+
+export const BENTO_VIEW_GRIDS: Record<keyof BentoBoxLayout, GridSpec> = {
+    desktop: DESKTOP_GRID,
+    mobile: MOBILE_GRID,
+}
+
+export const PUBLIC_GRID_GAP: Record<keyof BentoBoxLayout, number> = {
+    desktop: 21,
+    mobile: 12,
+}
 
 export type TilePreset = "1:1" | "2:1" | "1:2" | "2:2"
 
