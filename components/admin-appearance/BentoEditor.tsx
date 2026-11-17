@@ -109,7 +109,11 @@ export function BentoEditor({ saved, artworkMeta, onDirtyChange }: BentoEditorPr
                         </TabsContent>
                     ))}
                 </Tabs>
-                <TileList items={state.draft[view].items} artworkMeta={artworkMeta} />
+                <TileList
+                    items={state.draft[view].items}
+                    artworkMeta={artworkMeta}
+                    onRemove={(tileId) => dispatch({ type: "remove", tileId })}
+                />
             </div>
             <SaveBar
                 isDirty={isDirty}
