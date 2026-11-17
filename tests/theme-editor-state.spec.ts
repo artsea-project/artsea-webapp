@@ -42,7 +42,23 @@ test("revert restores the saved theme and saved marks the draft as clean", () =>
     const edited = themeEditorReducer(initial, { type: "applyPreset", preset: "dark" })
 
     expect(themeEditorReducer(edited, { type: "revert" }).draft).toEqual(saved)
-    expect(isThemeDirty(themeEditorReducer(edited, { type: "saved" }))).toBe(false)
+    expect(isThemeDirty(themeEditorReducer(edited, { type: "saved", theme: edited.draft }))).toBe(
+        false
+    )
+})
+
+test("a change made while saving stays unsaved", () => {
+    const edited = themeEditorReducer(initial, { type: "applyPreset", preset: "dark" })
+    const sent = edited.draft
+    const changedMeanwhile = themeEditorReducer(edited, {
+        type: "setFont",
+        field: "primaryFont",
+        value: "Lora",
+    })
+    const saved = themeEditorReducer(changedMeanwhile, { type: "saved", theme: sent })
+
+    expect(saved.saved).toBe(sent)
+    expect(isThemeDirty(saved)).toBe(true)
 })
 
 test("picking the saved values again is not a change", () => {

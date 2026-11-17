@@ -10,7 +10,7 @@ export type ThemeEditorAction =
     | { type: "setColor"; field: keyof SiteThemeColors; value: string }
     | { type: "applyPreset"; preset: ThemePresetId }
     | { type: "revert" }
-    | { type: "saved" }
+    | { type: "saved"; theme: ThemeDraft }
 
 export function themeEditorReducer(
     state: ThemeEditorState,
@@ -36,7 +36,7 @@ export function themeEditorReducer(
         case "revert":
             return { ...state, draft: state.saved }
         case "saved":
-            return { ...state, saved: draft }
+            return { ...state, saved: action.theme }
     }
 }
 

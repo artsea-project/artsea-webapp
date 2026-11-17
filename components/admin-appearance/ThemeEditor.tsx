@@ -204,16 +204,17 @@ export function ThemeEditor({
     }
 
     function handleSave() {
+        const theme = state.draft
         save(
             async () => {
-                const result = await saveSiteTheme(state.draft)
+                const result = await saveSiteTheme(theme)
                 if (result.status === "success") return null
                 setErrors(result.errors)
                 return "Popraw zaznaczone pola."
             },
             () => {
                 setErrors({})
-                dispatch({ type: "saved" })
+                dispatch({ type: "saved", theme })
             }
         )
     }
