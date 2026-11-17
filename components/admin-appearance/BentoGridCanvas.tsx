@@ -58,6 +58,14 @@ function toGridItems(items: BentoLayoutItem[]): Layout {
     }))
 }
 
+function visibleFieldRows(view: BentoView, items: BentoLayoutItem[]): number {
+    const maxRows = BENTO_VIEW_GRIDS[view].rows / FIELD_SIZE
+    if (view === "desktop") return maxRows
+
+    const bottom = Math.max(0, ...items.map((item) => item.rowStart + item.rowSpan - 1))
+    return Math.min(maxRows, Math.max(1, bottom / FIELD_SIZE))
+}
+
 function toBox(item: LayoutItem): TileBox {
     return {
         columnStart: item.x * FIELD_SIZE + 1,
@@ -123,7 +131,8 @@ export function BentoGridCanvas({
     const fieldColumns = grid.columns / FIELD_SIZE
     const fieldRows = grid.rows / FIELD_SIZE
     const rowHeight = (width - (fieldColumns - 1) * gap) / fieldColumns
-    const height = fieldRows * rowHeight + (fieldRows - 1) * gap
+    const rows = visibleFieldRows(view, items)
+    const height = rows * rowHeight + (rows - 1) * gap
 
     function snapBack() {
         setRevision(revision + 1)
