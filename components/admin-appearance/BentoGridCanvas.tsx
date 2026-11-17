@@ -8,6 +8,7 @@ import ReactGridLayout, {
     type EventCallback,
     type Layout,
     type LayoutItem,
+    type ResizeHandleAxis,
 } from "react-grid-layout"
 import "react-grid-layout/css/styles.css"
 import "react-resizable/css/styles.css"
@@ -19,6 +20,8 @@ import { FIELD_SIZE, type TileBox } from "@/lib/bento-grid"
 import type { BentoLayoutItem } from "@/types/bento"
 
 const compactor = { ...noCompactor, allowOverlap: true }
+
+const RESIZE_HANDLES: ResizeHandleAxis[] = ["n", "e", "s", "w", "ne", "nw", "se", "sw"]
 
 const PUBLIC_GAP: Record<BentoView, { width: number; gap: number }> = {
     desktop: { width: 1155, gap: 21 },
@@ -94,7 +97,7 @@ export function BentoGridCanvas({ view, items, artworkMeta, onMove }: BentoGridC
     const rowHeight = (width - (fieldColumns - 1) * gap) / fieldColumns
     const height = fieldRows * rowHeight + (fieldRows - 1) * gap
 
-    const handleDragStop: EventCallback = (_layout, _oldItem, newItem) => {
+    const moveOrSnapBack: EventCallback = (_layout, _oldItem, newItem) => {
         const box = newItem && toBox(newItem)
         if (newItem && box && moveTile(items, newItem.i, box, grid)) {
             onMove(newItem.i, box)
@@ -124,9 +127,10 @@ export function BentoGridCanvas({ view, items, artworkMeta, onMove }: BentoGridC
                         maxRows: fieldRows,
                     }}
                     dragConfig={{ enabled: true, bounded: true, threshold: 3 }}
-                    resizeConfig={{ enabled: false }}
+                    resizeConfig={{ enabled: true, handles: RESIZE_HANDLES }}
                     compactor={compactor}
-                    onDragStop={handleDragStop}
+                    onDragStop={moveOrSnapBack}
+                    onResizeStop={moveOrSnapBack}
                 >
                     {items.map((item) => (
                         <div key={item.tileId}>
