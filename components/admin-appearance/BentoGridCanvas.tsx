@@ -14,9 +14,15 @@ import "react-grid-layout/css/styles.css"
 import "react-resizable/css/styles.css"
 
 import { bentoImageProps } from "@/components/bento/bento-card"
-import { BENTO_VIEW_GRIDS, moveTile, type BentoView } from "@/lib/appearance/bento-editor-state"
+import {
+    BENTO_VIEW_GRIDS,
+    findDisplacedTiles,
+    moveTile,
+    type BentoView,
+} from "@/lib/appearance/bento-editor-state"
 import type { ArtworkMeta } from "@/lib/appearance/queries"
 import { FIELD_SIZE, type TileBox } from "@/lib/bento-grid"
+import { cn } from "@/lib/utils"
 import type { BentoLayoutItem } from "@/types/bento"
 
 const compactor = { ...noCompactor, allowOverlap: true }
@@ -60,11 +66,24 @@ function toBox(item: LayoutItem): TileBox {
     }
 }
 
-function Tile({ item, meta }: { item: BentoLayoutItem; meta?: ArtworkMeta }) {
+function Tile({
+    item,
+    meta,
+    isSwapTarget,
+}: {
+    item: BentoLayoutItem
+    meta?: ArtworkMeta
+    isSwapTarget: boolean
+}) {
     const title = meta?.title ?? "Bez tytułu"
 
     return (
-        <div className="relative size-full cursor-grab overflow-hidden rounded-xl bg-muted transition-shadow hover:ring-2 hover:ring-primary/60 hover:ring-offset-2">
+        <div
+            className={cn(
+                "relative size-full cursor-grab overflow-hidden rounded-xl bg-muted ring-offset-2 transition-shadow",
+                isSwapTarget ? "ring-4 ring-primary" : "hover:ring-2 hover:ring-primary/60"
+            )}
+        >
             <Image
                 {...bentoImageProps(item.mediaId, "(min-width: 1024px) 25vw, 50vw")}
                 alt={title}
@@ -90,6 +109,7 @@ type BentoGridCanvasProps = {
 export function BentoGridCanvas({ view, items, artworkMeta, onMove }: BentoGridCanvasProps) {
     const { width, containerRef, mounted } = useContainerWidth()
     const [revision, setRevision] = useState(0)
+    const [swapTargetIds, setSwapTargetIds] = useState<string[]>([])
     const grid = BENTO_VIEW_GRIDS[view]
     const gap = editorGap(view, width)
     const fieldColumns = grid.columns / FIELD_SIZE
@@ -104,6 +124,16 @@ export function BentoGridCanvas({ view, items, artworkMeta, onMove }: BentoGridC
         } else {
             setRevision(revision + 1)
         }
+    }
+
+    const highlightSwapTargets: EventCallback = (_layout, _oldItem, newItem) => {
+        const targets = newItem ? findDisplacedTiles(items, newItem.i, toBox(newItem)) : []
+        if (targets.join() !== swapTargetIds.join()) setSwapTargetIds(targets)
+    }
+
+    const handleDragStop: EventCallback = (...args) => {
+        setSwapTargetIds([])
+        moveOrSnapBack(...args)
     }
 
     return (
@@ -129,12 +159,17 @@ export function BentoGridCanvas({ view, items, artworkMeta, onMove }: BentoGridC
                     dragConfig={{ enabled: true, bounded: true, threshold: 3 }}
                     resizeConfig={{ enabled: true, handles: RESIZE_HANDLES }}
                     compactor={compactor}
-                    onDragStop={moveOrSnapBack}
+                    onDrag={highlightSwapTargets}
+                    onDragStop={handleDragStop}
                     onResizeStop={moveOrSnapBack}
                 >
                     {items.map((item) => (
                         <div key={item.tileId}>
-                            <Tile item={item} meta={artworkMeta[item.artPieceId]} />
+                            <Tile
+                                item={item}
+                                meta={artworkMeta[item.artPieceId]}
+                                isSwapTarget={swapTargetIds.includes(item.tileId)}
+                            />
                         </div>
                     ))}
                 </ReactGridLayout>
