@@ -2,10 +2,11 @@
 
 import { useEffect, useReducer, useState, type ReactNode } from "react"
 import { Plus } from "lucide-react"
+import { useContainerWidth } from "react-grid-layout"
 
 import { saveBentoLayout } from "@/app/admin/appearance/actions"
 import { ArtworkPickerDialog } from "@/components/admin-appearance/ArtworkPickerDialog"
-import { BentoGridCanvas } from "@/components/admin-appearance/BentoGridCanvas"
+import { BentoGridCanvas, desktopCanvasHeight } from "@/components/admin-appearance/BentoGridCanvas"
 import { SaveBar, useSectionSave } from "@/components/admin-appearance/SaveBar"
 import { TileList } from "@/components/admin-appearance/TileList"
 import { Button } from "@/components/ui/button"
@@ -26,12 +27,27 @@ const VIEWS: BentoView[] = ["desktop", "mobile"]
 
 const VIEW_LABELS: Record<BentoView, string> = { desktop: "Desktop", mobile: "Mobile" }
 
-function PhoneFrame({ children }: { children: ReactNode }) {
+const DESKTOP_FRAME_MAX_WIDTH = 610
+
+const DESKTOP_FRAME_BORDER_AND_PADDING = 5
+
+function desktopFrameHeight(availableWidth: number): number {
+    const frameWidth = Math.min(DESKTOP_FRAME_MAX_WIDTH, availableWidth)
+    const inset = 2 * DESKTOP_FRAME_BORDER_AND_PADDING
+    return desktopCanvasHeight(frameWidth - inset) + inset
+}
+
+const PHONE_WIDTH_TO_HEIGHT = 367 / 592
+
+function PhoneFrame({ height, children }: { height?: number; children: ReactNode }) {
     return (
-        <div className="mx-auto w-full rounded-[2rem] border-4 border-foreground p-3 sm:w-[367px]">
+        <div
+            className="mx-auto max-w-full rounded-[2rem] border-4 border-foreground p-3"
+            style={height ? { height, width: height * PHONE_WIDTH_TO_HEIGHT } : undefined}
+        >
             <div
                 data-bento-scroll
-                className="h-[560px] overflow-y-auto overscroll-contain rounded-[1.25rem] p-1"
+                className="h-full overflow-y-auto overscroll-contain rounded-[1.25rem] p-1"
             >
                 {children}
             </div>
@@ -39,11 +55,22 @@ function PhoneFrame({ children }: { children: ReactNode }) {
     )
 }
 
-function ViewFrame({ view, children }: { view: BentoView; children: ReactNode }) {
-    if (view === "mobile") return <PhoneFrame>{children}</PhoneFrame>
+function ViewFrame({
+    view,
+    height,
+    children,
+}: {
+    view: BentoView
+    height?: number
+    children: ReactNode
+}) {
+    if (view === "mobile") return <PhoneFrame height={height}>{children}</PhoneFrame>
 
     return (
-        <div className="w-full max-w-[610px] rounded-xl border border-dashed border-border p-1">
+        <div
+            className="w-full rounded-xl border border-dashed border-border p-1"
+            style={{ maxWidth: DESKTOP_FRAME_MAX_WIDTH }}
+        >
             {children}
         </div>
     )
@@ -104,6 +131,12 @@ type BentoEditorProps = {
 export function BentoEditor({ saved, artworkMeta, artworks, onDirtyChange }: BentoEditorProps) {
     const [state, dispatch] = useReducer(bentoEditorReducer, { saved, draft: saved })
     const [view, setView] = useState<BentoView>("desktop")
+    const {
+        width: frameAreaWidth,
+        containerRef: frameAreaRef,
+        mounted: isFrameAreaMeasured,
+    } = useContainerWidth()
+    const matchingFrameHeight = isFrameAreaMeasured ? desktopFrameHeight(frameAreaWidth) : undefined
     const [preset, setPreset] = useState<TilePreset>("1:1")
     const [pickerTarget, setPickerTarget] = useState<PickerTarget | null>(null)
     const { isSaving, isSaved, error, save, reset } = useSectionSave()
@@ -149,28 +182,39 @@ export function BentoEditor({ saved, artworkMeta, artworks, onDirtyChange }: Ben
                             </TabsTrigger>
                         ))}
                     </TabsList>
-                    {VIEWS.map((name) => (
-                        <TabsContent key={name} value={name} className="flex flex-col gap-2 pt-4">
-                            <ViewFrame view={name}>
-                                <BentoGridCanvas
-                                    view={name}
-                                    items={state.draft[name].items}
-                                    artworkMeta={artworkMeta}
-                                    onMove={(tileId, box) =>
-                                        dispatch({ type: "move", view: name, tileId, box })
-                                    }
-                                    onSwap={(sourceId, targetIds) =>
-                                        dispatch({ type: "swap", view: name, sourceId, targetIds })
-                                    }
-                                />
-                            </ViewFrame>
-                            <p className="text-xs text-muted-foreground">
-                                Przeciągnij kafelek na wolne miejsce, żeby go przesunąć, albo na
-                                inny kafelek, żeby zamienić je miejscami. Uchwytami na rogach i
-                                krawędziach zmienisz jego rozmiar.
-                            </p>
-                        </TabsContent>
-                    ))}
+                    <div ref={frameAreaRef}>
+                        {VIEWS.map((name) => (
+                            <TabsContent
+                                key={name}
+                                value={name}
+                                className="flex flex-col gap-2 pt-4"
+                            >
+                                <ViewFrame view={name} height={matchingFrameHeight}>
+                                    <BentoGridCanvas
+                                        view={name}
+                                        items={state.draft[name].items}
+                                        artworkMeta={artworkMeta}
+                                        onMove={(tileId, box) =>
+                                            dispatch({ type: "move", view: name, tileId, box })
+                                        }
+                                        onSwap={(sourceId, targetIds) =>
+                                            dispatch({
+                                                type: "swap",
+                                                view: name,
+                                                sourceId,
+                                                targetIds,
+                                            })
+                                        }
+                                    />
+                                </ViewFrame>
+                                <p className="text-xs text-muted-foreground">
+                                    Przeciągnij kafelek na wolne miejsce, żeby go przesunąć, albo na
+                                    inny kafelek, żeby zamienić je miejscami. Uchwytami na rogach i
+                                    krawędziach zmienisz jego rozmiar.
+                                </p>
+                            </TabsContent>
+                        ))}
+                    </div>
                 </Tabs>
                 <TileList
                     items={state.draft[view].items}
