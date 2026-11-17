@@ -1,8 +1,9 @@
 "use client"
 
-import type { ReactNode } from "react"
+import { useReducer, type ReactNode } from "react"
 
 import { BentoGridCanvas } from "@/components/admin-appearance/BentoGridCanvas"
+import { bentoEditorReducer } from "@/lib/appearance/bento-editor-state"
 import type { ArtworkMeta } from "@/lib/appearance/queries"
 import type { BentoBoxLayout } from "@/types/bento"
 
@@ -20,9 +21,16 @@ type BentoEditorProps = {
 }
 
 export function BentoEditor({ saved, artworkMeta }: BentoEditorProps) {
+    const [state, dispatch] = useReducer(bentoEditorReducer, { saved, draft: saved })
+
     return (
         <ViewFrame>
-            <BentoGridCanvas view="desktop" items={saved.desktop.items} artworkMeta={artworkMeta} />
+            <BentoGridCanvas
+                view="desktop"
+                items={state.draft.desktop.items}
+                artworkMeta={artworkMeta}
+                onMove={(tileId, box) => dispatch({ type: "move", view: "desktop", tileId, box })}
+            />
         </ViewFrame>
     )
 }

@@ -107,6 +107,11 @@
     --sidebar-ring: var(--ring);
 }
 
+.bento-canvas .react-grid-item.react-grid-placeholder {
+    background: var(--primary);
+    border-radius: 12px;
+}
+
 @layer base {
     * {
         @apply border-border outline-ring/50;
