@@ -56,11 +56,15 @@ export function BentoEditor({ saved, artworkMeta, onDirtyChange }: BentoEditorPr
                         onMove={(tileId, box) =>
                             dispatch({ type: "move", view: "desktop", tileId, box })
                         }
+                        onSwap={(sourceId, targetIds) =>
+                            dispatch({ type: "swap", view: "desktop", sourceId, targetIds })
+                        }
                     />
                 </ViewFrame>
                 <p className="text-xs text-muted-foreground">
-                    Przeciągnij kafelek na wolne miejsce, żeby go przesunąć. Uchwytami na rogach i
-                    krawędziach zmienisz jego rozmiar.
+                    Przeciągnij kafelek na wolne miejsce, żeby go przesunąć, albo na inny kafelek,
+                    żeby zamienić je miejscami. Uchwytami na rogach i krawędziach zmienisz jego
+                    rozmiar.
                 </p>
             </div>
             <SaveBar
