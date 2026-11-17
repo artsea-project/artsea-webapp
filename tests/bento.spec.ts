@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test"
 
 import { DESKTOP_GRID, MOBILE_GRID } from "../lib/bento-grid"
-import { hasSameTiles, normalizeBentoLayout } from "../lib/bento-layout"
+import { createTileId, hasSameTiles, normalizeBentoLayout } from "../lib/bento-layout"
 import type { BentoLayoutItem } from "../types/bento"
 
 const artPieceId = "a7f3bc01-0000-4000-8000-000000000101"
@@ -126,4 +126,16 @@ test("hasSameTiles compares tile ids with their work and image, not positions", 
         ])
     ).toBe(false)
     expect(hasSameTiles([], [])).toBe(true)
+})
+
+test("createTileId makes version 4 uuids that the layout accepts", () => {
+    const ids = Array.from({ length: 50 }, () => createTileId())
+
+    expect(new Set(ids).size).toBe(ids.length)
+    for (const id of ids) {
+        expect(id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/)
+    }
+    expect(normalizeBentoLayout({ items: [tile(ids[0], 1, 1, 3, 3)] }, DESKTOP_GRID)).toHaveLength(
+        1
+    )
 })
