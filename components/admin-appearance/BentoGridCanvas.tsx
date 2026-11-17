@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState, useSyncExternalStore, type RefObject } from "react"
+import { useEffect, useRef, useState, useSyncExternalStore, type RefObject } from "react"
 import Image from "next/image"
 import { GripVertical } from "lucide-react"
 import ReactGridLayout, {
@@ -83,6 +83,12 @@ function useEdgeAutoScroll(containerRef: RefObject<HTMLDivElement | null>) {
         frame.current = null
         step.current = 0
     }
+
+    useEffect(() => {
+        return () => {
+            if (frame.current !== null) cancelAnimationFrame(frame.current)
+        }
+    }, [])
 
     function update(event: Event) {
         const scroller = containerRef.current?.closest<HTMLElement>("[data-bento-scroll]")
