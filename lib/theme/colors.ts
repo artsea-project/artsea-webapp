@@ -19,6 +19,16 @@ export function isHexColor(value: unknown): value is string {
     return typeof value === "string" && CSS_HEX_COLOR.test(value)
 }
 
+function toLongHex(value: string): string {
+    const digits = value.slice(1)
+    const long = digits.length === 3 ? [...digits].map((digit) => digit + digit).join("") : digits
+    return `#${long.toUpperCase()}`
+}
+
+export function isSameColor(left: string, right: string): boolean {
+    return toLongHex(left) === toLongHex(right)
+}
+
 function resolveColor(value: unknown, fallback: string): string {
     return isHexColor(value) ? value : fallback
 }
