@@ -37,13 +37,29 @@ function desktopFrameHeight(availableWidth: number): number {
     return desktopCanvasHeight(frameWidth - inset) + inset
 }
 
-const PHONE_WIDTH_TO_HEIGHT = 367 / 592
+const PHONE_MAX_WIDTH = 367
 
-function PhoneFrame({ height, children }: { height?: number; children: ReactNode }) {
+const PHONE_MIN_MATCHED_WIDTH = 240
+
+const PHONE_WIDTH_TO_HEIGHT = PHONE_MAX_WIDTH / 592
+
+type FrameSize = { width: number; height: number }
+
+function phoneFrameSize(availableWidth: number): FrameSize {
+    const matchedHeight = desktopFrameHeight(availableWidth)
+    const matchedWidth = matchedHeight * PHONE_WIDTH_TO_HEIGHT
+    if (matchedWidth >= PHONE_MIN_MATCHED_WIDTH)
+        return { width: matchedWidth, height: matchedHeight }
+
+    const width = Math.min(availableWidth, PHONE_MAX_WIDTH)
+    return { width, height: width / PHONE_WIDTH_TO_HEIGHT }
+}
+
+function PhoneFrame({ size, children }: { size?: FrameSize; children: ReactNode }) {
     return (
         <div
             className="mx-auto max-w-full rounded-[2rem] border-4 border-foreground p-3"
-            style={height ? { height, width: height * PHONE_WIDTH_TO_HEIGHT } : undefined}
+            style={size}
         >
             <div
                 data-bento-scroll
@@ -57,14 +73,14 @@ function PhoneFrame({ height, children }: { height?: number; children: ReactNode
 
 function ViewFrame({
     view,
-    height,
+    phoneSize,
     children,
 }: {
     view: BentoView
-    height?: number
+    phoneSize?: FrameSize
     children: ReactNode
 }) {
-    if (view === "mobile") return <PhoneFrame height={height}>{children}</PhoneFrame>
+    if (view === "mobile") return <PhoneFrame size={phoneSize}>{children}</PhoneFrame>
 
     return (
         <div
@@ -136,7 +152,7 @@ export function BentoEditor({ saved, artworkMeta, artworks, onDirtyChange }: Ben
         containerRef: frameAreaRef,
         mounted: isFrameAreaMeasured,
     } = useContainerWidth({ measureBeforeMount: true })
-    const matchingFrameHeight = isFrameAreaMeasured ? desktopFrameHeight(frameAreaWidth) : undefined
+    const phoneSize = isFrameAreaMeasured ? phoneFrameSize(frameAreaWidth) : undefined
     const [preset, setPreset] = useState<TilePreset>("1:1")
     const [pickerTarget, setPickerTarget] = useState<PickerTarget | null>(null)
     const { isSaving, isSaved, error, save, reset } = useSectionSave()
@@ -189,7 +205,7 @@ export function BentoEditor({ saved, artworkMeta, artworks, onDirtyChange }: Ben
                                 value={name}
                                 className="flex flex-col gap-2 pt-4"
                             >
-                                <ViewFrame view={name} height={matchingFrameHeight}>
+                                <ViewFrame view={name} phoneSize={phoneSize}>
                                     <BentoGridCanvas
                                         view={name}
                                         items={state.draft[name].items}
