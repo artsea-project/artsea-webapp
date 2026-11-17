@@ -46,9 +46,18 @@ test("revert restores the saved layout and saved marks the draft as clean", () =
     expect(reverted.draft).toEqual(layout)
     expect(isBentoDirty(reverted)).toBe(false)
 
-    const saved = bentoEditorReducer(edited, { type: "saved" })
+    const saved = bentoEditorReducer(edited, { type: "saved", layout: edited.draft })
     expect(isBentoDirty(saved)).toBe(false)
     expect(saved.saved.desktop.items).toHaveLength(1)
+})
+
+test("a change made while saving stays unsaved", () => {
+    const sent = edited.draft
+    const changedMeanwhile = bentoEditorReducer(edited, { type: "remove", tileId: first })
+    const saved = bentoEditorReducer(changedMeanwhile, { type: "saved", layout: sent })
+
+    expect(saved.saved).toBe(sent)
+    expect(isBentoDirty(saved)).toBe(true)
 })
 
 test("tile order does not make a layout dirty", () => {

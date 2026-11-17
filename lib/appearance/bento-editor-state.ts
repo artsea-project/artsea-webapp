@@ -34,7 +34,7 @@ export type BentoEditorAction =
     | ({ type: "replaceContent"; tileId: string } & TileContent)
     | { type: "remove"; tileId: string }
     | { type: "revert" }
-    | { type: "saved" }
+    | { type: "saved"; layout: BentoBoxLayout }
 
 function mapViews(
     layout: BentoBoxLayout,
@@ -230,7 +230,7 @@ export function bentoEditorReducer(
         case "revert":
             return { ...state, draft: state.saved }
         case "saved":
-            return { ...state, saved: state.draft }
+            return { ...state, saved: action.layout }
     }
 }
 
