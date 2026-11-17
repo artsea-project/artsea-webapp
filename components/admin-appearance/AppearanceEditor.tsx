@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from "react"
 
 import { useLeaveGuard } from "@/components/AdminLeaveGuard"
+import { BentoEditor } from "@/components/admin-appearance/BentoEditor"
 import { ThemeEditor } from "@/components/admin-appearance/ThemeEditor"
 import type { AppearanceData } from "@/lib/appearance/queries"
 
@@ -26,7 +27,9 @@ export function AppearanceEditor({ data }: { data: AppearanceData }) {
 
     return (
         <div className="flex max-w-5xl flex-col gap-10">
-            <Section id="bento-heading" title="Kafelki BentoBox - strona główna" />
+            <Section id="bento-heading" title="Kafelki BentoBox - strona główna">
+                <BentoEditor saved={data.layout} artworkMeta={data.artworkMeta} />
+            </Section>
             <Section id="theme-heading" title="Czcionki i kolorystyka">
                 <ThemeEditor saved={data.theme} onDirtyChange={setIsThemeDirty} />
             </Section>
