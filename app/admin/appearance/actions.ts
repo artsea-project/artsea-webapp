@@ -14,6 +14,7 @@ import { BENTO_CACHE_TAG } from "@/lib/bento"
 import { DESKTOP_GRID } from "@/lib/bento-grid"
 import { normalizeBentoLayout } from "@/lib/bento-layout"
 import { SITE_THEME_CACHE_TAG } from "@/lib/theme/get-site-theme"
+import { findMatchingPreset } from "@/lib/theme/presets"
 import { isRecord } from "@/lib/theme/record"
 import { defaultSiteTheme } from "@/lib/theme/theme"
 import type { BentoBoxLayout } from "@/types/bento"
@@ -62,8 +63,15 @@ export async function saveSiteTheme(input: {
     if (!result.ok) return { status: "error", errors: result.errors }
 
     const saved = (await getSavedSiteSettings())?.theme ?? defaultSiteTheme
+    const { fonts, colors } = result
     await upsertSiteSettings({
-        theme: { ...defaultSiteTheme, ...saved, fonts: result.fonts, colors: result.colors },
+        theme: {
+            ...defaultSiteTheme,
+            ...saved,
+            fonts,
+            colors,
+            presetTheme: findMatchingPreset({ fonts, colors }) ?? saved.presetTheme,
+        },
     })
     updateTag(SITE_THEME_CACHE_TAG)
     refresh()
