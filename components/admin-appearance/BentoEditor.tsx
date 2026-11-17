@@ -55,6 +55,12 @@ function phoneFrameSize(availableWidth: number): FrameSize {
     return { width, height: width / PHONE_WIDTH_TO_HEIGHT }
 }
 
+function previewFrameHeight(view: BentoView, availableWidth: number): number {
+    return view === "mobile"
+        ? phoneFrameSize(availableWidth).height
+        : desktopFrameHeight(availableWidth)
+}
+
 function PhoneFrame({ size, children }: { size?: FrameSize; children: ReactNode }) {
     return (
         <div
@@ -153,6 +159,7 @@ export function BentoEditor({ saved, artworkMeta, artworks, onDirtyChange }: Ben
         mounted: isFrameAreaMeasured,
     } = useContainerWidth({ measureBeforeMount: true })
     const phoneSize = isFrameAreaMeasured ? phoneFrameSize(frameAreaWidth) : undefined
+    const previewHeight = isFrameAreaMeasured ? previewFrameHeight(view, frameAreaWidth) : undefined
     const [preset, setPreset] = useState<TilePreset>("1:1")
     const [pickerTarget, setPickerTarget] = useState<PickerTarget | null>(null)
     const { isSaving, isSaved, error, save, reset } = useSectionSave()
@@ -234,6 +241,7 @@ export function BentoEditor({ saved, artworkMeta, artworks, onDirtyChange }: Ben
                 </Tabs>
                 <TileList
                     items={state.draft[view].items}
+                    maxHeight={previewHeight}
                     artworkMeta={artworkMeta}
                     onReplace={(tileId) => setPickerTarget({ kind: "replace", tileId })}
                     onRemove={(tileId) => dispatch({ type: "remove", tileId })}
