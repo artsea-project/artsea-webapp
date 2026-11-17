@@ -110,6 +110,21 @@ function editorGap(view: BentoView, width: number): number {
     return Math.max(MIN_GAP, Math.round((EDITOR_GAP_SCALE * gap * width) / publicWidth))
 }
 
+function fieldMetrics(view: BentoView, width: number) {
+    const gap = editorGap(view, width)
+    const columns = BENTO_VIEW_GRIDS[view].columns / FIELD_SIZE
+    const rowHeight = (width - (columns - 1) * gap) / columns
+    return { gap, columns, rowHeight }
+}
+
+function heightOfRows(rows: number, { rowHeight, gap }: { rowHeight: number; gap: number }) {
+    return rows * rowHeight + (rows - 1) * gap
+}
+
+export function desktopCanvasHeight(width: number): number {
+    return heightOfRows(BENTO_VIEW_GRIDS.desktop.rows / FIELD_SIZE, fieldMetrics("desktop", width))
+}
+
 function toGridItems(items: BentoLayoutItem[]): Layout {
     return items.map((item) => ({
         i: item.tileId,
@@ -201,12 +216,10 @@ export function BentoGridCanvas({
     const [swapTargetIds, setSwapTargetIds] = useState<string[]>([])
     const [isMovingTile, setIsMovingTile] = useState(false)
     const grid = BENTO_VIEW_GRIDS[view]
-    const gap = editorGap(view, width)
-    const fieldColumns = grid.columns / FIELD_SIZE
+    const metrics = fieldMetrics(view, width)
+    const { gap, columns: fieldColumns, rowHeight } = metrics
     const fieldRows = grid.rows / FIELD_SIZE
-    const rowHeight = (width - (fieldColumns - 1) * gap) / fieldColumns
-    const rows = visibleFieldRows(view, items, isMovingTile)
-    const height = rows * rowHeight + (rows - 1) * gap
+    const height = heightOfRows(visibleFieldRows(view, items, isMovingTile), metrics)
 
     function snapBack() {
         setRevision(revision + 1)
