@@ -99,4 +99,16 @@ test.describe("semantic theme fonts", () => {
         expect(resolved.variables["--site-font-body"]).toContain("--font-inter")
         expect(resolved.variables["--site-font-mono"]).toContain("--font-geist-mono")
     })
+
+    test("treats a font the editor cannot offer like an unknown one", () => {
+        const resolved = resolveThemeFonts({
+            primaryFont: "Geist Mono",
+            secondaryFont: "Geist Mono",
+            additionalFont: "Geist Mono",
+        })
+
+        expect(resolved.variables["--site-font-primary"]).toContain("--font-playfair-display")
+        expect(resolved.variables["--site-font-secondary"]).toContain("--font-inter")
+        expect(resolved.variables["--site-font-body"]).toContain("--font-inter")
+    })
 })
