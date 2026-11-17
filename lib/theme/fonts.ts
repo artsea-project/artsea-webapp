@@ -71,12 +71,8 @@ export interface ResolvedThemeFonts {
     variables: ThemeFontVariables
 }
 
-function isFontName(value: unknown): value is FontName {
-    return typeof value === "string" && Object.hasOwn(fontCatalog, value)
-}
-
 function resolveFontName(value: unknown, fallback: FontName): FontName {
-    return isFontName(value) ? value : fallback
+    return isSelectableFontName(value) ? value : fallback
 }
 
 export function resolveThemeFonts(fonts?: Partial<SiteThemeFonts> | null): ResolvedThemeFonts {
