@@ -1,4 +1,4 @@
-import { THEME_PRESETS, type ThemePresetId } from "@/lib/theme/presets"
+import { THEME_PRESETS, isSameTheme, type ThemePresetId } from "@/lib/theme/presets"
 import type { SiteThemeColors, SiteThemeFonts } from "@/types/theme"
 
 export type ThemeDraft = { fonts: SiteThemeFonts; colors: SiteThemeColors }
@@ -41,5 +41,5 @@ export function themeEditorReducer(
 }
 
 export function isThemeDirty(state: ThemeEditorState): boolean {
-    return JSON.stringify(state.saved) !== JSON.stringify(state.draft)
+    return !isSameTheme(state.saved, state.draft)
 }
