@@ -38,16 +38,16 @@ export const THEME_PRESETS: Record<ThemePresetId, ThemePreset> = {
 
 type ThemeValues = { fonts: SiteThemeFonts; colors: SiteThemeColors }
 
-function matchesPreset(preset: ThemePreset, theme: ThemeValues): boolean {
-    const fontFields = Object.keys(preset.fonts) as (keyof SiteThemeFonts)[]
-    const colorFields = Object.keys(preset.colors) as (keyof SiteThemeColors)[]
+export function isSameTheme(left: ThemeValues, right: ThemeValues): boolean {
+    const fontFields = Object.keys(left.fonts) as (keyof SiteThemeFonts)[]
+    const colorFields = Object.keys(left.colors) as (keyof SiteThemeColors)[]
     return (
-        fontFields.every((field) => preset.fonts[field] === theme.fonts[field]) &&
-        colorFields.every((field) => isSameColor(preset.colors[field], theme.colors[field]))
+        fontFields.every((field) => left.fonts[field] === right.fonts[field]) &&
+        colorFields.every((field) => isSameColor(left.colors[field], right.colors[field]))
     )
 }
 
 export function findMatchingPreset(theme: ThemeValues): ThemePresetId | null {
     const ids = Object.keys(THEME_PRESETS) as ThemePresetId[]
-    return ids.find((id) => matchesPreset(THEME_PRESETS[id], theme)) ?? null
+    return ids.find((id) => isSameTheme(THEME_PRESETS[id], theme)) ?? null
 }
