@@ -61,6 +61,16 @@ test("a change made while saving stays unsaved", () => {
     expect(isThemeDirty(saved)).toBe(true)
 })
 
+test("the same color written in other letter case is not a change", () => {
+    const state = themeEditorReducer(initial, {
+        type: "setColor",
+        field: "foregroundColor",
+        value: saved.colors.foregroundColor.toLowerCase(),
+    })
+
+    expect(isThemeDirty(state)).toBe(false)
+})
+
 test("picking the saved values again is not a change", () => {
     const state = themeEditorReducer(initial, { type: "applyPreset", preset: "default" })
 
