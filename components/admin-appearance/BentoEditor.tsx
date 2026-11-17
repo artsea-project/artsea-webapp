@@ -18,7 +18,22 @@ const VIEWS: BentoView[] = ["desktop", "mobile"]
 
 const VIEW_LABELS: Record<BentoView, string> = { desktop: "Desktop", mobile: "Mobile" }
 
-function ViewFrame({ children }: { children: ReactNode }) {
+function PhoneFrame({ children }: { children: ReactNode }) {
+    return (
+        <div className="mx-auto w-full rounded-[2rem] border-4 border-foreground p-3 sm:w-[367px]">
+            <div
+                data-bento-scroll
+                className="h-[560px] overflow-y-auto overscroll-contain rounded-[1.25rem] p-1"
+            >
+                {children}
+            </div>
+        </div>
+    )
+}
+
+function ViewFrame({ view, children }: { view: BentoView; children: ReactNode }) {
+    if (view === "mobile") return <PhoneFrame>{children}</PhoneFrame>
+
     return (
         <div className="w-full max-w-[610px] rounded-xl border border-dashed border-border p-1">
             {children}
@@ -67,7 +82,7 @@ export function BentoEditor({ saved, artworkMeta, onDirtyChange }: BentoEditorPr
                 </TabsList>
                 {VIEWS.map((name) => (
                     <TabsContent key={name} value={name} className="flex flex-col gap-2 pt-4">
-                        <ViewFrame>
+                        <ViewFrame view={name}>
                             <BentoGridCanvas
                                 view={name}
                                 items={state.draft[name].items}
