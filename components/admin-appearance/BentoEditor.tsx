@@ -203,7 +203,7 @@ export function BentoEditor({ saved, artworkMeta, artworks, onDirtyChange }: Ben
                             <TabsContent
                                 key={name}
                                 value={name}
-                                className="flex flex-col gap-2 pt-4"
+                                className="flex flex-col gap-4 pt-4"
                             >
                                 <ViewFrame view={name} phoneSize={phoneSize}>
                                     <BentoGridCanvas
