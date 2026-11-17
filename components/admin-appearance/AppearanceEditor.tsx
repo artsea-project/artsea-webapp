@@ -32,6 +32,7 @@ export function AppearanceEditor({ data }: { data: AppearanceData }) {
                 <BentoEditor
                     saved={data.layout}
                     artworkMeta={data.artworkMeta}
+                    artworks={data.artworks}
                     onDirtyChange={setIsBentoDirty}
                 />
             </Section>

@@ -1,5 +1,5 @@
 import Image from "next/image"
-import { Trash2 } from "lucide-react"
+import { Pencil, Trash2 } from "lucide-react"
 
 import { bentoImageProps } from "@/components/bento/bento-card"
 import { Button } from "@/components/ui/button"
@@ -10,16 +10,18 @@ import type { BentoLayoutItem } from "@/types/bento"
 type TileListProps = {
     items: BentoLayoutItem[]
     artworkMeta: Record<string, ArtworkMeta>
+    onReplace: (tileId: string) => void
     onRemove: (tileId: string) => void
 }
 
 type TileRowProps = {
     item: BentoLayoutItem
     meta?: ArtworkMeta
+    onReplace: () => void
     onRemove: () => void
 }
 
-function TileRow({ item, meta, onRemove }: TileRowProps) {
+function TileRow({ item, meta, onReplace, onRemove }: TileRowProps) {
     const title = meta?.title ?? "Bez tytułu"
 
     return (
@@ -38,6 +40,15 @@ function TileRow({ item, meta, onRemove }: TileRowProps) {
                 type="button"
                 variant="ghost"
                 size="icon"
+                aria-label={`Zmień pracę albo zdjęcie: ${title}`}
+                onClick={onReplace}
+            >
+                <Pencil aria-hidden />
+            </Button>
+            <Button
+                type="button"
+                variant="ghost"
+                size="icon"
                 aria-label={`Usuń kafelek: ${title}`}
                 onClick={onRemove}
             >
@@ -47,7 +58,7 @@ function TileRow({ item, meta, onRemove }: TileRowProps) {
     )
 }
 
-export function TileList({ items, artworkMeta, onRemove }: TileListProps) {
+export function TileList({ items, artworkMeta, onReplace, onRemove }: TileListProps) {
     return (
         <section className="flex flex-col gap-6" aria-labelledby="tile-list-heading">
             <h3
@@ -68,6 +79,7 @@ export function TileList({ items, artworkMeta, onRemove }: TileListProps) {
                             key={item.tileId}
                             item={item}
                             meta={artworkMeta[item.artPieceId]}
+                            onReplace={() => onReplace(item.tileId)}
                             onRemove={() => onRemove(item.tileId)}
                         />
                     ))}
