@@ -189,7 +189,6 @@ function box(
     return { tileId, artPieceId, mediaId, columnStart, rowStart, columnSpan, rowSpan }
 }
 
-// The sample seed desktop layout: twelve fields, fully used.
 const seedDesktop = [
     box("a", 1, 1, 3, 6),
     box("b", 4, 1, 3, 3),
