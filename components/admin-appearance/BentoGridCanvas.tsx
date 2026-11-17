@@ -1,7 +1,8 @@
 "use client"
 
-import { useRef, useState, type RefObject } from "react"
+import { useRef, useState, useSyncExternalStore, type RefObject } from "react"
 import Image from "next/image"
+import { GripVertical } from "lucide-react"
 import ReactGridLayout, {
     noCompactor,
     useContainerWidth,
@@ -29,6 +30,24 @@ import type { BentoLayoutItem } from "@/types/bento"
 const compactor = { ...noCompactor, allowOverlap: true }
 
 const RESIZE_HANDLES: ResizeHandleAxis[] = ["n", "e", "s", "w", "ne", "nw", "se", "sw"]
+
+const TOUCH_RESIZE_HANDLES: ResizeHandleAxis[] = ["ne", "se", "sw"]
+
+const COARSE_POINTER = "(pointer: coarse)"
+
+function subscribeToPointer(onChange: () => void) {
+    const query = window.matchMedia(COARSE_POINTER)
+    query.addEventListener("change", onChange)
+    return () => query.removeEventListener("change", onChange)
+}
+
+function useCoarsePointer(): boolean {
+    return useSyncExternalStore(
+        subscribeToPointer,
+        () => window.matchMedia(COARSE_POINTER).matches,
+        () => false
+    )
+}
 
 const PUBLIC_GAP: Record<BentoView, { width: number; gap: number }> = {
     desktop: { width: 1155, gap: 21 },
@@ -147,6 +166,10 @@ function Tile({
                 draggable={false}
                 className="pointer-events-none object-cover"
             />
+            <span className="bento-drag-handle absolute top-1.5 left-1.5 z-10 flex size-8 cursor-grab touch-none items-center justify-center rounded-md bg-background/85 text-foreground shadow-sm">
+                <GripVertical className="size-4" aria-hidden />
+                <span className="sr-only">Przeciągnij kafelek {title}</span>
+            </span>
             {meta?.isVisible === false && (
                 <span className="absolute right-1.5 bottom-1.5 rounded-full bg-background/85 px-2 py-0.5 text-xs text-foreground">
                     Ukryta
@@ -173,6 +196,7 @@ export function BentoGridCanvas({
 }: BentoGridCanvasProps) {
     const { width, containerRef, mounted } = useContainerWidth()
     const autoScroll = useEdgeAutoScroll(containerRef)
+    const isCoarsePointer = useCoarsePointer()
     const [revision, setRevision] = useState(0)
     const [swapTargetIds, setSwapTargetIds] = useState<string[]>([])
     const [isMovingTile, setIsMovingTile] = useState(false)
@@ -242,8 +266,16 @@ export function BentoGridCanvas({
                         containerPadding: [0, 0],
                         maxRows: fieldRows,
                     }}
-                    dragConfig={{ enabled: true, bounded: true, threshold: 3 }}
-                    resizeConfig={{ enabled: true, handles: RESIZE_HANDLES }}
+                    dragConfig={{
+                        enabled: true,
+                        bounded: true,
+                        threshold: 3,
+                        handle: isCoarsePointer ? ".bento-drag-handle" : undefined,
+                    }}
+                    resizeConfig={{
+                        enabled: true,
+                        handles: isCoarsePointer ? TOUCH_RESIZE_HANDLES : RESIZE_HANDLES,
+                    }}
                     compactor={compactor}
                     onDragStart={() => setIsMovingTile(true)}
                     onDrag={handleDrag}
