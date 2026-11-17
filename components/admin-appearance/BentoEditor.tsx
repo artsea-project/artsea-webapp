@@ -47,7 +47,7 @@ function PhoneFrame({ height, children }: { height?: number; children: ReactNode
         >
             <div
                 data-bento-scroll
-                className="h-full overflow-y-auto overscroll-contain rounded-[1.25rem] p-1"
+                className="h-full [scrollbar-gutter:stable] overflow-y-auto overscroll-contain rounded-[1.25rem] p-1"
             >
                 {children}
             </div>
@@ -135,7 +135,7 @@ export function BentoEditor({ saved, artworkMeta, artworks, onDirtyChange }: Ben
         width: frameAreaWidth,
         containerRef: frameAreaRef,
         mounted: isFrameAreaMeasured,
-    } = useContainerWidth()
+    } = useContainerWidth({ measureBeforeMount: true })
     const matchingFrameHeight = isFrameAreaMeasured ? desktopFrameHeight(frameAreaWidth) : undefined
     const [preset, setPreset] = useState<TilePreset>("1:1")
     const [pickerTarget, setPickerTarget] = useState<PickerTarget | null>(null)
