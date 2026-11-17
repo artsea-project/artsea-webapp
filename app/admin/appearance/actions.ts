@@ -32,15 +32,21 @@ async function upsertSiteSettings(values: { theme?: SiteTheme; layoutBentoBox?: 
         .onConflictDoUpdate({ target: siteSettings.isSingleton, set: values })
 }
 
-function readSavedTileIds(layout: unknown): Set<string> {
+function readSavedTileWorks(layout: unknown): Map<string, string> {
     const desktop = isRecord(layout) ? layout.desktop : undefined
-    return new Set(normalizeBentoLayout(desktop, DESKTOP_GRID).map((item) => item.tileId))
+    return new Map(
+        normalizeBentoLayout(desktop, DESKTOP_GRID).map((item) => [item.tileId, item.artPieceId])
+    )
 }
 
 export async function saveBentoLayout(layout: BentoBoxLayout): Promise<SaveBentoResult> {
     const [settings, catalog] = await Promise.all([getSavedSiteSettings(), getArtworkCatalog()])
 
-    const result = validateBentoLayout(layout, readSavedTileIds(settings?.layoutBentoBox), catalog)
+    const result = validateBentoLayout(
+        layout,
+        readSavedTileWorks(settings?.layoutBentoBox),
+        catalog
+    )
     if (!result.ok) return { status: "error", message: result.message }
 
     await upsertSiteSettings({ layoutBentoBox: result.layout })
