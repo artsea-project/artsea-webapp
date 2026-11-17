@@ -20,11 +20,14 @@ const UNAVAILABLE_CONTENT = "Jedna z wybranych prac albo jedno ze zdjęć nie je
 
 function hasValidContent(
     item: BentoLayoutItem,
-    savedTileIds: Set<string>,
+    savedTileWorks: Map<string, string>,
     catalog: ArtworkCatalog
 ): boolean {
     if (catalog.mediaArtPiece.get(item.mediaId) !== item.artPieceId) return false
-    return savedTileIds.has(item.tileId) || catalog.visibleArtPieceIds.has(item.artPieceId)
+    return (
+        savedTileWorks.get(item.tileId) === item.artPieceId ||
+        catalog.visibleArtPieceIds.has(item.artPieceId)
+    )
 }
 
 function readViewItems(layout: unknown, view: keyof BentoBoxLayout): unknown[] | null {
@@ -34,7 +37,7 @@ function readViewItems(layout: unknown, view: keyof BentoBoxLayout): unknown[] |
 
 export function validateBentoLayout(
     next: unknown,
-    savedTileIds: Set<string>,
+    savedTileWorks: Map<string, string>,
     catalog: ArtworkCatalog
 ): BentoValidationResult {
     const desktopItems = readViewItems(next, "desktop")
@@ -48,7 +51,7 @@ export function validateBentoLayout(
     if (droppedAnyTile || !hasSameTiles(desktop, mobile)) {
         return { ok: false, message: INVALID_LAYOUT }
     }
-    if (!desktop.every((item) => hasValidContent(item, savedTileIds, catalog))) {
+    if (!desktop.every((item) => hasValidContent(item, savedTileWorks, catalog))) {
         return { ok: false, message: UNAVAILABLE_CONTENT }
     }
 

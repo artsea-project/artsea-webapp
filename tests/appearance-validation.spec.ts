@@ -35,8 +35,9 @@ function both(...items: BentoLayoutItem[]): BentoBoxLayout {
     return { desktop: { items }, mobile: { items: items.map((item) => ({ ...item })) } }
 }
 
-function validate(layout: unknown, savedTileIds: string[] = []) {
-    return validateBentoLayout(layout, new Set(savedTileIds), catalog)
+function validate(layout: unknown, savedTiles: BentoLayoutItem[] = []) {
+    const savedTileWorks = new Map(savedTiles.map((item) => [item.tileId, item.artPieceId]))
+    return validateBentoLayout(layout, savedTileWorks, catalog)
 }
 
 test("accepts a layout with the same tiles in both views", () => {
@@ -77,10 +78,20 @@ test("rejects an image that belongs to another work or no longer exists", () => 
 })
 
 test("rejects a new tile with a hidden work but keeps an already saved one", () => {
-    const hiddenTile = both(tile(firstTile, 1, hiddenWork, hiddenImage))
+    const savedHiddenTile = tile(firstTile, 1, hiddenWork, hiddenImage)
+    const hiddenTile = both(savedHiddenTile)
 
     expect(validate(hiddenTile).ok).toBe(false)
-    expect(validate(hiddenTile, [firstTile]).ok).toBe(true)
+    expect(validate(hiddenTile, [savedHiddenTile]).ok).toBe(true)
+})
+
+test("rejects a hidden work put on a saved tile that showed another work", () => {
+    const swapped = both(tile(firstTile, 1, hiddenWork, hiddenImage))
+
+    expect(validate(swapped, [tile(firstTile)])).toEqual({
+        ok: false,
+        message: "Jedna z wybranych prac albo jedno ze zdjęć nie jest już dostępne.",
+    })
 })
 
 const validTheme = {
