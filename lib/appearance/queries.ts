@@ -1,4 +1,4 @@
-import { asc } from "drizzle-orm"
+import { asc, eq, inArray } from "drizzle-orm"
 
 import { db } from "@/db"
 import { artPieces, media } from "@/db/schema"
@@ -37,7 +37,9 @@ function groupTileImagesByWork(rows: MediaRow[]): Map<string, string[]> {
     const imagesByWork = new Map<string, string[]>()
     for (const row of rows) {
         if (!isBentoMediaType(row.fileType)) continue
-        imagesByWork.set(row.artPieceId, [...(imagesByWork.get(row.artPieceId) ?? []), row.mediaId])
+        const images = imagesByWork.get(row.artPieceId)
+        if (images) images.push(row.mediaId)
+        else imagesByWork.set(row.artPieceId, [row.mediaId])
     }
     return imagesByWork
 }
@@ -82,8 +84,27 @@ function toCatalog(records: ArtworkRecord[]): ArtworkCatalog {
     }
 }
 
-export async function getArtworkCatalog(): Promise<ArtworkCatalog> {
-    return toCatalog(await loadArtworkRecords())
+export async function getArtworkCatalog(mediaIds: string[]): Promise<ArtworkCatalog> {
+    if (mediaIds.length === 0) return { visibleArtPieceIds: new Set(), mediaArtPiece: new Map() }
+
+    const rows = await db
+        .select({
+            mediaId: media.mediaId,
+            artPieceId: media.artPieceId,
+            fileType: media.fileType,
+            isVisible: artPieces.isVisible,
+        })
+        .from(media)
+        .innerJoin(artPieces, eq(media.artPieceId, artPieces.artPieceId))
+        .where(inArray(media.mediaId, mediaIds))
+    const tileImages = rows.filter((row) => isBentoMediaType(row.fileType))
+
+    return {
+        visibleArtPieceIds: new Set(
+            tileImages.filter((row) => row.isVisible).map((row) => row.artPieceId)
+        ),
+        mediaArtPiece: new Map(tileImages.map((row) => [row.mediaId, row.artPieceId])),
+    }
 }
 
 export async function getSavedSiteSettings() {

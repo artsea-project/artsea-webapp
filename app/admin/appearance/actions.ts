@@ -17,7 +17,7 @@ import { SITE_THEME_CACHE_TAG } from "@/lib/theme/get-site-theme"
 import { findMatchingPreset } from "@/lib/theme/presets"
 import { isRecord } from "@/lib/theme/record"
 import { defaultSiteTheme } from "@/lib/theme/theme"
-import type { BentoBoxLayout } from "@/types/bento"
+import type { BentoBoxLayout, BentoLayoutItem } from "@/types/bento"
 import type { SiteTheme, SiteThemeColors, SiteThemeFonts } from "@/types/theme"
 
 export type SaveBentoResult = { status: "success" } | { status: "error"; message: string }
@@ -33,21 +33,22 @@ async function upsertSiteSettings(values: { theme?: SiteTheme; layoutBentoBox?: 
         .onConflictDoUpdate({ target: siteSettings.isSingleton, set: values })
 }
 
-function readSavedTileWorks(layout: unknown): Map<string, string> {
+function readDesktopTiles(layout: unknown): BentoLayoutItem[] {
     const desktop = isRecord(layout) ? layout.desktop : undefined
-    return new Map(
-        normalizeBentoLayout(desktop, DESKTOP_GRID).map((item) => [item.tileId, item.artPieceId])
-    )
+    return normalizeBentoLayout(desktop, DESKTOP_GRID)
 }
 
 export async function saveBentoLayout(layout: BentoBoxLayout): Promise<SaveBentoResult> {
-    const [settings, catalog] = await Promise.all([getSavedSiteSettings(), getArtworkCatalog()])
-
-    const result = validateBentoLayout(
-        layout,
-        readSavedTileWorks(settings?.layoutBentoBox),
-        catalog
+    const mediaIds = readDesktopTiles(layout).map((item) => item.mediaId)
+    const [settings, catalog] = await Promise.all([
+        getSavedSiteSettings(),
+        getArtworkCatalog(mediaIds),
+    ])
+    const savedTileWorks = new Map(
+        readDesktopTiles(settings?.layoutBentoBox).map((item) => [item.tileId, item.artPieceId])
     )
+
+    const result = validateBentoLayout(layout, savedTileWorks, catalog)
     if (!result.ok) return { status: "error", message: result.message }
 
     await upsertSiteSettings({ layoutBentoBox: result.layout })
