@@ -112,6 +112,18 @@
     border-radius: 12px;
 }
 
+.bento-canvas .react-resizable-handle {
+    touch-action: none;
+}
+
+@media (pointer: coarse) {
+    .bento-canvas .react-grid-item > .react-resizable-handle {
+        width: 44px;
+        height: 44px;
+        opacity: 1;
+    }
+}
+
 @layer base {
     * {
         @apply border-border outline-ring/50;
