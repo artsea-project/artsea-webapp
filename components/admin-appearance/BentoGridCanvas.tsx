@@ -18,6 +18,7 @@ import {
     BENTO_VIEW_GRIDS,
     findDisplacedTiles,
     moveTile,
+    swapWithTiles,
     type BentoView,
 } from "@/lib/appearance/bento-editor-state"
 import type { ArtworkMeta } from "@/lib/appearance/queries"
@@ -104,9 +105,16 @@ type BentoGridCanvasProps = {
     items: BentoLayoutItem[]
     artworkMeta: Record<string, ArtworkMeta>
     onMove: (tileId: string, box: TileBox) => void
+    onSwap: (sourceId: string, targetIds: string[]) => void
 }
 
-export function BentoGridCanvas({ view, items, artworkMeta, onMove }: BentoGridCanvasProps) {
+export function BentoGridCanvas({
+    view,
+    items,
+    artworkMeta,
+    onMove,
+    onSwap,
+}: BentoGridCanvasProps) {
     const { width, containerRef, mounted } = useContainerWidth()
     const [revision, setRevision] = useState(0)
     const [swapTargetIds, setSwapTargetIds] = useState<string[]>([])
@@ -117,12 +125,16 @@ export function BentoGridCanvas({ view, items, artworkMeta, onMove }: BentoGridC
     const rowHeight = (width - (fieldColumns - 1) * gap) / fieldColumns
     const height = fieldRows * rowHeight + (fieldRows - 1) * gap
 
+    function snapBack() {
+        setRevision(revision + 1)
+    }
+
     const moveOrSnapBack: EventCallback = (_layout, _oldItem, newItem) => {
         const box = newItem && toBox(newItem)
         if (newItem && box && moveTile(items, newItem.i, box, grid)) {
             onMove(newItem.i, box)
         } else {
-            setRevision(revision + 1)
+            snapBack()
         }
     }
 
@@ -131,9 +143,16 @@ export function BentoGridCanvas({ view, items, artworkMeta, onMove }: BentoGridC
         if (targets.join() !== swapTargetIds.join()) setSwapTargetIds(targets)
     }
 
-    const handleDragStop: EventCallback = (...args) => {
+    const handleDragStop: EventCallback = (layout, oldItem, newItem, ...rest) => {
         setSwapTargetIds([])
-        moveOrSnapBack(...args)
+        const targets = newItem ? findDisplacedTiles(items, newItem.i, toBox(newItem)) : []
+        if (targets.length === 0) return moveOrSnapBack(layout, oldItem, newItem, ...rest)
+
+        if (newItem && swapWithTiles(items, newItem.i, targets, grid)) {
+            onSwap(newItem.i, targets)
+        } else {
+            snapBack()
+        }
     }
 
     return (
