@@ -177,12 +177,13 @@ export function BentoEditor({ saved, artworkMeta, artworks, onDirtyChange }: Ben
     }
 
     function handleSave() {
+        const layout = state.draft
         save(
             async () => {
-                const result = await saveBentoLayout(state.draft)
+                const result = await saveBentoLayout(layout)
                 return result.status === "success" ? null : result.message
             },
-            () => dispatch({ type: "saved" })
+            () => dispatch({ type: "saved", layout })
         )
     }
 
