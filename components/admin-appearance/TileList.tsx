@@ -1,6 +1,8 @@
 import Image from "next/image"
+import { Trash2 } from "lucide-react"
 
 import { bentoImageProps } from "@/components/bento/bento-card"
+import { Button } from "@/components/ui/button"
 import type { ArtworkMeta } from "@/lib/appearance/queries"
 import { describePreset } from "@/lib/bento-grid"
 import type { BentoLayoutItem } from "@/types/bento"
@@ -8,26 +10,44 @@ import type { BentoLayoutItem } from "@/types/bento"
 type TileListProps = {
     items: BentoLayoutItem[]
     artworkMeta: Record<string, ArtworkMeta>
+    onRemove: (tileId: string) => void
 }
 
-function TileRow({ item, meta }: { item: BentoLayoutItem; meta?: ArtworkMeta }) {
+type TileRowProps = {
+    item: BentoLayoutItem
+    meta?: ArtworkMeta
+    onRemove: () => void
+}
+
+function TileRow({ item, meta, onRemove }: TileRowProps) {
+    const title = meta?.title ?? "Bez tytułu"
+
     return (
         <li className="flex items-center gap-3 rounded-lg border bg-background p-2">
             <span className="relative size-10 shrink-0 overflow-hidden rounded-md bg-muted">
                 <Image {...bentoImageProps(item.mediaId, "40px")} alt="" className="object-cover" />
             </span>
             <span className="flex min-w-0 flex-1 flex-col">
-                <span className="truncate text-sm font-medium">{meta?.title ?? "Bez tytułu"}</span>
+                <span className="truncate text-sm font-medium">{title}</span>
                 <span className="text-xs text-muted-foreground">
                     Rozmiar: {describePreset(item)}
                     {meta?.isVisible === false && ", praca ukryta"}
                 </span>
             </span>
+            <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label={`Usuń kafelek: ${title}`}
+                onClick={onRemove}
+            >
+                <Trash2 aria-hidden />
+            </Button>
         </li>
     )
 }
 
-export function TileList({ items, artworkMeta }: TileListProps) {
+export function TileList({ items, artworkMeta, onRemove }: TileListProps) {
     return (
         <section className="flex flex-col gap-6" aria-labelledby="tile-list-heading">
             <h3
@@ -48,6 +68,7 @@ export function TileList({ items, artworkMeta }: TileListProps) {
                             key={item.tileId}
                             item={item}
                             meta={artworkMeta[item.artPieceId]}
+                            onRemove={() => onRemove(item.tileId)}
                         />
                     ))}
                 </ul>
