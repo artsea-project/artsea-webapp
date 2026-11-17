@@ -16,7 +16,6 @@ const playfairDisplay = Playfair_Display({
     subsets: ["latin", "latin-ext"],
     weight: ["400", "700"],
     fallback: ["Georgia", "Times New Roman", "serif"],
-    preload: false,
 })
 
 const lora = Lora({
@@ -48,7 +47,6 @@ const inter = Inter({
     subsets: ["latin", "latin-ext"],
     weight: ["400", "600", "700"],
     fallback: ["Arial", "Helvetica", "sans-serif"],
-    preload: false,
 })
 
 const poppins = Poppins({
