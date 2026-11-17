@@ -3,6 +3,7 @@
 import { useEffect, useReducer, useState, type ReactNode } from "react"
 
 import { saveBentoLayout } from "@/app/admin/appearance/actions"
+import { ArtworkPickerDialog } from "@/components/admin-appearance/ArtworkPickerDialog"
 import { BentoGridCanvas } from "@/components/admin-appearance/BentoGridCanvas"
 import { SaveBar, useSectionSave } from "@/components/admin-appearance/SaveBar"
 import { TileList } from "@/components/admin-appearance/TileList"
@@ -12,7 +13,7 @@ import {
     isBentoDirty,
     type BentoView,
 } from "@/lib/appearance/bento-editor-state"
-import type { ArtworkMeta } from "@/lib/appearance/queries"
+import type { ArtworkMeta, PickerArtwork } from "@/lib/appearance/queries"
 import type { BentoBoxLayout } from "@/types/bento"
 
 const VIEWS: BentoView[] = ["desktop", "mobile"]
@@ -45,12 +46,14 @@ function ViewFrame({ view, children }: { view: BentoView; children: ReactNode })
 type BentoEditorProps = {
     saved: BentoBoxLayout
     artworkMeta: Record<string, ArtworkMeta>
+    artworks: PickerArtwork[]
     onDirtyChange: (isDirty: boolean) => void
 }
 
-export function BentoEditor({ saved, artworkMeta, onDirtyChange }: BentoEditorProps) {
+export function BentoEditor({ saved, artworkMeta, artworks, onDirtyChange }: BentoEditorProps) {
     const [state, dispatch] = useReducer(bentoEditorReducer, { saved, draft: saved })
     const [view, setView] = useState<BentoView>("desktop")
+    const [replacedTileId, setReplacedTileId] = useState<string | null>(null)
     const { isSaving, isSaved, error, save, reset } = useSectionSave()
     const isDirty = isBentoDirty(state)
 
@@ -112,6 +115,7 @@ export function BentoEditor({ saved, artworkMeta, onDirtyChange }: BentoEditorPr
                 <TileList
                     items={state.draft[view].items}
                     artworkMeta={artworkMeta}
+                    onReplace={setReplacedTileId}
                     onRemove={(tileId) => dispatch({ type: "remove", tileId })}
                 />
             </div>
@@ -122,6 +126,16 @@ export function BentoEditor({ saved, artworkMeta, onDirtyChange }: BentoEditorPr
                 error={error}
                 onSave={handleSave}
                 onRevert={handleRevert}
+            />
+            <ArtworkPickerDialog
+                open={replacedTileId !== null}
+                title="Zmień pracę albo zdjęcie"
+                artworks={artworks}
+                onOpenChange={(open) => !open && setReplacedTileId(null)}
+                onPick={(content) =>
+                    replacedTileId &&
+                    dispatch({ type: "replaceContent", tileId: replacedTileId, ...content })
+                }
             />
         </div>
     )
