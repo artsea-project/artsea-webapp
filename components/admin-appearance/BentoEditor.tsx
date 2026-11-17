@@ -5,6 +5,7 @@ import { useEffect, useReducer, useState, type ReactNode } from "react"
 import { saveBentoLayout } from "@/app/admin/appearance/actions"
 import { BentoGridCanvas } from "@/components/admin-appearance/BentoGridCanvas"
 import { SaveBar, useSectionSave } from "@/components/admin-appearance/SaveBar"
+import { TileList } from "@/components/admin-appearance/TileList"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
     bentoEditorReducer,
@@ -72,37 +73,44 @@ export function BentoEditor({ saved, artworkMeta, onDirtyChange }: BentoEditorPr
 
     return (
         <div className="flex flex-col gap-6">
-            <Tabs value={view} onValueChange={(value) => setView(value as BentoView)}>
-                <TabsList>
+            <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+                <Tabs
+                    value={view}
+                    onValueChange={(value) => setView(value as BentoView)}
+                    className="min-w-0"
+                >
+                    <TabsList>
+                        {VIEWS.map((name) => (
+                            <TabsTrigger key={name} value={name}>
+                                {VIEW_LABELS[name]}
+                            </TabsTrigger>
+                        ))}
+                    </TabsList>
                     {VIEWS.map((name) => (
-                        <TabsTrigger key={name} value={name}>
-                            {VIEW_LABELS[name]}
-                        </TabsTrigger>
+                        <TabsContent key={name} value={name} className="flex flex-col gap-2 pt-4">
+                            <ViewFrame view={name}>
+                                <BentoGridCanvas
+                                    view={name}
+                                    items={state.draft[name].items}
+                                    artworkMeta={artworkMeta}
+                                    onMove={(tileId, box) =>
+                                        dispatch({ type: "move", view: name, tileId, box })
+                                    }
+                                    onSwap={(sourceId, targetIds) =>
+                                        dispatch({ type: "swap", view: name, sourceId, targetIds })
+                                    }
+                                />
+                            </ViewFrame>
+                            <p className="text-xs text-muted-foreground">
+                                Przeciągnij kafelek na wolne miejsce, żeby go przesunąć, albo na
+                                inny kafelek, żeby zamienić je miejscami. Uchwytami na rogach i
+                                krawędziach zmienisz jego rozmiar.
+                            </p>
+                        </TabsContent>
                     ))}
-                </TabsList>
-                {VIEWS.map((name) => (
-                    <TabsContent key={name} value={name} className="flex flex-col gap-2 pt-4">
-                        <ViewFrame view={name}>
-                            <BentoGridCanvas
-                                view={name}
-                                items={state.draft[name].items}
-                                artworkMeta={artworkMeta}
-                                onMove={(tileId, box) =>
-                                    dispatch({ type: "move", view: name, tileId, box })
-                                }
-                                onSwap={(sourceId, targetIds) =>
-                                    dispatch({ type: "swap", view: name, sourceId, targetIds })
-                                }
-                            />
-                        </ViewFrame>
-                        <p className="text-xs text-muted-foreground">
-                            Przeciągnij kafelek na wolne miejsce, żeby go przesunąć, albo na inny
-                            kafelek, żeby zamienić je miejscami. Uchwytami na rogach i krawędziach
-                            zmienisz jego rozmiar.
-                        </p>
-                    </TabsContent>
-                ))}
-            </Tabs>
+                </Tabs>
+                <TileList items={state.draft[view].items} artworkMeta={artworkMeta} />
+            </div>
             <SaveBar
                 isDirty={isDirty}
                 isSaving={isSaving}
