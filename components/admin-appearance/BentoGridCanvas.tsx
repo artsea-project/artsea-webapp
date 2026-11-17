@@ -16,14 +16,13 @@ import "react-resizable/css/styles.css"
 
 import { bentoImageProps } from "@/components/bento/bento-card"
 import {
-    BENTO_VIEW_GRIDS,
     findDisplacedTiles,
     moveTile,
     swapWithTiles,
     type BentoView,
 } from "@/lib/appearance/bento-editor-state"
 import type { ArtworkMeta } from "@/lib/appearance/queries"
-import { FIELD_SIZE, type TileBox } from "@/lib/bento-grid"
+import { BENTO_VIEW_GRIDS, FIELD_SIZE, PUBLIC_GRID_GAP, type TileBox } from "@/lib/bento-grid"
 import { cn } from "@/lib/utils"
 import type { BentoLayoutItem } from "@/types/bento"
 
@@ -49,9 +48,9 @@ function useCoarsePointer(): boolean {
     )
 }
 
-const PUBLIC_GAP: Record<BentoView, { width: number; gap: number }> = {
-    desktop: { width: 1155, gap: 21 },
-    mobile: { width: 335, gap: 12 },
+const PUBLIC_WIDTH: Record<BentoView, number> = {
+    desktop: 1155,
+    mobile: 335,
 }
 
 const EDITOR_GAP_SCALE = 1.8
@@ -112,8 +111,8 @@ function useEdgeAutoScroll(containerRef: RefObject<HTMLDivElement | null>) {
 const MIN_GAP = 8
 
 function editorGap(view: BentoView, width: number): number {
-    const { width: publicWidth, gap } = PUBLIC_GAP[view]
-    return Math.max(MIN_GAP, Math.round((EDITOR_GAP_SCALE * gap * width) / publicWidth))
+    const scaled = (EDITOR_GAP_SCALE * PUBLIC_GRID_GAP[view] * width) / PUBLIC_WIDTH[view]
+    return Math.max(MIN_GAP, Math.round(scaled))
 }
 
 function fieldMetrics(view: BentoView, width: number) {
