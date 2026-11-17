@@ -37,6 +37,8 @@ const PUBLIC_GAP: Record<BentoView, { width: number; gap: number }> = {
 
 const EDITOR_GAP_SCALE = 1.8
 
+const MOBILE_SPARE_FIELDS = 2
+
 const MIN_GAP = 8
 
 function editorGap(view: BentoView, width: number): number {
@@ -58,12 +60,13 @@ function toGridItems(items: BentoLayoutItem[]): Layout {
     }))
 }
 
-function visibleFieldRows(view: BentoView, items: BentoLayoutItem[]): number {
+function visibleFieldRows(view: BentoView, items: BentoLayoutItem[], withSpare: boolean): number {
     const maxRows = BENTO_VIEW_GRIDS[view].rows / FIELD_SIZE
     if (view === "desktop") return maxRows
 
     const bottom = Math.max(0, ...items.map((item) => item.rowStart + item.rowSpan - 1))
-    return Math.min(maxRows, Math.max(1, bottom / FIELD_SIZE))
+    const spare = withSpare ? MOBILE_SPARE_FIELDS : 0
+    return Math.min(maxRows, Math.max(1, bottom / FIELD_SIZE + spare))
 }
 
 function toBox(item: LayoutItem): TileBox {
@@ -126,12 +129,13 @@ export function BentoGridCanvas({
     const { width, containerRef, mounted } = useContainerWidth()
     const [revision, setRevision] = useState(0)
     const [swapTargetIds, setSwapTargetIds] = useState<string[]>([])
+    const [isMovingTile, setIsMovingTile] = useState(false)
     const grid = BENTO_VIEW_GRIDS[view]
     const gap = editorGap(view, width)
     const fieldColumns = grid.columns / FIELD_SIZE
     const fieldRows = grid.rows / FIELD_SIZE
     const rowHeight = (width - (fieldColumns - 1) * gap) / fieldColumns
-    const rows = visibleFieldRows(view, items)
+    const rows = visibleFieldRows(view, items, isMovingTile)
     const height = rows * rowHeight + (rows - 1) * gap
 
     function snapBack() {
@@ -152,7 +156,13 @@ export function BentoGridCanvas({
         if (targets.join() !== swapTargetIds.join()) setSwapTargetIds(targets)
     }
 
+    const handleResizeStop: EventCallback = (...args) => {
+        setIsMovingTile(false)
+        moveOrSnapBack(...args)
+    }
+
     const handleDragStop: EventCallback = (layout, oldItem, newItem, ...rest) => {
+        setIsMovingTile(false)
         setSwapTargetIds([])
         const targets = newItem ? findDisplacedTiles(items, newItem.i, toBox(newItem)) : []
         if (targets.length === 0) return moveOrSnapBack(layout, oldItem, newItem, ...rest)
@@ -187,9 +197,11 @@ export function BentoGridCanvas({
                     dragConfig={{ enabled: true, bounded: true, threshold: 3 }}
                     resizeConfig={{ enabled: true, handles: RESIZE_HANDLES }}
                     compactor={compactor}
+                    onDragStart={() => setIsMovingTile(true)}
                     onDrag={highlightSwapTargets}
                     onDragStop={handleDragStop}
-                    onResizeStop={moveOrSnapBack}
+                    onResizeStart={() => setIsMovingTile(true)}
+                    onResizeStop={handleResizeStop}
                 >
                     {items.map((item) => (
                         <div key={item.tileId}>
