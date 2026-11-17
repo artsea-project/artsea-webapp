@@ -1,6 +1,5 @@
 import {
-    DESKTOP_GRID,
-    MOBILE_GRID,
+    BENTO_VIEW_GRIDS,
     TILE_PRESETS,
     findFreeSpot,
     fitsGrid,
@@ -13,11 +12,6 @@ import {
 import type { BentoBoxLayout, BentoLayoutItem } from "@/types/bento"
 
 export type BentoView = keyof BentoBoxLayout
-
-export const BENTO_VIEW_GRIDS: Record<BentoView, GridSpec> = {
-    desktop: DESKTOP_GRID,
-    mobile: MOBILE_GRID,
-}
 
 const VIEWS: BentoView[] = ["desktop", "mobile"]
 
