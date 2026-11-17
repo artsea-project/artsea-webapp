@@ -21,6 +21,7 @@ import {
 } from "@/lib/appearance/bento-editor-state"
 import type { ArtworkMeta, PickerArtwork } from "@/lib/appearance/queries"
 import { TILE_PRESETS, type TilePreset } from "@/lib/bento-grid"
+import { createTileId } from "@/lib/bento-layout"
 import type { BentoBoxLayout } from "@/types/bento"
 
 const VIEWS: BentoView[] = ["desktop", "mobile"]
@@ -169,7 +170,7 @@ export function BentoEditor({ saved, artworkMeta, artworks, onDirtyChange }: Ben
 
     function pick(content: TileContent) {
         if (pickerTarget?.kind === "add") {
-            dispatch({ type: "add", tileId: crypto.randomUUID(), preset, ...content })
+            dispatch({ type: "add", tileId: createTileId(), preset, ...content })
         } else if (pickerTarget?.kind === "replace") {
             dispatch({ type: "replaceContent", tileId: pickerTarget.tileId, ...content })
         }
