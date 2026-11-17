@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState, type RefObject } from "react"
 import Image from "next/image"
 import ReactGridLayout, {
     noCompactor,
@@ -38,6 +38,51 @@ const PUBLIC_GAP: Record<BentoView, { width: number; gap: number }> = {
 const EDITOR_GAP_SCALE = 1.8
 
 const MOBILE_SPARE_FIELDS = 2
+
+const AUTO_SCROLL_EDGE = 48
+
+const AUTO_SCROLL_STEP = 10
+
+function pointerY(event: Event): number | null {
+    if ("touches" in event) return (event as TouchEvent).touches[0]?.clientY ?? null
+    return "clientY" in event ? (event as MouseEvent).clientY : null
+}
+
+function scrollStepNearEdge(scroller: HTMLElement, y: number): number {
+    const { top, bottom } = scroller.getBoundingClientRect()
+    if (y < top + AUTO_SCROLL_EDGE) return -AUTO_SCROLL_STEP
+    if (y > bottom - AUTO_SCROLL_EDGE) return AUTO_SCROLL_STEP
+    return 0
+}
+
+function useEdgeAutoScroll(containerRef: RefObject<HTMLDivElement | null>) {
+    const frame = useRef<number | null>(null)
+    const step = useRef(0)
+
+    function stop() {
+        if (frame.current !== null) cancelAnimationFrame(frame.current)
+        frame.current = null
+        step.current = 0
+    }
+
+    function update(event: Event) {
+        const scroller = containerRef.current?.closest<HTMLElement>("[data-bento-scroll]")
+        const y = pointerY(event)
+        if (!scroller || y === null) return
+
+        step.current = scrollStepNearEdge(scroller, y)
+        if (step.current === 0 || frame.current !== null) return
+
+        const tick = () => {
+            if (step.current === 0) return stop()
+            scroller.scrollBy(0, step.current)
+            frame.current = requestAnimationFrame(tick)
+        }
+        frame.current = requestAnimationFrame(tick)
+    }
+
+    return { update, stop }
+}
 
 const MIN_GAP = 8
 
@@ -127,6 +172,7 @@ export function BentoGridCanvas({
     onSwap,
 }: BentoGridCanvasProps) {
     const { width, containerRef, mounted } = useContainerWidth()
+    const autoScroll = useEdgeAutoScroll(containerRef)
     const [revision, setRevision] = useState(0)
     const [swapTargetIds, setSwapTargetIds] = useState<string[]>([])
     const [isMovingTile, setIsMovingTile] = useState(false)
@@ -151,7 +197,8 @@ export function BentoGridCanvas({
         }
     }
 
-    const highlightSwapTargets: EventCallback = (_layout, _oldItem, newItem) => {
+    const handleDrag: EventCallback = (_layout, _oldItem, newItem, _placeholder, event) => {
+        autoScroll.update(event)
         const targets = newItem ? findDisplacedTiles(items, newItem.i, toBox(newItem)) : []
         if (targets.join() !== swapTargetIds.join()) setSwapTargetIds(targets)
     }
@@ -162,6 +209,7 @@ export function BentoGridCanvas({
     }
 
     const handleDragStop: EventCallback = (layout, oldItem, newItem, ...rest) => {
+        autoScroll.stop()
         setIsMovingTile(false)
         setSwapTargetIds([])
         const targets = newItem ? findDisplacedTiles(items, newItem.i, toBox(newItem)) : []
@@ -198,7 +246,7 @@ export function BentoGridCanvas({
                     resizeConfig={{ enabled: true, handles: RESIZE_HANDLES }}
                     compactor={compactor}
                     onDragStart={() => setIsMovingTile(true)}
-                    onDrag={highlightSwapTargets}
+                    onDrag={handleDrag}
                     onDragStop={handleDragStop}
                     onResizeStart={() => setIsMovingTile(true)}
                     onResizeStop={handleResizeStop}
