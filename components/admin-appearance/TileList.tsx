@@ -9,6 +9,7 @@ import type { BentoLayoutItem } from "@/types/bento"
 
 type TileListProps = {
     items: BentoLayoutItem[]
+    maxHeight?: number
     artworkMeta: Record<string, ArtworkMeta>
     onReplace: (tileId: string) => void
     onRemove: (tileId: string) => void
@@ -58,7 +59,7 @@ function TileRow({ item, meta, onReplace, onRemove }: TileRowProps) {
     )
 }
 
-export function TileList({ items, artworkMeta, onReplace, onRemove }: TileListProps) {
+export function TileList({ items, maxHeight, artworkMeta, onReplace, onRemove }: TileListProps) {
     return (
         <section className="flex flex-col gap-6" aria-labelledby="tile-list-heading">
             <h3
@@ -73,7 +74,7 @@ export function TileList({ items, artworkMeta, onReplace, onRemove }: TileListPr
                     Brak kafelków. Strona główna pokaże pusty stan.
                 </p>
             ) : (
-                <ul className="flex flex-col gap-2">
+                <ul className="flex flex-col gap-2 overflow-y-auto" style={{ maxHeight }}>
                     {items.map((item) => (
                         <TileRow
                             key={item.tileId}
