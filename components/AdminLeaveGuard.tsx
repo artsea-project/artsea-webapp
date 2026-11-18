@@ -44,6 +44,7 @@ export function useLeaveGuard(enabled: boolean, description: string): ReactNode 
     const isLeaving = useRef(false)
 
     useEffect(() => {
+        isLeaving.current = false
         if (!enabled) return
 
         function stop(event: Event, leave: PendingLeave) {
