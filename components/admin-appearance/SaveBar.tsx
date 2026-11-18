@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useCallback, useState, useTransition } from "react"
 
 import { Button } from "@/components/ui/button"
 
@@ -31,10 +31,10 @@ export function useSectionSave() {
         })
     }
 
-    function reset() {
+    const reset = useCallback(() => {
         setError(null)
         setIsSaved(false)
-    }
+    }, [])
 
     return { isSaving, isSaved, error, save, reset }
 }
