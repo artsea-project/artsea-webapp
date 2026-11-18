@@ -21,25 +21,16 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import type { AdminWork, WorkCategoryOption } from "@/lib/works/queries"
+import type { AdminWork } from "@/lib/works/queries"
 
 interface WorksSectionProps {
     works: AdminWork[]
-    categories: WorkCategoryOption[]
     page: number
     pageCount: number
     search: string
-    selectedCategoryId: string
 }
 
-export default function WorksSection({
-    works,
-    categories,
-    page,
-    pageCount,
-    search,
-    selectedCategoryId,
-}: WorksSectionProps) {
+export default function WorksSection({ works, page, pageCount, search }: WorksSectionProps) {
     const [notice, setNotice] = useState<StatusNotice | null>(null)
     const [workToDelete, setWorkToDelete] = useState<AdminWork | null>(null)
     const [savingWorkId, setSavingWorkId] = useState<string | null>(null)
@@ -142,16 +133,11 @@ export default function WorksSection({
                 {notice?.text ?? ""}
             </p>
 
-            <WorksSearchBar
-                key={`${search}:${selectedCategoryId}`}
-                initialSearch={search}
-                selectedCategoryId={selectedCategoryId}
-                categories={categories}
-            />
+            <WorksSearchBar key={search} initialSearch={search} />
 
             {optimisticWorks.length === 0 ? (
                 <div className="flex min-h-48 items-center justify-center rounded-xl border border-dashed border-border bg-background p-8 text-sm text-muted-foreground">
-                    {search || selectedCategoryId
+                    {search
                         ? "Nie znaleziono prac pasujących do wyszukiwanej frazy."
                         : "Nie dodano jeszcze żadnych prac."}
                 </div>
@@ -172,12 +158,7 @@ export default function WorksSection({
                 </div>
             )}
 
-            <WorksPagination
-                page={page}
-                pageCount={pageCount}
-                search={search}
-                categoryId={selectedCategoryId}
-            />
+            <WorksPagination page={page} pageCount={pageCount} search={search} />
 
             <AlertDialog
                 open={workToDelete !== null}
