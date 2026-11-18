@@ -112,6 +112,39 @@ test.describe("works queries", () => {
         expect(wildcard.total).toBe(0)
     })
 
+    test("supports multi-term search across title, category, tags (with #) and year", async () => {
+        const matchingWorkId = await createWork({
+            titlePln: `${marker} szkic`,
+            yearOfExecution: 2026,
+        })
+        await db.insert(artPieceTags).values({ artPieceId: matchingWorkId, tagId })
+
+        await createWork({
+            titlePln: `${marker} szkic`,
+            yearOfExecution: 2024,
+        })
+
+        const byAllTerms = await getAdminWorks({
+            search: `${marker} cat ${marker}tag_en 2026`,
+            page: 1,
+        })
+        expect(byAllTerms.total).toBe(1)
+        expect(byAllTerms.works[0]?.artPieceId).toBe(matchingWorkId)
+
+        const withHashtag = await getAdminWorks({
+            search: `#${marker}tag szkic 2026`,
+            page: 1,
+        })
+        expect(withHashtag.total).toBe(1)
+        expect(withHashtag.works[0]?.artPieceId).toBe(matchingWorkId)
+
+        const mismatchedYear = await getAdminWorks({
+            search: `${marker} cat ${marker}tag_en 2024`,
+            page: 1,
+        })
+        expect(mismatchedYear.total).toBe(0)
+    })
+
     test("filters works by explicit categoryId", async () => {
         await createWork({ titlePln: `${marker} kategoria filtr` })
 
