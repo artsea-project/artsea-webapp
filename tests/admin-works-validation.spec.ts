@@ -18,7 +18,6 @@ import {
     MAX_MEDIA_FILE_BYTES,
     MAX_TOTAL_MEDIA_BYTES,
     normalizeSearchQuery,
-    parseCategoryFilter,
     parsePage,
     parseTagIds,
     parseVisibilityFilter,
@@ -123,10 +122,6 @@ test.describe("work validation helpers", () => {
         expect(parsePage("1.5")).toBe(1)
         expect(parsePage("abc")).toBe(1)
         expect(parsePage(undefined)).toBe(1)
-        expect(parseCategoryFilter(` ${VALID_UUID} `)).toBe(VALID_UUID)
-        expect(parseCategoryFilter([VALID_UUID, "other"])).toBe(VALID_UUID)
-        expect(parseCategoryFilter("not-a-uuid")).toBe("")
-        expect(parseCategoryFilter(undefined)).toBe("")
         expect(parseVisibilityFilter("1")).toBe(true)
         expect(parseVisibilityFilter("true")).toBe(true)
         expect(parseVisibilityFilter("0")).toBe(false)

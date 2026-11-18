@@ -80,7 +80,7 @@ function buildTermFilter(term: string) {
     )
 }
 
-function buildSearchFilter(search: string, categoryId?: string, onlyVisible?: boolean) {
+function buildSearchFilter(search: string, onlyVisible?: boolean) {
     const conditions = []
 
     const terms = [
@@ -93,10 +93,6 @@ function buildSearchFilter(search: string, categoryId?: string, onlyVisible?: bo
     ]
     for (const term of terms) {
         conditions.push(buildTermFilter(term))
-    }
-
-    if (categoryId) {
-        conditions.push(eq(artPieces.categoryId, categoryId))
     }
 
     if (onlyVisible) {
@@ -130,16 +126,14 @@ async function getCoverMediaIds(artPieceIds: string[]): Promise<Map<string, stri
 
 export async function getAdminWorks({
     search,
-    categoryId,
     onlyVisible,
     page,
 }: {
     search: string
-    categoryId?: string
     onlyVisible?: boolean
     page: number
 }): Promise<AdminWorksPage> {
-    const filter = buildSearchFilter(search, categoryId, onlyVisible)
+    const filter = buildSearchFilter(search, onlyVisible)
 
     const [{ value: totalValue }] = await db
         .select({ value: count() })
