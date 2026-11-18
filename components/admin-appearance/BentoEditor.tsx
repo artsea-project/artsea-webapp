@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useReducer, useState, type ReactNode } from "react"
+import { useEffect, useLayoutEffect, useReducer, useState, type ReactNode } from "react"
 import { Plus } from "lucide-react"
 import { useContainerWidth } from "react-grid-layout"
 
@@ -167,6 +167,14 @@ export function BentoEditor({ saved, artworkMeta, artworks, onDirtyChange }: Ben
     const isDirty = isBentoDirty(state)
 
     useEffect(() => onDirtyChange(isDirty), [isDirty, onDirtyChange])
+
+    useLayoutEffect(() => {
+        return () => {
+            dispatch({ type: "revert" })
+            setPickerTarget(null)
+            reset()
+        }
+    }, [reset])
 
     function pick(content: TileContent) {
         if (pickerTarget?.kind === "add") {
