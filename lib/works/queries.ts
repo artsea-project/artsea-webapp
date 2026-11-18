@@ -1,7 +1,7 @@
-import { and, asc, count, desc, eq, ilike, inArray, or, sql } from "drizzle-orm"
+import { and, asc, count, desc, eq, exists, ilike, inArray, or, sql } from "drizzle-orm"
 
 import { db } from "@/db"
-import { artPieces, artPieceTags, categories, media } from "@/db/schema"
+import { artPieces, artPieceTags, categories, media, tags } from "@/db/schema"
 import { getOrderedTags, type AdminTag } from "@/lib/categories/queries"
 import { resolveLocalizedLabel } from "@/lib/localized-labels"
 import { readWorkDescription, type WorkDescription } from "@/lib/works/description"
@@ -57,19 +57,42 @@ export interface WorkFormOptions {
 
 const IMAGE_FILE_TYPES = ["png", "jpg", "gif"] as const
 
+function buildTermFilter(term: string) {
+    const pattern = `%${escapeLikePattern(term)}%`
+    const matchingTag = db
+        .select({ one: sql`1` })
+        .from(artPieceTags)
+        .innerJoin(tags, eq(artPieceTags.tagId, tags.tagId))
+        .where(
+            and(
+                eq(artPieceTags.artPieceId, artPieces.artPieceId),
+                or(ilike(tags.namePln, pattern), ilike(tags.nameEng, pattern))
+            )
+        )
+
+    return or(
+        ilike(artPieces.titlePln, pattern),
+        ilike(artPieces.titleEng, pattern),
+        ilike(categories.namePln, pattern),
+        ilike(categories.nameEng, pattern),
+        sql`cast(${artPieces.yearOfExecution} as text) ilike ${pattern}`,
+        exists(matchingTag)
+    )
+}
+
 function buildSearchFilter(search: string, categoryId?: string) {
     const conditions = []
 
-    if (search) {
-        const pattern = `%${escapeLikePattern(search)}%`
-        conditions.push(
-            or(
-                ilike(artPieces.titlePln, pattern),
-                ilike(artPieces.titleEng, pattern),
-                ilike(categories.namePln, pattern),
-                ilike(categories.nameEng, pattern)
-            )
-        )
+    const terms = [
+        ...new Set(
+            search
+                .split(/\s+/)
+                .map((term) => term.replace(/^#+/, ""))
+                .filter(Boolean)
+        ),
+    ]
+    for (const term of terms) {
+        conditions.push(buildTermFilter(term))
     }
 
     if (categoryId) {
