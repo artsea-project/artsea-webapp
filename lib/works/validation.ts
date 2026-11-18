@@ -114,11 +114,6 @@ export function normalizeSearchQuery(raw: string | string[] | undefined): string
     return (value ?? "").trim().replace(/\s+/g, " ")
 }
 
-export function parseCategoryFilter(raw: string | string[] | undefined): string {
-    const value = (Array.isArray(raw) ? raw[0] : raw)?.trim() ?? ""
-    return isUuid(value) ? value : ""
-}
-
 export function parseVisibilityFilter(raw: string | string[] | undefined): boolean {
     const value = (Array.isArray(raw) ? raw[0] : raw)?.trim().toLowerCase() ?? ""
     return value === "1" || value === "true"

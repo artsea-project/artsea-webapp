@@ -145,16 +145,6 @@ test.describe("works queries", () => {
         expect(mismatchedYear.total).toBe(0)
     })
 
-    test("filters works by explicit categoryId", async () => {
-        await createWork({ titlePln: `${marker} kategoria filtr` })
-
-        const matching = await getAdminWorks({ search: "", categoryId, page: 1 })
-        expect(matching.total).toBeGreaterThanOrEqual(1)
-
-        const missing = await getAdminWorks({ search: "", categoryId: randomUUID(), page: 1 })
-        expect(missing.total).toBe(0)
-    })
-
     test("filters works by onlyVisible", async () => {
         const visibleId = await createWork({
             titlePln: `${marker} widoczna`,
