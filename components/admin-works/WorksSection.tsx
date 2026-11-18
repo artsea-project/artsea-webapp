@@ -28,9 +28,16 @@ interface WorksSectionProps {
     page: number
     pageCount: number
     search: string
+    onlyVisible: boolean
 }
 
-export default function WorksSection({ works, page, pageCount, search }: WorksSectionProps) {
+export default function WorksSection({
+    works,
+    page,
+    pageCount,
+    search,
+    onlyVisible,
+}: WorksSectionProps) {
     const [notice, setNotice] = useState<StatusNotice | null>(null)
     const [workToDelete, setWorkToDelete] = useState<AdminWork | null>(null)
     const [savingWorkId, setSavingWorkId] = useState<string | null>(null)
@@ -133,12 +140,16 @@ export default function WorksSection({ works, page, pageCount, search }: WorksSe
                 {notice?.text ?? ""}
             </p>
 
-            <WorksSearchBar key={search} initialSearch={search} />
+            <WorksSearchBar
+                key={`${search}:${onlyVisible}`}
+                initialSearch={search}
+                onlyVisible={onlyVisible}
+            />
 
             {optimisticWorks.length === 0 ? (
                 <div className="flex min-h-48 items-center justify-center rounded-xl border border-dashed border-border bg-background p-8 text-sm text-muted-foreground">
-                    {search
-                        ? "Nie znaleziono prac pasujących do wyszukiwanej frazy."
+                    {search || onlyVisible
+                        ? "Nie znaleziono prac spełniających wybrane kryteria."
                         : "Nie dodano jeszcze żadnych prac."}
                 </div>
             ) : (
@@ -158,7 +169,12 @@ export default function WorksSection({ works, page, pageCount, search }: WorksSe
                 </div>
             )}
 
-            <WorksPagination page={page} pageCount={pageCount} search={search} />
+            <WorksPagination
+                page={page}
+                pageCount={pageCount}
+                search={search}
+                onlyVisible={onlyVisible}
+            />
 
             <AlertDialog
                 open={workToDelete !== null}

@@ -1,6 +1,7 @@
 import { Image as ImageIcon, Pencil, Trash2 } from "lucide-react"
 import Link from "next/link"
 
+import VisibilitySwitch from "@/components/admin-works/VisibilitySwitch"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import type { AdminWork } from "@/lib/works/queries"
@@ -60,34 +61,13 @@ export default function WorkCard({
             </div>
 
             <div className="flex items-center justify-between border-t border-muted px-4 py-3">
-                <button
-                    type="button"
-                    role="switch"
-                    aria-checked={work.isVisible}
-                    aria-label={`Widoczność pracy ${title}`}
+                <VisibilitySwitch
+                    checked={work.isVisible}
+                    label={work.isVisible ? "Widoczna" : "Ukryta"}
+                    ariaLabel={`Widoczność pracy ${title}`}
                     disabled={isBusy}
-                    onClick={() => onToggleVisibility(work)}
-                    className="group inline-flex items-center gap-2.5 text-xs font-medium disabled:pointer-events-none disabled:opacity-50"
-                >
-                    <span
-                        className={cn(
-                            "relative inline-flex h-5 w-9 shrink-0 items-center rounded-full p-0.5 transition-colors",
-                            work.isVisible ? "bg-foreground" : "bg-muted-foreground/25"
-                        )}
-                    >
-                        <span
-                            className={cn(
-                                "size-4 rounded-full bg-background shadow-xs transition-transform",
-                                work.isVisible ? "translate-x-4" : "translate-x-0"
-                            )}
-                        />
-                    </span>
-                    <span
-                        className={cn(work.isVisible ? "text-foreground" : "text-muted-foreground")}
-                    >
-                        {work.isVisible ? "Widoczna" : "Ukryta"}
-                    </span>
-                </button>
+                    onToggle={() => onToggleVisibility(work)}
+                />
 
                 <div className="inline-flex items-center gap-1">
                     <Button

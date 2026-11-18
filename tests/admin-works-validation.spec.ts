@@ -21,6 +21,7 @@ import {
     parseCategoryFilter,
     parsePage,
     parseTagIds,
+    parseVisibilityFilter,
     parseYearOfExecution,
     TOTAL_MEDIA_SIZE_ERROR,
 } from "../lib/works/validation"
@@ -126,6 +127,10 @@ test.describe("work validation helpers", () => {
         expect(parseCategoryFilter([VALID_UUID, "other"])).toBe(VALID_UUID)
         expect(parseCategoryFilter("not-a-uuid")).toBe("")
         expect(parseCategoryFilter(undefined)).toBe("")
+        expect(parseVisibilityFilter("1")).toBe(true)
+        expect(parseVisibilityFilter("true")).toBe(true)
+        expect(parseVisibilityFilter("0")).toBe(false)
+        expect(parseVisibilityFilter(undefined)).toBe(false)
     })
 
     test("escapes LIKE wildcards", () => {
