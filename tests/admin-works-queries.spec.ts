@@ -155,6 +155,28 @@ test.describe("works queries", () => {
         expect(missing.total).toBe(0)
     })
 
+    test("filters works by onlyVisible", async () => {
+        const visibleId = await createWork({
+            titlePln: `${marker} widoczna`,
+            isVisible: true,
+        })
+        await createWork({
+            titlePln: `${marker} widoczna`,
+            isVisible: false,
+        })
+
+        const all = await getAdminWorks({ search: `${marker} widoczna`, page: 1 })
+        expect(all.total).toBe(2)
+
+        const onlyVisible = await getAdminWorks({
+            search: `${marker} widoczna`,
+            onlyVisible: true,
+            page: 1,
+        })
+        expect(onlyVisible.total).toBe(1)
+        expect(onlyVisible.works[0]?.artPieceId).toBe(visibleId)
+    })
+
     test("clamps out-of-range pages and respects the page size", async () => {
         for (let index = 0; index < WORKS_PER_PAGE; index += 1) {
             await createWork({ titlePln: `${marker} paginacja ${index}` })

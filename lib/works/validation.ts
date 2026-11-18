@@ -119,6 +119,11 @@ export function parseCategoryFilter(raw: string | string[] | undefined): string 
     return isUuid(value) ? value : ""
 }
 
+export function parseVisibilityFilter(raw: string | string[] | undefined): boolean {
+    const value = (Array.isArray(raw) ? raw[0] : raw)?.trim().toLowerCase() ?? ""
+    return value === "1" || value === "true"
+}
+
 export function parsePage(raw: string | string[] | undefined): number {
     const value = Array.isArray(raw) ? raw[0] : raw
     const page = Number(value)

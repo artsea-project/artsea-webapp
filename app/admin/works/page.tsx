@@ -2,11 +2,12 @@ import { Suspense } from "react"
 
 import WorksSection from "@/components/admin-works/WorksSection"
 import { getAdminWorks } from "@/lib/works/queries"
-import { normalizeSearchQuery, parsePage } from "@/lib/works/validation"
+import { normalizeSearchQuery, parsePage, parseVisibilityFilter } from "@/lib/works/validation"
 
 interface AdminWorksPageProps {
     searchParams: Promise<{
         q?: string | string[]
+        visible?: string | string[]
         page?: string | string[]
     }>
 }
@@ -22,12 +23,23 @@ export default function AdminWorksPage({ searchParams }: AdminWorksPageProps) {
 async function WorksContent({ searchParams }: AdminWorksPageProps) {
     const resolved = await searchParams
     const search = normalizeSearchQuery(resolved.q)
+    const onlyVisible = parseVisibilityFilter(resolved.visible)
     const requestedPage = parsePage(resolved.page)
-    const { works, page, pageCount } = await getAdminWorks({ search, page: requestedPage })
+    const { works, page, pageCount } = await getAdminWorks({
+        search,
+        onlyVisible,
+        page: requestedPage,
+    })
 
     return (
         <div className="px-4 py-6 font-secondary sm:px-8 md:px-16 md:py-9">
-            <WorksSection works={works} page={page} pageCount={pageCount} search={search} />
+            <WorksSection
+                works={works}
+                page={page}
+                pageCount={pageCount}
+                search={search}
+                onlyVisible={onlyVisible}
+            />
         </div>
     )
 }
