@@ -8,6 +8,7 @@
         "untitled": "Bez tytułu",
         "technique": "Technika i materiały",
         "description": "O projekcie",
+        "missingTranslation": "Ta treść nie jest dostępna w języku polskim.",
         "next": "Zobacz kolejny",
         "photoAlt": "{title} - zdjęcie {number}"
     },

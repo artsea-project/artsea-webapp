@@ -8,6 +8,7 @@
         "untitled": "Untitled",
         "technique": "Technique and materials",
         "description": "About the project",
+        "missingTranslation": "This content is not available in English.",
         "next": "See next",
         "photoAlt": "{title} - photo {number}"
     },
