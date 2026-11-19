@@ -73,8 +73,8 @@ export default function WorksSearchBar({ initialSearch, onlyHidden = false }: Wo
 
             <VisibilitySwitch
                 checked={onlyHidden}
-                label="Tylko niewidoczne"
-                ariaLabel="Filtruj tylko niewidoczne prace"
+                label="Tylko ukryte"
+                ariaLabel="Filtruj tylko ukryte prace"
                 onToggle={handleToggleHidden}
             />
         </div>
