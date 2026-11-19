@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import { useTranslations } from "next-intl"
 import { getLocale, getTranslations } from "next-intl/server"
 import { Ruler, MoveRight } from "lucide-react"
+import { MissingTranslation } from "@/components/MissingTranslation"
 import { ProjectGallery } from "@/components/ProjectGallery"
 import { Link } from "@/i18n/navigation"
 import {
@@ -80,22 +81,18 @@ interface DetailSectionProps {
 }
 
 function DetailSection({ label, content }: DetailSectionProps) {
-    const t = useTranslations("Artwork")
-
     if (!content) return null
     return (
         <div className="flex flex-col gap-3">
             <span className="text-[11px] font-bold tracking-widest text-muted-foreground uppercase font-secondary">
                 {label}
             </span>
-            {content.kind === "text" ? (
+            {content.kind === "content" ? (
                 <p className="text-foreground leading-relaxed text-base font-body whitespace-pre-line">
-                    {content.text}
+                    {content.value}
                 </p>
             ) : (
-                <p className="text-muted-foreground italic leading-relaxed text-base font-body">
-                    {t("missingTranslation")}
-                </p>
+                <MissingTranslation className="text-base" />
             )}
         </div>
     )

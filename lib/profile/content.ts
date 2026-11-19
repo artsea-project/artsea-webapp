@@ -1,3 +1,4 @@
+import { hasText } from "@/lib/i18n/localized-text"
 import type { BioContent } from "@/types/profile"
 
 export const DEFAULT_ABOUT_HEADING = { pln: "O mnie", eng: "About me" }
@@ -37,4 +38,8 @@ export function parseBio(value: unknown): BioContent {
         highlight: stringsOf(content.highlight),
         body: stringsOf(content.body),
     }
+}
+
+export function hasParagraphs(paragraphs: string[]): boolean {
+    return paragraphs.some(hasText)
 }

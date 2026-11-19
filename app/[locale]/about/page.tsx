@@ -4,8 +4,10 @@ import { useTranslations } from "next-intl"
 import { getLocale } from "next-intl/server"
 import { ArrowUpRight } from "lucide-react"
 import Image from "next/image"
+import { MissingTranslation } from "@/components/MissingTranslation"
 import type { Locale } from "@/i18n/routing"
 import { localizedValue } from "@/lib/i18n/localized-key"
+import { hasText, type Localized } from "@/lib/i18n/localized-text"
 import { DEFAULT_ABOUT_HEADING } from "@/lib/profile/content"
 import { profileImagePath } from "@/lib/profile/image"
 import {
@@ -15,10 +17,30 @@ import {
     type ProfileLink,
 } from "@/lib/profile/queries"
 
+interface LocalizedParagraphsProps {
+    content: Localized<string[]>
+    paragraphClassName: string
+}
+
+function LocalizedParagraphs({ content, paragraphClassName }: LocalizedParagraphsProps) {
+    if (!content) return null
+    if (content.kind === "missingTranslation") return <MissingTranslation className="text-lg" />
+
+    return (
+        <>
+            {content.value.map((paragraph, idx) => (
+                <p key={idx} className={paragraphClassName}>
+                    {paragraph}
+                </p>
+            ))}
+        </>
+    )
+}
+
 interface HeroSectionProps {
     fullName: string
     heading: string
-    intro: string[]
+    intro: Localized<string[]>
     profileImageSrc: string | null
 }
 
@@ -39,14 +61,10 @@ function HeroSection({ fullName, heading, intro, profileImageSrc }: HeroSectionP
                     </div>
 
                     <div className="max-w-md flex flex-col gap-4">
-                        {intro.map((paragraph, idx) => (
-                            <p
-                                key={idx}
-                                className="font-body text-lg leading-relaxed text-foreground whitespace-pre-line"
-                            >
-                                {paragraph}
-                            </p>
-                        ))}
+                        <LocalizedParagraphs
+                            content={intro}
+                            paragraphClassName="font-body text-lg leading-relaxed text-foreground whitespace-pre-line"
+                        />
                     </div>
                 </div>
 
@@ -79,37 +97,29 @@ function HeroSection({ fullName, heading, intro, profileImageSrc }: HeroSectionP
 }
 
 interface DetailedBioSectionProps {
-    highlight: string[]
-    body: string[]
+    highlight: Localized<string[]>
+    body: Localized<string[]>
 }
 
 function DetailedBioSection({ highlight, body }: DetailedBioSectionProps) {
-    if (highlight.length === 0 && body.length === 0) return null
+    if (!highlight && !body) return null
 
     return (
         <section className="max-w-[1440px] mx-auto px-10 md:px-32 pt-32 pb-32">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 items-start">
                 <div className="md:col-span-5 text-foreground flex flex-col gap-6">
-                    {highlight.map((paragraph, idx) => (
-                        <p
-                            key={idx}
-                            className="font-primary text-[32px] leading-tight font-normal whitespace-pre-line"
-                        >
-                            {paragraph}
-                        </p>
-                    ))}
+                    <LocalizedParagraphs
+                        content={highlight}
+                        paragraphClassName="font-primary text-[32px] leading-tight font-normal whitespace-pre-line"
+                    />
                 </div>
 
-                {body.length > 0 && (
+                {body && (
                     <div className="md:col-span-6 md:col-start-7 text-foreground flex flex-col gap-6">
-                        {body.map((paragraph, idx) => (
-                            <p
-                                key={idx}
-                                className="font-body text-lg leading-relaxed whitespace-pre-line"
-                            >
-                                {paragraph}
-                            </p>
-                        ))}
+                        <LocalizedParagraphs
+                            content={body}
+                            paragraphClassName="font-body text-lg leading-relaxed whitespace-pre-line"
+                        />
                     </div>
                 )}
             </div>
@@ -120,7 +130,7 @@ function DetailedBioSection({ highlight, body }: DetailedBioSectionProps) {
 interface ContactSectionProps {
     email?: string | null
     socialLinks: ProfileLink[]
-    paragraphs: string[]
+    paragraphs: Localized<string[]>
 }
 
 function ContactSection({ email, socialLinks, paragraphs }: ContactSectionProps) {
@@ -133,13 +143,12 @@ function ContactSection({ email, socialLinks, paragraphs }: ContactSectionProps)
                     <h2 className="font-primary text-[40px] md:text-[56px] leading-[1.1] font-normal text-foreground">
                         {t("contactHeading")}
                     </h2>
-                    {paragraphs.length > 0 && (
+                    {paragraphs && (
                         <div className="text-muted-foreground font-body text-lg leading-relaxed flex flex-col gap-1">
-                            {paragraphs.map((paragraph, idx) => (
-                                <p key={idx} className="whitespace-pre-line">
-                                    {paragraph}
-                                </p>
-                            ))}
+                            <LocalizedParagraphs
+                                content={paragraphs}
+                                paragraphClassName="whitespace-pre-line"
+                            />
                         </div>
                     )}
                 </div>
@@ -227,15 +236,17 @@ async function AboutContent() {
         notFound()
     }
 
-    const { bio } = profile
     const profileImageSrc = profile.imageHash ? profileImagePath(profile.imageHash) : null
+    const heading = hasText(profile.heading)
+        ? profile.heading
+        : localizedValue(DEFAULT_ABOUT_HEADING, locale)
 
     return (
         <div className="w-full">
             <HeroSection
                 fullName={profile.fullName}
-                heading={bio.heading || localizedValue(DEFAULT_ABOUT_HEADING, locale)}
-                intro={bio.intro}
+                heading={heading}
+                intro={profile.intro}
                 profileImageSrc={profileImageSrc}
             />
 
@@ -247,7 +258,7 @@ async function AboutContent() {
                 </div>
             </div>
 
-            <DetailedBioSection highlight={bio.highlight} body={bio.body} />
+            <DetailedBioSection highlight={profile.highlight} body={profile.body} />
 
             <div className="max-w-[1440px] mx-auto px-10 md:px-32">
                 <div className="w-full h-px bg-border" />
