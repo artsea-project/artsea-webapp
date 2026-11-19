@@ -50,7 +50,7 @@ export default function WorksSearchBar({
                     name="q"
                     value={query}
                     onChange={(event) => setQuery(event.target.value)}
-                    placeholder="Wpisz interesującą cię frazę …"
+                    placeholder="Wpisz kategorię, tytuł, tag lub rok"
                     aria-label="Szukaj prac"
                     className="min-w-0 flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none [&::-webkit-search-cancel-button]:appearance-none"
                 />
