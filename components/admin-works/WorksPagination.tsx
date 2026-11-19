@@ -7,21 +7,21 @@ interface WorksPaginationProps {
     page: number
     pageCount: number
     search: string
-    onlyVisible?: boolean
+    onlyHidden?: boolean
 }
 
 export function buildWorksHref({
     search,
-    onlyVisible,
+    onlyHidden,
     page,
 }: {
     search?: string
-    onlyVisible?: boolean
+    onlyHidden?: boolean
     page?: number
 }): string {
     const params = new URLSearchParams()
     if (search) params.set("q", search)
-    if (onlyVisible) params.set("visible", "1")
+    if (onlyHidden) params.set("hidden", "1")
     if (page && page > 1) params.set("page", String(page))
     const queryString = params.toString()
     return queryString ? `/admin/works?${queryString}` : "/admin/works"
@@ -42,7 +42,7 @@ export default function WorksPagination({
     page,
     pageCount,
     search,
-    onlyVisible,
+    onlyHidden,
 }: WorksPaginationProps) {
     if (pageCount <= 1) return null
 
@@ -57,7 +57,7 @@ export default function WorksPagination({
         <nav aria-label="Paginacja prac" className="flex items-center justify-center gap-2 pt-2">
             {hasPrevious ? (
                 <Link
-                    href={buildWorksHref({ page: page - 1, search, onlyVisible })}
+                    href={buildWorksHref({ page: page - 1, search, onlyHidden })}
                     aria-label="Poprzednia strona"
                     className={cn(
                         itemBase,
@@ -83,7 +83,7 @@ export default function WorksPagination({
                 return (
                     <Link
                         key={pageNumber}
-                        href={buildWorksHref({ page: pageNumber, search, onlyVisible })}
+                        href={buildWorksHref({ page: pageNumber, search, onlyHidden })}
                         aria-current={isActive ? "page" : undefined}
                         className={cn(
                             itemBase,
@@ -99,7 +99,7 @@ export default function WorksPagination({
 
             {hasNext ? (
                 <Link
-                    href={buildWorksHref({ page: page + 1, search, onlyVisible })}
+                    href={buildWorksHref({ page: page + 1, search, onlyHidden })}
                     aria-label="Następna strona"
                     className={cn(
                         itemBase,

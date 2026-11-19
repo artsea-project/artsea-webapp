@@ -7,7 +7,7 @@ import { normalizeSearchQuery, parsePage, parseVisibilityFilter } from "@/lib/wo
 interface AdminWorksPageProps {
     searchParams: Promise<{
         q?: string | string[]
-        visible?: string | string[]
+        hidden?: string | string[]
         page?: string | string[]
     }>
 }
@@ -23,11 +23,11 @@ export default function AdminWorksPage({ searchParams }: AdminWorksPageProps) {
 async function WorksContent({ searchParams }: AdminWorksPageProps) {
     const resolved = await searchParams
     const search = normalizeSearchQuery(resolved.q)
-    const onlyVisible = parseVisibilityFilter(resolved.visible)
+    const onlyHidden = parseVisibilityFilter(resolved.hidden)
     const requestedPage = parsePage(resolved.page)
     const { works, page, pageCount } = await getAdminWorks({
         search,
-        onlyVisible,
+        onlyHidden,
         page: requestedPage,
     })
 
@@ -38,7 +38,7 @@ async function WorksContent({ searchParams }: AdminWorksPageProps) {
                 page={page}
                 pageCount={pageCount}
                 search={search}
-                onlyVisible={onlyVisible}
+                onlyHidden={onlyHidden}
             />
         </div>
     )
