@@ -1,4 +1,5 @@
 import { count } from "drizzle-orm"
+import { cache } from "react"
 
 import { db } from "@/db"
 import { artPieces, categories, tags } from "@/db/schema"
@@ -17,7 +18,7 @@ export type AdminOverviewData = AdminOverviewStats & {
 }
 
 /** Fetches counts and ordered social links for the admin overview dashboard. */
-export async function getAdminOverviewStats(): Promise<AdminOverviewStats> {
+export const getAdminOverviewStats = cache(async (): Promise<AdminOverviewStats> => {
     const [[worksRow], [categoriesRow], [tagsRow], links] = await Promise.all([
         db.select({ value: count() }).from(artPieces),
         db.select({ value: count() }).from(categories),
@@ -31,14 +32,14 @@ export async function getAdminOverviewStats(): Promise<AdminOverviewStats> {
         tagsCount: Number(tagsRow?.value ?? 0),
         links,
     }
-}
+})
 
 /** Fetches all data needed to render the admin overview dashboard. */
-export async function getAdminOverviewData(): Promise<AdminOverviewData> {
+export const getAdminOverviewData = cache(async (): Promise<AdminOverviewData> => {
     const [stats, bento] = await Promise.all([getAdminOverviewStats(), getBentoData()])
 
     return {
         ...stats,
         featuredWorks: bento.desktop,
     }
-}
+})
