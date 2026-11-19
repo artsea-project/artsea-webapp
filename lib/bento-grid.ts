@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react"
+
 import type { BentoBoxLayout, BentoLayoutItem } from "@/types/bento"
 
 export type GridSpec = { columns: number; rows: number }
@@ -16,6 +18,15 @@ export const BENTO_VIEW_GRIDS: Record<keyof BentoBoxLayout, GridSpec> = {
 export const PUBLIC_GRID_GAP: Record<keyof BentoBoxLayout, number> = {
     desktop: 21,
     mobile: 12,
+}
+
+export function bentoGridStyle(view: keyof BentoBoxLayout, gap: number): CSSProperties {
+    const { columns } = BENTO_VIEW_GRIDS[view]
+    return {
+        gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+        gridAutoRows: `calc((100cqw - ${(columns - 1) * gap}px) / ${columns})`,
+        gap,
+    }
 }
 
 export type TilePreset = "1:1" | "2:1" | "1:2" | "2:2"
