@@ -10,7 +10,7 @@ import {
     deleteTag,
     updateCategory,
     updateTag,
-} from "../app/admin/categories/actions"
+} from "@/lib/categories/mutations"
 import { db } from "../db"
 import { artPieces, categories, tags } from "../db/schema"
 import { initialCategoryFormState, initialTagFormState } from "../lib/categories/form-state"
