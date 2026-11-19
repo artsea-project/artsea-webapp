@@ -13,22 +13,23 @@ export default function BentoPreviewCard({ works }: BentoPreviewCardProps) {
     return (
         <Link
             href="/admin/appearance"
-            className="flex min-h-99 flex-col rounded-[10px] border border-border bg-background p-7 transition-colors hover:border-foreground/30 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            aria-label="Przejdź do edycji układu strony głównej"
+            className="flex min-h-99 flex-col rounded-xl border border-border bg-background p-7 transition-colors hover:border-foreground/30 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         >
             {works.length === 0 ? (
-                <div className="flex flex-1 items-center justify-center rounded-[10px] border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
                     Brak prac wyróżnionych w układzie strony głównej.
                 </div>
             ) : (
                 <div
-                    aria-label="Podgląd układu prac na stronie głównej"
+                    aria-hidden="true"
                     className="grid flex-1 grid-cols-11 gap-2"
                     style={{ gridAutoRows: "minmax(10px, 1fr)" }}
                 >
                     {works.map((work) => (
                         <div
-                            key={`${work.artPieceId}-${work.mediaId}`}
-                            className="relative min-h-0 overflow-hidden rounded-[10px] bg-muted"
+                            key={`${work.artPieceId}-${work.mediaId}-${work.columnStart}-${work.rowStart}`}
+                            className="relative min-h-0 overflow-hidden rounded-lg bg-muted"
                             style={{
                                 gridColumn: `${work.columnStart} / span ${work.columnSpan}`,
                                 gridRow: `${work.rowStart} / span ${work.rowSpan}`,
@@ -39,10 +40,9 @@ export default function BentoPreviewCard({ works }: BentoPreviewCardProps) {
                                     work.mediaId,
                                     "(min-width: 1024px) 220px, 45vw"
                                 )}
-                                alt={work.title}
+                                alt=""
                                 className="object-cover"
                             />
-                            <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/50 to-transparent" />
                         </div>
                     ))}
                 </div>
