@@ -44,6 +44,13 @@ export type TilePosition = { columnStart: number; rowStart: number }
 
 export type TileBox = Pick<BentoLayoutItem, "columnStart" | "rowStart" | "columnSpan" | "rowSpan">
 
+export function tilePlacement(box: TileBox): CSSProperties {
+    return {
+        gridColumn: `${box.columnStart} / span ${box.columnSpan}`,
+        gridRow: `${box.rowStart} / span ${box.rowSpan}`,
+    }
+}
+
 function isFieldSpan(span: number): boolean {
     return span === FIELD_SIZE || span === 2 * FIELD_SIZE
 }
