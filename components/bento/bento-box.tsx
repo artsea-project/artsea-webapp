@@ -1,7 +1,5 @@
-import type { CSSProperties } from "react"
-
 import type { BentoCardData, BentoData } from "@/lib/bento"
-import { BENTO_VIEW_GRIDS, PUBLIC_GRID_GAP } from "@/lib/bento-grid"
+import { bentoGridStyle, PUBLIC_GRID_GAP } from "@/lib/bento-grid"
 import type { BentoBoxLayout } from "@/types/bento"
 
 import { BentoCard } from "./bento-card"
@@ -11,16 +9,6 @@ type LayoutKind = keyof BentoBoxLayout
 const VISIBILITY_CLASSES: Record<LayoutKind, string> = {
     desktop: "hidden md:block",
     mobile: "md:hidden",
-}
-
-function gridStyle(kind: LayoutKind): CSSProperties {
-    const { columns } = BENTO_VIEW_GRIDS[kind]
-    const gap = PUBLIC_GRID_GAP[kind]
-    return {
-        gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-        gridAutoRows: `calc((100cqw - ${(columns - 1) * gap}px) / ${columns})`,
-        gap,
-    }
 }
 
 const IMAGE_SIZES: Record<LayoutKind, string> = {
@@ -46,7 +34,7 @@ function Layout({ cards, kind }: { cards: BentoCardData[]; kind: LayoutKind }) {
 
     return (
         <div className={`${VISIBILITY_CLASSES[kind]} @container`}>
-            <div className="grid" style={gridStyle(kind)}>
+            <div className="grid" style={bentoGridStyle(kind, PUBLIC_GRID_GAP[kind])}>
                 {cards.map((card) => (
                     <BentoCard
                         card={card}
