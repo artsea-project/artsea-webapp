@@ -1,4 +1,4 @@
-import type { Locale } from "@/i18n/routing"
+import { routing, type Locale } from "@/i18n/routing"
 
 const COLUMN_SUFFIX = { pl: "Pln", en: "Eng" } as const satisfies Record<Locale, string>
 
@@ -7,6 +7,10 @@ type Suffix = (typeof COLUMN_SUFFIX)[Locale]
 // Bilingual database columns come in pairs named `<field>Pln` and `<field>Eng`.
 export function localizedKey<Field extends string>(field: Field, locale: Locale) {
     return `${field}${COLUMN_SUFFIX[locale]}` as `${Field}${Suffix}`
+}
+
+export function otherLocale(locale: Locale): Locale {
+    return routing.locales.find((candidate) => candidate !== locale) ?? locale
 }
 
 // Bilingual values kept in code use the same pair as plain keys: `{ pln, eng }`.

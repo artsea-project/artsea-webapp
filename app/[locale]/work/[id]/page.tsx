@@ -11,6 +11,7 @@ import {
     type ArtworkDetails,
     type ArtworkLink,
 } from "@/lib/artworks/queries"
+import type { LocalizedText } from "@/lib/i18n/localized-text"
 
 interface PageProps {
     params: Promise<{ id: string }>
@@ -75,19 +76,27 @@ function DimensionsSection({ dimensions }: DimensionsSectionProps) {
 
 interface DetailSectionProps {
     label: string
-    content: string
+    content: LocalizedText
 }
 
 function DetailSection({ label, content }: DetailSectionProps) {
+    const t = useTranslations("Artwork")
+
     if (!content) return null
     return (
         <div className="flex flex-col gap-3">
             <span className="text-[11px] font-bold tracking-widest text-muted-foreground uppercase font-secondary">
                 {label}
             </span>
-            <p className="text-foreground leading-relaxed text-base font-body whitespace-pre-line">
-                {content}
-            </p>
+            {content.kind === "text" ? (
+                <p className="text-foreground leading-relaxed text-base font-body whitespace-pre-line">
+                    {content.text}
+                </p>
+            ) : (
+                <p className="text-muted-foreground italic leading-relaxed text-base font-body">
+                    {t("missingTranslation")}
+                </p>
+            )}
         </div>
     )
 }

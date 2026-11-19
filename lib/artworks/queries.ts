@@ -3,8 +3,11 @@ import { and, asc, eq } from "drizzle-orm"
 import { db } from "@/db"
 import { artPieces, artPieceTags, categories, media, tags } from "@/db/schema"
 import type { Locale } from "@/i18n/routing"
-import { localizedKey } from "@/lib/i18n/localized-key"
+import { localizedKey, otherLocale } from "@/lib/i18n/localized-key"
+import { localizedText, type LocalizedText } from "@/lib/i18n/localized-text"
 import { isBentoMediaType } from "@/lib/media"
+
+type DescriptionSlot = "technique" | "description"
 
 export type ArtworkDetails = {
     artPieceId: string
@@ -12,8 +15,8 @@ export type ArtworkDetails = {
     categoryName: string
     yearOfExecution: number | null
     dimensions: string | null
-    technique: string
-    description: string
+    technique: LocalizedText
+    description: LocalizedText
     tags: string[]
     photos: { mediaId: string; orderIndex: number }[]
 }
@@ -23,10 +26,18 @@ export type ArtworkLink = {
     title: string | null
 }
 
-function parseDescriptionSlot(value: unknown, slot: "technique" | "description"): string {
+function parseDescriptionSlot(value: unknown, slot: DescriptionSlot): string {
     if (!value || typeof value !== "object") return ""
     const obj = value as Record<string, unknown>
     return typeof obj[slot] === "string" ? (obj[slot] as string) : ""
+}
+
+function localizedDescriptionSlot(
+    current: unknown,
+    other: unknown,
+    slot: DescriptionSlot
+): LocalizedText {
+    return localizedText(parseDescriptionSlot(current, slot), parseDescriptionSlot(other, slot))
 }
 
 export async function getArtworkDetails(
@@ -38,6 +49,7 @@ export async function getArtworkDetails(
             artPieceId: artPieces.artPieceId,
             title: artPieces[localizedKey("title", locale)],
             description: artPieces[localizedKey("description", locale)],
+            otherDescription: artPieces[localizedKey("description", otherLocale(locale))],
             categoryName: categories[localizedKey("name", locale)],
             yearOfExecution: artPieces.yearOfExecution,
             dimensions: artPieces.dimensions,
@@ -72,8 +84,16 @@ export async function getArtworkDetails(
         categoryName: artwork.categoryName,
         yearOfExecution: artwork.yearOfExecution,
         dimensions: artwork.dimensions,
-        technique: parseDescriptionSlot(artwork.description, "technique"),
-        description: parseDescriptionSlot(artwork.description, "description"),
+        technique: localizedDescriptionSlot(
+            artwork.description,
+            artwork.otherDescription,
+            "technique"
+        ),
+        description: localizedDescriptionSlot(
+            artwork.description,
+            artwork.otherDescription,
+            "description"
+        ),
         tags: tagRows.flatMap(({ name }) => (name ? [name] : [])),
         photos: mediaRows
             .filter(({ fileType }) => isBentoMediaType(fileType))
