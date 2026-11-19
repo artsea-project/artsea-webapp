@@ -4,11 +4,13 @@ import {
     DESKTOP_GRID,
     MOBILE_GRID,
     TILE_PRESETS,
+    bentoGridStyle,
     describePreset,
     findFreeSpot,
     fitsGrid,
     hasOverlaps,
     overlaps,
+    tilePlacement,
     type TileBox,
 } from "../lib/bento-grid"
 
@@ -80,4 +82,24 @@ test("describePreset names the preset of a tile", () => {
     expect(describePreset(box(1, 1, 3, 6))).toBe("1:2")
     expect(describePreset(box(1, 1, 6, 6))).toBe("2:2")
     expect(describePreset(box(1, 1, 4, 5))).toBeNull()
+})
+
+test("bentoGridStyle builds square rows from the view columns and the gap", () => {
+    expect(bentoGridStyle("desktop", 21)).toEqual({
+        gridTemplateColumns: "repeat(12, minmax(0, 1fr))",
+        gridAutoRows: "calc((100cqw - 231px) / 12)",
+        gap: 21,
+    })
+    expect(bentoGridStyle("mobile", 12)).toEqual({
+        gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
+        gridAutoRows: "calc((100cqw - 60px) / 6)",
+        gap: 12,
+    })
+})
+
+test("tilePlacement spans the tile over its columns and rows", () => {
+    expect(tilePlacement(box(4, 1, 3, 6))).toEqual({
+        gridColumn: "4 / span 3",
+        gridRow: "1 / span 6",
+    })
 })

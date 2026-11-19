@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react"
+
 import type { BentoBoxLayout, BentoLayoutItem } from "@/types/bento"
 
 export type GridSpec = { columns: number; rows: number }
@@ -18,6 +20,15 @@ export const PUBLIC_GRID_GAP: Record<keyof BentoBoxLayout, number> = {
     mobile: 12,
 }
 
+export function bentoGridStyle(view: keyof BentoBoxLayout, gap: number): CSSProperties {
+    const { columns } = BENTO_VIEW_GRIDS[view]
+    return {
+        gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+        gridAutoRows: `calc((100cqw - ${(columns - 1) * gap}px) / ${columns})`,
+        gap,
+    }
+}
+
 export type TilePreset = "1:1" | "2:1" | "1:2" | "2:2"
 
 export type TileSize = { columnSpan: number; rowSpan: number }
@@ -32,6 +43,13 @@ export const TILE_PRESETS: Record<TilePreset, TileSize> = {
 export type TilePosition = { columnStart: number; rowStart: number }
 
 export type TileBox = Pick<BentoLayoutItem, "columnStart" | "rowStart" | "columnSpan" | "rowSpan">
+
+export function tilePlacement(box: TileBox): CSSProperties {
+    return {
+        gridColumn: `${box.columnStart} / span ${box.columnSpan}`,
+        gridRow: `${box.rowStart} / span ${box.rowSpan}`,
+    }
+}
 
 function isFieldSpan(span: number): boolean {
     return span === FIELD_SIZE || span === 2 * FIELD_SIZE
