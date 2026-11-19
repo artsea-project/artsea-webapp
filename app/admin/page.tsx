@@ -1,9 +1,10 @@
 import { Folder, Hash, Image as ImageIcon } from "lucide-react"
 import { Suspense } from "react"
 
+import BentoPreviewCard from "@/components/admin-overview/BentoPreviewCard"
 import OverviewStatCard from "@/components/admin-overview/OverviewStatCard"
 import SocialLinksCard from "@/components/admin-overview/SocialLinksCard"
-import { getAdminOverviewStats } from "@/lib/overview/queries"
+import { getAdminOverviewData } from "@/lib/overview/queries"
 
 export default function AdminOverviewPage() {
     return (
@@ -14,7 +15,7 @@ export default function AdminOverviewPage() {
 }
 
 async function OverviewContent() {
-    const stats = await getAdminOverviewStats()
+    const data = await getAdminOverviewData()
 
     return (
         <div className="px-4 py-6 font-secondary sm:px-8 md:px-16 md:py-9">
@@ -29,19 +30,19 @@ async function OverviewContent() {
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                     <OverviewStatCard
                         label="Dodane prace"
-                        value={stats.worksCount}
+                        value={data.worksCount}
                         href="/admin/works"
                         icon={ImageIcon}
                     />
                     <OverviewStatCard
                         label="Aktywne kategorie"
-                        value={stats.categoriesCount}
+                        value={data.categoriesCount}
                         href="/admin/categories"
                         icon={Folder}
                     />
                     <OverviewStatCard
                         label="Zdefiniowane tagi"
-                        value={stats.tagsCount}
+                        value={data.tagsCount}
                         href="/admin/categories"
                         icon={Hash}
                     />
@@ -52,13 +53,14 @@ async function OverviewContent() {
                         <h3 className="text-sm font-normal text-muted-foreground">
                             Prace wyróżnione na stronie głównej.
                         </h3>
+                        <BentoPreviewCard works={data.featuredWorks} />
                     </section>
 
                     <section className="flex flex-col gap-5">
                         <h3 className="text-sm font-normal text-muted-foreground">
                             Linki społecznościowe
                         </h3>
-                        <SocialLinksCard links={stats.links} />
+                        <SocialLinksCard links={data.links} />
                     </section>
                 </div>
             </div>
