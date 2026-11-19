@@ -2,6 +2,7 @@ import { Folder, Hash, Image as ImageIcon } from "lucide-react"
 import { Suspense } from "react"
 
 import OverviewStatCard from "@/components/admin-overview/OverviewStatCard"
+import SocialLinksCard from "@/components/admin-overview/SocialLinksCard"
 import { getAdminOverviewStats } from "@/lib/overview/queries"
 
 export default function AdminOverviewPage() {
@@ -46,17 +47,18 @@ async function OverviewContent() {
                     />
                 </div>
 
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    <section className="flex flex-col gap-3">
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-11">
+                    <section className="flex flex-col gap-5">
                         <h3 className="text-sm font-normal text-muted-foreground">
                             Prace wyróżnione na stronie głównej.
                         </h3>
                     </section>
 
-                    <section className="flex flex-col gap-3">
+                    <section className="flex flex-col gap-5">
                         <h3 className="text-sm font-normal text-muted-foreground">
                             Linki społecznościowe
                         </h3>
+                        <SocialLinksCard links={stats.links} />
                     </section>
                 </div>
             </div>
