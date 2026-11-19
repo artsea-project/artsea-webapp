@@ -10,6 +10,7 @@ import {
     fitsGrid,
     hasOverlaps,
     overlaps,
+    tilePlacement,
     type TileBox,
 } from "../lib/bento-grid"
 
@@ -93,5 +94,12 @@ test("bentoGridStyle builds square rows from the view columns and the gap", () =
         gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
         gridAutoRows: "calc((100cqw - 60px) / 6)",
         gap: 12,
+    })
+})
+
+test("tilePlacement spans the tile over its columns and rows", () => {
+    expect(tilePlacement(box(4, 1, 3, 6))).toEqual({
+        gridColumn: "4 / span 3",
+        gridRow: "1 / span 6",
     })
 })

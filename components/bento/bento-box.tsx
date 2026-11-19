@@ -1,5 +1,5 @@
 import type { BentoCardData, BentoData } from "@/lib/bento"
-import { bentoGridStyle, PUBLIC_GRID_GAP } from "@/lib/bento-grid"
+import { bentoGridStyle, PUBLIC_GRID_GAP, tilePlacement } from "@/lib/bento-grid"
 import type { BentoBoxLayout } from "@/types/bento"
 
 import { BentoCard } from "./bento-card"
@@ -14,13 +14,6 @@ const VISIBILITY_CLASSES: Record<LayoutKind, string> = {
 const IMAGE_SIZES: Record<LayoutKind, string> = {
     desktop: "(min-width: 1280px) 420px, (min-width: 768px) 35vw",
     mobile: "(max-width: 767px) 90vw",
-}
-
-function gridPlacement(card: BentoCardData) {
-    return {
-        gridColumn: `${card.columnStart} / span ${card.columnSpan}`,
-        gridRow: `${card.rowStart} / span ${card.rowSpan}`,
-    }
 }
 
 function Layout({ cards, kind }: { cards: BentoCardData[]; kind: LayoutKind }) {
@@ -40,7 +33,7 @@ function Layout({ cards, kind }: { cards: BentoCardData[]; kind: LayoutKind }) {
                         card={card}
                         key={card.tileId}
                         sizes={IMAGE_SIZES[kind]}
-                        style={gridPlacement(card)}
+                        style={tilePlacement(card)}
                     />
                 ))}
             </div>
