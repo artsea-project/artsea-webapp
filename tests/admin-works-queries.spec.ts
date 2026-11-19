@@ -145,12 +145,12 @@ test.describe("works queries", () => {
         expect(mismatchedYear.total).toBe(0)
     })
 
-    test("filters works by onlyVisible", async () => {
-        const visibleId = await createWork({
+    test("filters works by onlyHidden", async () => {
+        await createWork({
             titlePln: `${marker} widoczna`,
             isVisible: true,
         })
-        await createWork({
+        const hiddenId = await createWork({
             titlePln: `${marker} widoczna`,
             isVisible: false,
         })
@@ -158,13 +158,13 @@ test.describe("works queries", () => {
         const all = await getAdminWorks({ search: `${marker} widoczna`, page: 1 })
         expect(all.total).toBe(2)
 
-        const onlyVisible = await getAdminWorks({
+        const onlyHidden = await getAdminWorks({
             search: `${marker} widoczna`,
-            onlyVisible: true,
+            onlyHidden: true,
             page: 1,
         })
-        expect(onlyVisible.total).toBe(1)
-        expect(onlyVisible.works[0]?.artPieceId).toBe(visibleId)
+        expect(onlyHidden.total).toBe(1)
+        expect(onlyHidden.works[0]?.artPieceId).toBe(hiddenId)
     })
 
     test("clamps out-of-range pages and respects the page size", async () => {

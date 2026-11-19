@@ -28,7 +28,7 @@ interface WorksSectionProps {
     page: number
     pageCount: number
     search: string
-    onlyVisible: boolean
+    onlyHidden: boolean
 }
 
 export default function WorksSection({
@@ -36,7 +36,7 @@ export default function WorksSection({
     page,
     pageCount,
     search,
-    onlyVisible,
+    onlyHidden,
 }: WorksSectionProps) {
     const [notice, setNotice] = useState<StatusNotice | null>(null)
     const [workToDelete, setWorkToDelete] = useState<AdminWork | null>(null)
@@ -141,14 +141,14 @@ export default function WorksSection({
             </p>
 
             <WorksSearchBar
-                key={`${search}:${onlyVisible}`}
+                key={`${search}:${onlyHidden}`}
                 initialSearch={search}
-                onlyVisible={onlyVisible}
+                onlyHidden={onlyHidden}
             />
 
             {optimisticWorks.length === 0 ? (
                 <div className="flex min-h-48 items-center justify-center rounded-xl border border-dashed border-border bg-background p-8 text-sm text-muted-foreground">
-                    {search || onlyVisible
+                    {search || onlyHidden
                         ? "Nie znaleziono prac spełniających wybrane kryteria."
                         : "Nie dodano jeszcze żadnych prac."}
                 </div>
@@ -173,7 +173,7 @@ export default function WorksSection({
                 page={page}
                 pageCount={pageCount}
                 search={search}
-                onlyVisible={onlyVisible}
+                onlyHidden={onlyHidden}
             />
 
             <AlertDialog

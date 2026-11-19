@@ -10,31 +10,28 @@ import { Button } from "@/components/ui/button"
 
 interface WorksSearchBarProps {
     initialSearch: string
-    onlyVisible?: boolean
+    onlyHidden?: boolean
 }
 
-export default function WorksSearchBar({
-    initialSearch,
-    onlyVisible = false,
-}: WorksSearchBarProps) {
+export default function WorksSearchBar({ initialSearch, onlyHidden = false }: WorksSearchBarProps) {
     const router = useRouter()
     const [query, setQuery] = useState(initialSearch)
 
     function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault()
         const trimmed = query.trim()
-        router.push(buildWorksHref({ search: trimmed, onlyVisible }))
+        router.push(buildWorksHref({ search: trimmed, onlyHidden }))
     }
 
     function handleClear() {
         setQuery("")
         if (initialSearch) {
-            router.push(buildWorksHref({ onlyVisible }))
+            router.push(buildWorksHref({ onlyHidden }))
         }
     }
 
-    function handleToggleVisible() {
-        router.push(buildWorksHref({ search: query.trim(), onlyVisible: !onlyVisible }))
+    function handleToggleHidden() {
+        router.push(buildWorksHref({ search: query.trim(), onlyHidden: !onlyHidden }))
     }
 
     return (
@@ -75,10 +72,10 @@ export default function WorksSearchBar({
             </form>
 
             <VisibilitySwitch
-                checked={onlyVisible}
-                label="Tylko widoczne"
-                ariaLabel="Filtruj tylko widoczne prace"
-                onToggle={handleToggleVisible}
+                checked={onlyHidden}
+                label="Tylko niewidoczne"
+                ariaLabel="Filtruj tylko niewidoczne prace"
+                onToggle={handleToggleHidden}
             />
         </div>
     )
