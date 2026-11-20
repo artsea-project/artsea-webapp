@@ -6,9 +6,10 @@ interface StatCardProps {
     value: number
     icon: LucideIcon
     href: string
+    note?: string | null
 }
 
-export default function StatCard({ label, value, icon: Icon, href }: StatCardProps) {
+export default function StatCard({ label, value, icon: Icon, href, note }: StatCardProps) {
     return (
         <Link
             href={href}
@@ -19,6 +20,7 @@ export default function StatCard({ label, value, icon: Icon, href }: StatCardPro
                 <Icon aria-hidden className="size-6 shrink-0" />
             </span>
             <span className="text-4xl font-bold text-foreground">{value}</span>
+            {note && <span className="text-sm text-muted-foreground">{note}</span>}
         </Link>
     )
 }
