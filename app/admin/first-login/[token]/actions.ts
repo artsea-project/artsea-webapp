@@ -3,9 +3,8 @@
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { applyAuthCookies } from "@/lib/auth/next-cookies"
-import { artistLoginEmail } from "@/lib/auth/config"
 import { registerArtist, type RegistrationResult } from "@/lib/auth/register"
-import { getAuth } from "@/lib/auth/server"
+import { signInArtist } from "@/lib/auth/server"
 
 export type FirstLoginFormState = {
     error?: string
@@ -51,12 +50,7 @@ export async function registerAction(
     }
 
     try {
-        const auth = await getAuth()
-        const response = await auth.api.signInEmail({
-            body: { email: artistLoginEmail, password },
-            headers: await headers(),
-            asResponse: true,
-        })
+        const response = await signInArtist(password, await headers())
         if (!response.ok) {
             redirect("/admin/login?created=1")
         }

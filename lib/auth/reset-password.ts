@@ -4,6 +4,7 @@ import { db } from "@/db"
 import { accounts, sessions } from "@/db/schema"
 import { findRegisteredArtistAccount } from "@/lib/auth/artist-account"
 import { isNonemptyPassword } from "@/lib/auth/password"
+import { artistPasswordResetLock } from "@/lib/auth/password-lock"
 
 export type PasswordResetTarget = {
     userId: string
@@ -25,6 +26,8 @@ export async function resetPassword(userId: string, newPassword: string) {
     const password = await hashPassword(newPassword)
 
     await db.transaction(async (tx) => {
+        await tx.execute(artistPasswordResetLock)
+
         const updated = await tx
             .update(accounts)
             .set({ password, updatedAt: new Date() })
