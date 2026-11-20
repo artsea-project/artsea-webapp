@@ -3,6 +3,7 @@ import { Image as ImageIcon } from "lucide-react"
 
 import StatCard from "@/components/admin-overview/StatCard"
 import AdminPageIntro from "@/components/AdminPageIntro"
+import { describeHiddenWorks } from "@/lib/overview/hidden-works"
 import { getOverviewCounts } from "@/lib/overview/queries"
 
 export default function AdminOverviewPage() {
@@ -31,6 +32,7 @@ async function OverviewContent() {
                 value={counts.works}
                 icon={ImageIcon}
                 href="/admin/works"
+                note={describeHiddenWorks(counts.hiddenWorks)}
             />
         </div>
     )
