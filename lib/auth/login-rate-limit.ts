@@ -1,11 +1,30 @@
 import { createHash } from "node:crypto"
-import { sql } from "drizzle-orm"
+import { and, like, lt, sql } from "drizzle-orm"
 import { db } from "@/db"
 import { rateLimits } from "@/db/schema"
 
 const LOGIN_RATE_LIMIT_KEY_PREFIX = "artsea:admin-login:client:"
 const LOGIN_RATE_LIMIT_WINDOW_MS = 60_000
 const LOGIN_RATE_LIMIT_MAX = 10
+const CLEANUP_INTERVAL_MS = 60 * 60_000
+const BUCKET_RETENTION_MS = 60 * 60_000
+
+let nextCleanupAt = 0
+
+export async function pruneLoginRateLimitBuckets(now = Date.now()): Promise<void> {
+    if (now < nextCleanupAt) return
+
+    // Reserve the interval before awaiting the query so concurrent attempts don't repeat it.
+    nextCleanupAt = now + CLEANUP_INTERVAL_MS
+    await db
+        .delete(rateLimits)
+        .where(
+            and(
+                like(rateLimits.key, `${LOGIN_RATE_LIMIT_KEY_PREFIX}%`),
+                lt(rateLimits.lastRequest, now - BUCKET_RETENTION_MS)
+            )
+        )
+}
 
 export async function consumeLoginAttempt(
     requestHeaders: Pick<Headers, "get">,
