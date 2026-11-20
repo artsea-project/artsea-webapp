@@ -5,6 +5,7 @@ import {
     OVERVIEW_CARD_CLASS,
     OVERVIEW_CARD_LINK_CLASS,
 } from "@/components/admin-overview/card-styles"
+import OverviewEmptyState from "@/components/admin-overview/OverviewEmptyState"
 import { bentoImageProps } from "@/components/bento/bento-card"
 import type { BentoCardData } from "@/lib/bento"
 import { bentoGridStyle, tilePlacement } from "@/lib/bento-grid"
@@ -19,6 +20,16 @@ interface FeaturedWorksProps {
 }
 
 export default function FeaturedWorks({ cards }: FeaturedWorksProps) {
+    if (cards.length === 0) {
+        return (
+            <OverviewEmptyState
+                message="Na stronie głównej nie ma jeszcze prac."
+                actionLabel="Ułóż stronę główną"
+                href="/admin/appearance"
+            />
+        )
+    }
+
     return (
         <Link
             href="/admin/appearance"
