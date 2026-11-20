@@ -28,12 +28,11 @@ test.describe("Database Config & Relations Integration Test", () => {
         const [user] = await db
             .insert(users)
             .values({
-                username: testUsername,
+                name: testUsername,
                 email: testEmail,
-                passwordHash: "playwrightpass123",
             })
             .returning()
-        createdUserId = user.userId
+        createdUserId = user.id
 
         // 2. Insert Profile
         const [profile] = await db
@@ -89,7 +88,7 @@ test.describe("Database Config & Relations Integration Test", () => {
                 .where(eq(siteSettings.siteSettingsId, createdSiteSettingsId))
         }
         if (createdUserId) {
-            await db.delete(users).where(eq(users.userId, createdUserId))
+            await db.delete(users).where(eq(users.id, createdUserId))
         }
     })
 
@@ -293,9 +292,8 @@ test.describe("Database Config & Relations Integration Test", () => {
     test("should enforce singleton constraint on users, profiles, and siteSettings", async () => {
         await expect(
             db.insert(users).values({
-                username: "second_admin",
+                name: "second_admin",
                 email: "admin2@eliseroux.com",
-                passwordHash: "playwrightpass123",
             })
         ).rejects.toThrow()
 
@@ -328,9 +326,8 @@ test.describe("Database Config & Relations Integration Test", () => {
     test("should reject false singleton values on users, profiles, and siteSettings", async () => {
         await expect(
             db.insert(users).values({
-                username: "third_admin",
+                name: "third_admin",
                 email: "admin3@eliseroux.com",
-                passwordHash: "playwrightpass123",
                 isSingleton: false,
             })
         ).rejects.toThrow()

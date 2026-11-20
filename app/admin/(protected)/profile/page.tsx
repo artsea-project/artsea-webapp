@@ -3,6 +3,7 @@ import { Suspense } from "react"
 import LinksSection from "@/components/admin-profile/LinksSection"
 import ProfileForm from "@/components/admin-profile/ProfileForm"
 import { Separator } from "@/components/ui/separator"
+import { requireArtistSession } from "@/lib/auth/session"
 import { getEditableProfile, getOrderedLinks } from "@/lib/profile/queries"
 
 export default function AdminProfilePage() {
@@ -14,6 +15,8 @@ export default function AdminProfilePage() {
 }
 
 async function ProfileContent() {
+    await requireArtistSession()
+
     const [profile, links] = await Promise.all([getEditableProfile(), getOrderedLinks()])
 
     return (

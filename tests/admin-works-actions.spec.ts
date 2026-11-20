@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto"
 import { expect, test } from "@playwright/test"
 import { eq, inArray } from "drizzle-orm"
 
-import { createWork, deleteWork, setWorkVisibility, updateWork } from "../app/admin/works/actions"
+import { createWork, deleteWork, setWorkVisibility, updateWork } from "@/lib/works/mutations"
 import { db } from "../db"
 import { artPieces, artPieceTags, categories, tags } from "../db/schema"
 import { initialWorkFormState } from "../lib/works/form-state"

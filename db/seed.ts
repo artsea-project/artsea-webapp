@@ -3,20 +3,33 @@ import { readFile } from "node:fs/promises"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { config } from "dotenv"
-import { assertSeedSafety, parseSeedArguments } from "./seed-guard"
+import { hashPassword } from "better-auth/crypto"
+import {
+    assertSeedDatabaseUrl,
+    assertSeedSafety,
+    developmentSeedPassword,
+    parseSeedArguments,
+    seedArtist,
+} from "./seed-guard"
 import {
     buildBentoLayout,
     cleanDatabase,
+    initializeSeedAuthentication,
     seedArtistProfile,
     seedArtistUser,
     seedSiteSettings,
     seedSocialLinks,
 } from "./seed-common"
 
-config({ path: path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../.env.local") })
+config({
+    path: path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../.env.local"),
+    quiet: true,
+})
 
 async function main() {
     const seedOptions = parseSeedArguments(process.argv.slice(2))
+    assertSeedDatabaseUrl(process.env.DATABASE_URL)
+    const developmentPasswordHash = await hashPassword(developmentSeedPassword)
     console.log("Seeding database...")
 
     const { db } = await import("./index")
@@ -109,16 +122,17 @@ async function main() {
 
     const existingUsers = await db
         .select({
-            userId: users.userId,
-            username: users.username,
+            id: users.id,
+            name: users.name,
             email: users.email,
         })
         .from(users)
     assertSeedSafety({ ...seedOptions, existingUsers })
+    await initializeSeedAuthentication()
 
     await db.transaction(async (tx) => {
         await cleanDatabase(tx)
-        await seedArtistUser(tx)
+        await seedArtistUser(tx, developmentPasswordHash)
 
         const profileContent = await readFile(path.join(fixtureDirectory, "profile.jpg"))
         await seedArtistProfile(tx, profileContent)
@@ -212,6 +226,10 @@ async function main() {
     })
 
     console.log("Database seeded successfully with Bento portfolio data!")
+    console.log("")
+    console.log("Development admin login:")
+    console.log(`Name: ${seedArtist.name}`)
+    console.log(`Password: ${developmentSeedPassword}`)
 }
 
 main()

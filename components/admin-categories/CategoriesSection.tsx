@@ -1,6 +1,6 @@
 "use client"
 
-import { deleteCategory } from "@/app/admin/categories/actions"
+import { deleteCategory } from "@/app/admin/(protected)/categories/actions"
 import CatalogSection from "@/components/admin-categories/CatalogSection"
 import CategoriesTable from "@/components/admin-categories/CategoriesTable"
 import CategoryPanel from "@/components/admin-categories/CategoryPanel"

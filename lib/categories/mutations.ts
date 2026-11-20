@@ -1,5 +1,3 @@
-"use server"
-
 import { and, eq, ne, sql, type AnyColumn, type SQL } from "drizzle-orm"
 
 import { db } from "@/db"

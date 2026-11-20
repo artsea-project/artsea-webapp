@@ -27,6 +27,8 @@ const fontVariableClasses: Record<FontName, string> = {
     "Geist Mono": geistMono.variable,
 }
 
+export const adminFontClassName = inter.className
+
 export function getFontVariableClasses(fontNames: readonly FontName[]): string {
     return fontNames.map((fontName) => fontVariableClasses[fontName]).join(" ")
 }

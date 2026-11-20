@@ -5,15 +5,20 @@ import type { SiteTheme } from "../types/theme"
 import { defaultSiteTheme } from "@/lib/theme/theme"
 import * as schema from "./schema"
 import {
+    accounts,
     artPieces,
+    authInstallation,
     artPieceTags,
     categories,
     links,
     media,
     profiles,
+    rateLimits,
+    sessions,
     siteSettings,
     tags,
     users,
+    verifications,
 } from "./schema"
 import { seedArtist } from "./seed-guard"
 
@@ -27,7 +32,7 @@ export const siteSettingsId = "a7f3bc01-0000-4000-8000-000000000004"
 export const sharedProfile = {
     profileId,
     fullName: "Anna",
-    contactEmail: seedArtist.email,
+    contactEmail: "anna@example.com",
     bioPln: {
         heading: "",
         intro: [
@@ -134,14 +139,31 @@ export async function cleanDatabase(tx: SeedTransaction) {
     await tx.delete(tags)
     await tx.delete(categories)
     await tx.delete(siteSettings)
+    await tx.delete(sessions)
+    await tx.delete(accounts)
+    await tx.delete(verifications)
+    await tx.delete(rateLimits)
     await tx.delete(users)
 }
 
-export async function seedArtistUser(tx: SeedTransaction) {
+export async function initializeSeedAuthentication() {
+    const { getOrCreateAuthInstallation } = await import("@/lib/auth/installation")
+    await getOrCreateAuthInstallation()
+}
+
+export async function seedArtistUser(tx: SeedTransaction, passwordHash: string) {
+    await tx.insert(users).values(seedArtist).onConflictDoNothing()
     await tx
-        .insert(users)
-        .values({ ...seedArtist, passwordHash: "development-only-not-for-login" })
+        .insert(accounts)
+        .values({
+            accountId: seedArtist.id,
+            providerId: "credential",
+            userId: seedArtist.id,
+            password: passwordHash,
+        })
         .onConflictDoNothing()
+    const now = new Date()
+    await tx.update(authInstallation).set({ setupCompletedAt: now, updatedAt: now })
 }
 
 export async function seedArtistProfile(tx: SeedTransaction, profileContent: Buffer) {

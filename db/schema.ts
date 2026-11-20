@@ -4,6 +4,7 @@ import {
     jsonb,
     boolean,
     integer,
+    bigint,
     timestamp,
     uuid,
     primaryKey,
@@ -11,6 +12,7 @@ import {
     unique,
     uniqueIndex,
     check,
+    index,
     customType,
 } from "drizzle-orm/pg-core"
 import { relations, sql } from "drizzle-orm"
@@ -20,24 +22,112 @@ const bytea = customType<{ data: Buffer; driverData: Buffer }>({
         return "bytea"
     },
 })
-import type { BioContent, ContactContent } from "../types/profile"
-import type { SiteTheme } from "../types/theme"
-import type { BentoBoxLayout } from "../types/bento"
+import type { BioContent, ContactContent } from "@/types/profile"
+import type { SiteTheme } from "@/types/theme"
+import type { BentoBoxLayout } from "@/types/bento"
 
 // User Table
 export const users = pgTable(
     "users",
     {
-        userId: uuid("user_id").primaryKey().defaultRandom(),
-        username: text("username").notNull().unique(),
+        id: uuid("user_id").primaryKey().defaultRandom(),
+        name: text("username").notNull().unique(),
         email: text("email").notNull().unique(),
-        passwordHash: text("password_hash").notNull(),
+        emailVerified: boolean("email_verified").notNull().default(false),
+        image: text("image"),
         createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+        updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
         isSingleton: boolean("is_singleton").notNull().default(true),
     },
     (table) => [
         unique("users_singleton_uq").on(table.isSingleton),
         check("users_singleton_val_chk", sql`${table.isSingleton} = true`),
+    ]
+)
+
+// Better Auth Tables
+export const accounts = pgTable(
+    "accounts",
+    {
+        id: uuid("id").primaryKey().defaultRandom(),
+        accountId: text("account_id").notNull(),
+        providerId: text("provider_id").notNull(),
+        userId: uuid("user_id")
+            .notNull()
+            .references(() => users.id, { onDelete: "cascade" }),
+        accessToken: text("access_token"),
+        refreshToken: text("refresh_token"),
+        idToken: text("id_token"),
+        accessTokenExpiresAt: timestamp("access_token_expires_at", { withTimezone: true }),
+        refreshTokenExpiresAt: timestamp("refresh_token_expires_at", { withTimezone: true }),
+        scope: text("scope"),
+        password: text("password"),
+        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+        updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    },
+    (table) => [
+        index("accounts_user_id_idx").on(table.userId),
+        unique("accounts_user_provider_uq").on(table.userId, table.providerId),
+    ]
+)
+
+export const sessions = pgTable(
+    "sessions",
+    {
+        id: uuid("id").primaryKey().defaultRandom(),
+        expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+        token: text("token").notNull().unique(),
+        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+        updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+        ipAddress: text("ip_address"),
+        userAgent: text("user_agent"),
+        userId: uuid("user_id")
+            .notNull()
+            .references(() => users.id, { onDelete: "cascade" }),
+    },
+    (table) => [
+        index("sessions_user_id_idx").on(table.userId),
+        index("sessions_expires_at_idx").on(table.expiresAt),
+    ]
+)
+
+export const verifications = pgTable(
+    "verifications",
+    {
+        id: uuid("id").primaryKey().defaultRandom(),
+        identifier: text("identifier").notNull(),
+        value: text("value").notNull(),
+        expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+        updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    },
+    (table) => [index("verifications_identifier_idx").on(table.identifier)]
+)
+
+export const rateLimits = pgTable("rate_limit", {
+    id: uuid("id").primaryKey().defaultRandom(),
+    key: text("key").notNull().unique(),
+    count: integer("count").notNull(),
+    lastRequest: bigint("last_request", { mode: "number" }).notNull(),
+})
+
+export const authInstallation = pgTable(
+    "auth_installation",
+    {
+        id: uuid("id").primaryKey().defaultRandom(),
+        betterAuthSecret: text("better_auth_secret").notNull(),
+        setupCompletedAt: timestamp("setup_completed_at", { withTimezone: true }),
+        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+        updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+        isSingleton: boolean("is_singleton").notNull().default(true),
+    },
+    (table) => [
+        unique("auth_installation_singleton_uq").on(table.isSingleton),
+        check("auth_installation_singleton_val_chk", sql`${table.isSingleton} = true`),
+        check(
+            "auth_installation_secret_length_chk",
+            sql`char_length(${table.betterAuthSecret}) >= 32`
+        ),
     ]
 )
 
@@ -202,6 +292,25 @@ export const siteSettings = pgTable(
 )
 
 // Relations
+
+export const usersRelations = relations(users, ({ many }) => ({
+    accounts: many(accounts),
+    sessions: many(sessions),
+}))
+
+export const accountsRelations = relations(accounts, ({ one }) => ({
+    user: one(users, {
+        fields: [accounts.userId],
+        references: [users.id],
+    }),
+}))
+
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+    user: one(users, {
+        fields: [sessions.userId],
+        references: [users.id],
+    }),
+}))
 
 export const categoriesRelations = relations(categories, ({ many }) => ({
     artPieces: many(artPieces),
