@@ -50,7 +50,12 @@ async function OverviewContent() {
                     icon={Folder}
                     href="/admin/categories"
                 />
-                <StatCard label="Zdefiniowane tagi" value={counts.tags} icon={Hash} />
+                <StatCard
+                    label="Zdefiniowane tagi"
+                    value={counts.tags}
+                    icon={Hash}
+                    href="/admin/categories"
+                />
             </div>
             <div className="grid gap-6 lg:grid-cols-2 lg:gap-11">
                 <OverviewPanel
