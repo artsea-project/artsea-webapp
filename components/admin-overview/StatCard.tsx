@@ -1,6 +1,10 @@
 import Link from "next/link"
 import type { LucideIcon } from "lucide-react"
 
+import {
+    OVERVIEW_CARD_CLASS,
+    OVERVIEW_CARD_LINK_CLASS,
+} from "@/components/admin-overview/card-styles"
 import { cn } from "@/lib/utils"
 
 interface StatCardProps {
@@ -11,7 +15,7 @@ interface StatCardProps {
     note?: string | null
 }
 
-const CARD_CLASS = "flex flex-col gap-2 rounded-lg border border-border bg-background p-6"
+const CARD_CLASS = cn("flex flex-col gap-2", OVERVIEW_CARD_CLASS)
 
 export default function StatCard({ label, value, icon: Icon, href, note }: StatCardProps) {
     const content = (
@@ -28,13 +32,7 @@ export default function StatCard({ label, value, icon: Icon, href, note }: StatC
     if (!href) return <div className={CARD_CLASS}>{content}</div>
 
     return (
-        <Link
-            href={href}
-            className={cn(
-                CARD_CLASS,
-                "transition-colors hover:border-foreground/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-            )}
-        >
+        <Link href={href} className={cn(CARD_CLASS, OVERVIEW_CARD_LINK_CLASS)}>
             {content}
         </Link>
     )

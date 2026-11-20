@@ -1,8 +1,11 @@
 import { Suspense } from "react"
 import { Folder, Hash, Image as ImageIcon } from "lucide-react"
 
+import FeaturedWorks from "@/components/admin-overview/FeaturedWorks"
+import OverviewPanel from "@/components/admin-overview/OverviewPanel"
 import StatCard from "@/components/admin-overview/StatCard"
 import AdminPageIntro from "@/components/AdminPageIntro"
+import { getBentoData } from "@/lib/bento"
 import { describeHiddenWorks } from "@/lib/overview/hidden-works"
 import { getOverviewCounts } from "@/lib/overview/queries"
 
@@ -23,24 +26,34 @@ export default function AdminOverviewPage() {
 }
 
 async function OverviewContent() {
-    const counts = await getOverviewCounts()
+    const [counts, bento] = await Promise.all([getOverviewCounts(), getBentoData()])
 
     return (
-        <div className="grid gap-6 sm:grid-cols-3">
-            <StatCard
-                label="Dodane prace"
-                value={counts.works}
-                icon={ImageIcon}
-                href="/admin/works"
-                note={describeHiddenWorks(counts.hiddenWorks)}
-            />
-            <StatCard
-                label="Kategorie"
-                value={counts.categories}
-                icon={Folder}
-                href="/admin/categories"
-            />
-            <StatCard label="Zdefiniowane tagi" value={counts.tags} icon={Hash} />
-        </div>
+        <>
+            <div className="grid gap-6 sm:grid-cols-3">
+                <StatCard
+                    label="Dodane prace"
+                    value={counts.works}
+                    icon={ImageIcon}
+                    href="/admin/works"
+                    note={describeHiddenWorks(counts.hiddenWorks)}
+                />
+                <StatCard
+                    label="Kategorie"
+                    value={counts.categories}
+                    icon={Folder}
+                    href="/admin/categories"
+                />
+                <StatCard label="Zdefiniowane tagi" value={counts.tags} icon={Hash} />
+            </div>
+            <div className="grid gap-6 lg:grid-cols-2 lg:gap-11">
+                <OverviewPanel
+                    id="overview-featured-works"
+                    title="Prace wyróżnione na stronie głównej"
+                >
+                    <FeaturedWorks cards={bento.desktop} />
+                </OverviewPanel>
+            </div>
+        </>
     )
 }
