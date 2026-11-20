@@ -2,6 +2,7 @@ import { Suspense } from "react"
 
 import CategoriesSection from "@/components/admin-categories/CategoriesSection"
 import TagsSection from "@/components/admin-categories/TagsSection"
+import { requireArtistSession } from "@/lib/auth/session"
 import { getCategoriesWithWorkCounts, getOrderedTags } from "@/lib/categories/queries"
 
 export default function AdminCategoriesPage() {
@@ -13,6 +14,8 @@ export default function AdminCategoriesPage() {
 }
 
 async function CategoriesContent() {
+    await requireArtistSession()
+
     const [categories, tags] = await Promise.all([getCategoriesWithWorkCounts(), getOrderedTags()])
 
     return (

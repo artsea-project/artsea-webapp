@@ -1,7 +1,8 @@
 import { expect, test } from "@playwright/test"
 import { hashPassword } from "better-auth/crypto"
+import { eq } from "drizzle-orm"
 import { db } from "@/db"
-import { accounts, authInstallation, profiles, rateLimits, users } from "@/db/schema"
+import { accounts, authInstallation, profiles, rateLimits, sessions, users } from "@/db/schema"
 import { getOrCreateAuthInstallation } from "@/lib/auth/installation"
 import { artistLoginEmail } from "@/lib/auth/config"
 import { deleteSetupToken, getOrCreateSetupToken } from "@/lib/auth/setup-token"
@@ -105,6 +106,29 @@ test.describe("admin authentication", () => {
             await page.goto(route)
             await expect(page).toHaveURL(/\/admin\/login$/)
         }
+    })
+
+    test("requires a valid session on client-side navigation between admin pages", async ({
+        page,
+    }) => {
+        await db.insert(users).values({ id: userId, name: "Test Artist", email: artistLoginEmail })
+        await db.insert(accounts).values({
+            accountId: userId,
+            providerId: "credential",
+            userId,
+            password: await hashPassword(password),
+        })
+
+        await page.goto("/admin/login")
+        await page.getByLabel("Hasło").fill(password)
+        await page.getByRole("button", { name: "Zaloguj się" }).click()
+        await expect(page).toHaveURL(/\/admin$/)
+        const worksLink = page.locator("aside").getByRole("link", { name: "Prace" })
+        await expect(worksLink).toBeVisible()
+
+        await db.delete(sessions).where(eq(sessions.userId, userId))
+        await worksLink.click()
+        await expect(page).toHaveURL(/\/admin\/login$/)
     })
 
     for (const route of [
