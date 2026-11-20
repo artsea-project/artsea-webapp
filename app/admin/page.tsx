@@ -1,5 +1,5 @@
 import { Suspense } from "react"
-import { Folder, Image as ImageIcon } from "lucide-react"
+import { Folder, Hash, Image as ImageIcon } from "lucide-react"
 
 import StatCard from "@/components/admin-overview/StatCard"
 import AdminPageIntro from "@/components/AdminPageIntro"
@@ -40,6 +40,7 @@ async function OverviewContent() {
                 icon={Folder}
                 href="/admin/categories"
             />
+            <StatCard label="Zdefiniowane tagi" value={counts.tags} icon={Hash} />
         </div>
     )
 }
