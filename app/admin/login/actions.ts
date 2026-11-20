@@ -5,9 +5,8 @@ import { redirect } from "next/navigation"
 import { after } from "next/server"
 import { applyAuthCookies } from "@/lib/auth/next-cookies"
 import { consumeLoginAttempt, pruneLoginRateLimitBuckets } from "@/lib/auth/login-rate-limit"
-import { artistLoginEmail } from "@/lib/auth/config"
 import { isNonemptyPassword } from "@/lib/auth/password"
-import { getAuth } from "@/lib/auth/server"
+import { signInArtist } from "@/lib/auth/server"
 
 export type LoginFormState = {
     error?: string
@@ -30,12 +29,7 @@ export async function loginAction(
             return { error: "Zbyt wiele prób logowania. Spróbuj ponownie za minutę." }
         }
 
-        const auth = await getAuth()
-        const response = await auth.api.signInEmail({
-            body: { email: artistLoginEmail, password },
-            headers: requestHeaders,
-            asResponse: true,
-        })
+        const response = await signInArtist(password, requestHeaders)
         if (!response.ok) {
             return { error: "Nieprawidłowe hasło. Spróbuj ponownie." }
         }
