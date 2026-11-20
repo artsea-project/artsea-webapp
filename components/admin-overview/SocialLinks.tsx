@@ -1,6 +1,7 @@
 import Link from "next/link"
 
 import { OVERVIEW_CARD_CLASS } from "@/components/admin-overview/card-styles"
+import OverviewEmptyState from "@/components/admin-overview/OverviewEmptyState"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import type { ProfileLink } from "@/lib/profile/queries"
@@ -12,6 +13,16 @@ interface SocialLinksProps {
 }
 
 export default function SocialLinks({ links }: SocialLinksProps) {
+    if (links.length === 0) {
+        return (
+            <OverviewEmptyState
+                message="Nie dodano jeszcze linków."
+                actionLabel="Dodaj linki w profilu"
+                href="/admin/profile"
+            />
+        )
+    }
+
     return (
         <div className={cn("flex flex-col gap-4", OVERVIEW_CARD_CLASS)}>
             <span className="text-4xl font-bold text-foreground">{links.length}</span>
