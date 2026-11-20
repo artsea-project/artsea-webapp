@@ -2,8 +2,9 @@
 
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
+import { after } from "next/server"
 import { applyAuthCookies } from "@/lib/auth/next-cookies"
-import { consumeLoginAttempt } from "@/lib/auth/login-rate-limit"
+import { consumeLoginAttempt, pruneLoginRateLimitBuckets } from "@/lib/auth/login-rate-limit"
 import { artistLoginEmail } from "@/lib/auth/config"
 import { isNonemptyPassword } from "@/lib/auth/password"
 import { getAuth } from "@/lib/auth/server"
@@ -23,7 +24,9 @@ export async function loginAction(
 
     try {
         const requestHeaders = await headers()
-        if (!(await consumeLoginAttempt(requestHeaders))) {
+        const allowed = await consumeLoginAttempt(requestHeaders)
+        after(() => pruneLoginRateLimitBuckets())
+        if (!allowed) {
             return { error: "Zbyt wiele prób logowania. Spróbuj ponownie za minutę." }
         }
 
