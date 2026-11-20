@@ -1,4 +1,7 @@
+import Link from "next/link"
+
 import { OVERVIEW_CARD_CLASS } from "@/components/admin-overview/card-styles"
+import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import type { ProfileLink } from "@/lib/profile/queries"
 import { displayLinkUrl } from "@/lib/profile/validation"
@@ -28,6 +31,9 @@ export default function SocialLinks({ links }: SocialLinksProps) {
                     </li>
                 ))}
             </ul>
+            <Button asChild variant="outline" size="sm" className="self-start">
+                <Link href="/admin/profile">Edytuj linki w profilu</Link>
+            </Button>
         </div>
     )
 }
