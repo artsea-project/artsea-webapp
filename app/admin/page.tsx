@@ -1,5 +1,5 @@
 import { Suspense } from "react"
-import { Image as ImageIcon } from "lucide-react"
+import { Folder, Image as ImageIcon } from "lucide-react"
 
 import StatCard from "@/components/admin-overview/StatCard"
 import AdminPageIntro from "@/components/AdminPageIntro"
@@ -33,6 +33,12 @@ async function OverviewContent() {
                 icon={ImageIcon}
                 href="/admin/works"
                 note={describeHiddenWorks(counts.hiddenWorks)}
+            />
+            <StatCard
+                label="Kategorie"
+                value={counts.categories}
+                icon={Folder}
+                href="/admin/categories"
             />
         </div>
     )
