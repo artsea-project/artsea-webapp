@@ -3,11 +3,13 @@ import { Folder, Hash, Image as ImageIcon } from "lucide-react"
 
 import FeaturedWorks from "@/components/admin-overview/FeaturedWorks"
 import OverviewPanel from "@/components/admin-overview/OverviewPanel"
+import SocialLinks from "@/components/admin-overview/SocialLinks"
 import StatCard from "@/components/admin-overview/StatCard"
 import AdminPageIntro from "@/components/AdminPageIntro"
 import { getBentoData } from "@/lib/bento"
 import { describeHiddenWorks } from "@/lib/overview/hidden-works"
 import { getOverviewCounts } from "@/lib/overview/queries"
+import { getOrderedLinks } from "@/lib/profile/queries"
 
 export default function AdminOverviewPage() {
     return (
@@ -26,7 +28,11 @@ export default function AdminOverviewPage() {
 }
 
 async function OverviewContent() {
-    const [counts, bento] = await Promise.all([getOverviewCounts(), getBentoData()])
+    const [counts, bento, links] = await Promise.all([
+        getOverviewCounts(),
+        getBentoData(),
+        getOrderedLinks(),
+    ])
 
     return (
         <>
@@ -52,6 +58,9 @@ async function OverviewContent() {
                     title="Prace wyróżnione na stronie głównej"
                 >
                     <FeaturedWorks cards={bento.desktop} />
+                </OverviewPanel>
+                <OverviewPanel id="overview-social-links" title="Linki społecznościowe">
+                    <SocialLinks links={links} />
                 </OverviewPanel>
             </div>
         </>
