@@ -1,12 +1,8 @@
-import Link from "next/link"
-
-import { OVERVIEW_CARD_CLASS } from "@/components/admin-overview/card-styles"
+import ClickableCard from "@/components/admin-overview/ClickableCard"
 import OverviewEmptyState from "@/components/admin-overview/OverviewEmptyState"
-import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import type { ProfileLink } from "@/lib/profile/queries"
 import { displayLinkUrl } from "@/lib/profile/validation"
-import { cn } from "@/lib/utils"
 
 interface SocialLinksProps {
     links: ProfileLink[]
@@ -25,7 +21,11 @@ export default function SocialLinks({ links }: SocialLinksProps) {
                     className={FILL_PANEL_CLASS}
                 />
             ) : (
-                <div className={cn("flex flex-col gap-4", OVERVIEW_CARD_CLASS, FILL_PANEL_CLASS)}>
+                <ClickableCard
+                    href="/admin/profile"
+                    label="Linki społecznościowe. Przejdź do Profil"
+                    className={FILL_PANEL_CLASS}
+                >
                     <span className="text-4xl font-bold text-foreground">{links.length}</span>
                     <Separator />
                     <ul className="-m-1 flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-1">
@@ -45,10 +45,7 @@ export default function SocialLinks({ links }: SocialLinksProps) {
                             </li>
                         ))}
                     </ul>
-                    <Button asChild variant="outline" size="sm" className="self-start">
-                        <Link href="/admin/profile">Edytuj linki w profilu</Link>
-                    </Button>
-                </div>
+                </ClickableCard>
             )}
         </div>
     )
