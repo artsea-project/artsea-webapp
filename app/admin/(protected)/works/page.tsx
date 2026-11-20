@@ -1,6 +1,7 @@
 import { Suspense } from "react"
 
 import WorksSection from "@/components/admin-works/WorksSection"
+import { requireArtistSession } from "@/lib/auth/session"
 import { getAdminWorks } from "@/lib/works/queries"
 import { normalizeSearchQuery, parsePage, parseVisibilityFilter } from "@/lib/works/validation"
 
@@ -21,6 +22,8 @@ export default function AdminWorksPage({ searchParams }: AdminWorksPageProps) {
 }
 
 async function WorksContent({ searchParams }: AdminWorksPageProps) {
+    await requireArtistSession()
+
     const resolved = await searchParams
     const search = normalizeSearchQuery(resolved.q)
     const onlyHidden = parseVisibilityFilter(resolved.hidden)

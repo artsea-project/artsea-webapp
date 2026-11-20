@@ -2,6 +2,7 @@ import { notFound } from "next/navigation"
 import { Suspense } from "react"
 
 import WorkForm from "@/components/admin-works/WorkForm"
+import { requireArtistSession } from "@/lib/auth/session"
 import { getWorkForEdit, getWorkFormOptions } from "@/lib/works/queries"
 
 interface AdminEditWorkPageProps {
@@ -17,6 +18,8 @@ export default function AdminEditWorkPage({ params }: AdminEditWorkPageProps) {
 }
 
 async function EditWorkContent({ params }: AdminEditWorkPageProps) {
+    await requireArtistSession()
+
     const { id } = await params
     const [work, { categories, tags }] = await Promise.all([
         getWorkForEdit(id),

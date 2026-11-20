@@ -1,6 +1,7 @@
 import { Suspense } from "react"
 
 import WorkForm from "@/components/admin-works/WorkForm"
+import { requireArtistSession } from "@/lib/auth/session"
 import { getWorkFormOptions } from "@/lib/works/queries"
 
 export default function AdminNewWorkPage() {
@@ -12,6 +13,8 @@ export default function AdminNewWorkPage() {
 }
 
 async function NewWorkContent() {
+    await requireArtistSession()
+
     const { categories, tags } = await getWorkFormOptions()
 
     return (
