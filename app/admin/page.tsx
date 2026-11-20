@@ -20,54 +20,64 @@ export default function AdminOverviewPage() {
                     description="Podsumowanie prac, kategorii i tagów oraz tego, co widać na stronie głównej."
                 />
                 <Suspense fallback={null}>
-                    <OverviewContent />
+                    <OverviewCounts />
                 </Suspense>
+                <div className="grid gap-6 lg:grid-cols-2 lg:gap-11">
+                    <OverviewPanel
+                        id="overview-featured-works"
+                        title="Prace wyróżnione na stronie głównej"
+                    >
+                        <Suspense fallback={null}>
+                            <OverviewFeaturedWorks />
+                        </Suspense>
+                    </OverviewPanel>
+                    <OverviewPanel id="overview-social-links" title="Linki społecznościowe">
+                        <Suspense fallback={null}>
+                            <OverviewSocialLinks />
+                        </Suspense>
+                    </OverviewPanel>
+                </div>
             </div>
         </div>
     )
 }
 
-async function OverviewContent() {
-    const [counts, bento, links] = await Promise.all([
-        getOverviewCounts(),
-        getBentoData(),
-        getOrderedLinks(),
-    ])
+async function OverviewCounts() {
+    const counts = await getOverviewCounts()
 
     return (
-        <>
-            <div className="grid gap-6 sm:grid-cols-3">
-                <StatCard
-                    label="Dodane prace"
-                    value={counts.works}
-                    icon={ImageIcon}
-                    href="/admin/works"
-                    note={describeHiddenWorks(counts.hiddenWorks)}
-                />
-                <StatCard
-                    label="Kategorie"
-                    value={counts.categories}
-                    icon={Folder}
-                    href="/admin/categories"
-                />
-                <StatCard
-                    label="Zdefiniowane tagi"
-                    value={counts.tags}
-                    icon={Hash}
-                    href="/admin/categories"
-                />
-            </div>
-            <div className="grid gap-6 lg:grid-cols-2 lg:gap-11">
-                <OverviewPanel
-                    id="overview-featured-works"
-                    title="Prace wyróżnione na stronie głównej"
-                >
-                    <FeaturedWorks cards={bento.desktop} />
-                </OverviewPanel>
-                <OverviewPanel id="overview-social-links" title="Linki społecznościowe">
-                    <SocialLinks links={links} />
-                </OverviewPanel>
-            </div>
-        </>
+        <div className="grid gap-6 sm:grid-cols-3">
+            <StatCard
+                label="Dodane prace"
+                value={counts.works}
+                icon={ImageIcon}
+                href="/admin/works"
+                note={describeHiddenWorks(counts.hiddenWorks)}
+            />
+            <StatCard
+                label="Kategorie"
+                value={counts.categories}
+                icon={Folder}
+                href="/admin/categories"
+            />
+            <StatCard
+                label="Zdefiniowane tagi"
+                value={counts.tags}
+                icon={Hash}
+                href="/admin/categories"
+            />
+        </div>
     )
+}
+
+async function OverviewFeaturedWorks() {
+    const bento = await getBentoData()
+
+    return <FeaturedWorks cards={bento.desktop} />
+}
+
+async function OverviewSocialLinks() {
+    const links = await getOrderedLinks()
+
+    return <SocialLinks links={links} />
 }
