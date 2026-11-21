@@ -7,6 +7,7 @@ import {
     collectTagsByCategory,
     distributeIntoColumns,
     keepTagsUsedInCategory,
+    listPageLinks,
     parsePortfolioQuery,
     type PortfolioArtwork,
     type PortfolioQuery,
@@ -96,17 +97,19 @@ test("removes duplicate labels and sorts them in Polish order", () => {
     ])
 })
 
-test("loads 12, 24, then 30 works and hides the button at the end", () => {
+test("splits 30 works into pages of 12, 12 and 6", () => {
     const first = buildPortfolioView(thirtyArtworks, query())
     const second = buildPortfolioView(thirtyArtworks, query({ page: 2 }))
     const third = buildPortfolioView(thirtyArtworks, query({ page: 3 }))
+    const sorted = ids(sortArtworksNewestFirst(thirtyArtworks))
 
     expect(first.items).toHaveLength(12)
-    expect(first.hasMore).toBe(true)
-    expect(second.items).toHaveLength(24)
-    expect(ids(second.items).slice(0, 12)).toEqual(ids(first.items))
-    expect(third.items).toHaveLength(30)
-    expect(third.hasMore).toBe(false)
+    expect(second.items).toHaveLength(12)
+    expect(third.items).toHaveLength(6)
+    expect([first, second, third].map((view) => view.pageCount)).toEqual([3, 3, 3])
+    expect(
+        [...first.items, ...second.items, ...third.items].map((item) => item.artPieceId)
+    ).toEqual(sorted)
     expect(first.items[0].year).toBe(2029)
 })
 
@@ -138,7 +141,7 @@ test("returns no works when no work has all the selected tags", () => {
 
     expect(view.query.tags).toEqual(["3D", "typografia"])
     expect(view.items).toEqual([])
-    expect(view.hasMore).toBe(false)
+    expect(view.pageCount).toBe(1)
 })
 
 test("drops tags that the selected category does not use", () => {
@@ -173,6 +176,15 @@ test("builds portfolio URLs without default values", () => {
     expect(buildPortfolioUrl(query({ category: "Rzeźba", tags: ["3D", "natura"], page: 2 }))).toBe(
         "/portfolio?category=Rze%C5%BAba&tag=3D&tag=natura&page=2"
     )
+})
+
+test("lists the first, last and nearby pages with gaps as ellipses", () => {
+    expect(listPageLinks(1, 1)).toEqual([1])
+    expect(listPageLinks(1, 3)).toEqual([1, 2, 3])
+    expect(listPageLinks(1, 10)).toEqual([1, 2, "ellipsis", 10])
+    expect(listPageLinks(4, 10)).toEqual([1, 2, 3, 4, 5, "ellipsis", 10])
+    expect(listPageLinks(6, 10)).toEqual([1, "ellipsis", 5, 6, 7, "ellipsis", 10])
+    expect(listPageLinks(10, 10)).toEqual([1, "ellipsis", 9, 10])
 })
 
 test("collects the tags used in each category", () => {

@@ -27,7 +27,7 @@ export type PortfolioView = {
     tags: string[]
     query: PortfolioQuery
     items: PortfolioArtwork[]
-    hasMore: boolean
+    pageCount: number
 }
 
 export type TagsByCategory = Map<string, Set<string>>
@@ -106,11 +106,12 @@ function keepArtworksWithAllTags(artworks: PortfolioArtwork[], tags: string[]) {
     return artworks.filter((artwork) => tags.every((tag) => artwork.tags.includes(tag)))
 }
 
-function limitArtworksToLoadedPage(artworks: PortfolioArtwork[], requestedPage: number) {
-    const lastPage = Math.max(1, Math.ceil(artworks.length / PORTFOLIO_PAGE_SIZE))
-    const page = Math.min(requestedPage, lastPage)
-    const items = artworks.slice(0, page * PORTFOLIO_PAGE_SIZE)
-    return { page, items, hasMore: artworks.length > items.length }
+function takeArtworksOnPage(artworks: PortfolioArtwork[], requestedPage: number) {
+    const pageCount = Math.max(1, Math.ceil(artworks.length / PORTFOLIO_PAGE_SIZE))
+    const page = Math.min(requestedPage, pageCount)
+    const start = (page - 1) * PORTFOLIO_PAGE_SIZE
+    const items = artworks.slice(start, start + PORTFOLIO_PAGE_SIZE)
+    return { page, items, pageCount }
 }
 
 export function buildPortfolioView(
@@ -125,9 +126,9 @@ export function buildPortfolioView(
     const selectedTags = keepOnlyKnown(requested.tags, tags)
 
     const matching = sortArtworksNewestFirst(keepArtworksWithAllTags(inCategory, selectedTags))
-    const { page, items, hasMore } = limitArtworksToLoadedPage(matching, requested.page)
+    const { page, items, pageCount } = takeArtworksOnPage(matching, requested.page)
 
-    return { categories, tags, query: { category, tags: selectedTags, page }, items, hasMore }
+    return { categories, tags, query: { category, tags: selectedTags, page }, items, pageCount }
 }
 
 export function buildPortfolioUrl(query: PortfolioQuery) {
@@ -137,6 +138,22 @@ export function buildPortfolioUrl(query: PortfolioQuery) {
     if (query.page > 1) params.set("page", String(query.page))
     const search = params.toString()
     return search ? `${PORTFOLIO_PATH}?${search}` : PORTFOLIO_PATH
+}
+
+export type PageLink = number | "ellipsis"
+
+export function listPageLinks(page: number, pageCount: number): PageLink[] {
+    const shown = [1, page - 1, page, page + 1, pageCount].filter(
+        (number) => number >= 1 && number <= pageCount
+    )
+    const numbers = [...new Set(shown)].sort((left, right) => left - right)
+
+    return numbers.flatMap((number, index): PageLink[] => {
+        const previous = numbers[index - 1]
+        if (previous === undefined || number - previous === 1) return [number]
+        if (number - previous === 2) return [previous + 1, number]
+        return ["ellipsis", number]
+    })
 }
 
 export function collectTagsByCategory(artworks: PortfolioArtwork[]): TagsByCategory {
@@ -179,7 +196,6 @@ export function splitIntoVisibleAndHiddenTags(
     }
 }
 
-// Earlier cards don't move when more cards are appended.
 export function distributeIntoColumns<T extends MediaDimensions>(items: T[], columnCount: number) {
     const count = Math.max(1, Math.floor(columnCount))
     const columns: T[][] = Array.from({ length: count }, () => [])

@@ -1,10 +1,10 @@
 import type { Metadata } from "next"
 import { Suspense } from "react"
 
-import { LoadMoreLink } from "@/components/portfolio/load-more-link"
 import { NoMatchingArtworks } from "@/components/portfolio/no-matching-artworks"
 import { PortfolioFilters } from "@/components/portfolio/portfolio-filters"
 import { PortfolioGrid } from "@/components/portfolio/portfolio-grid"
+import { PortfolioPagination } from "@/components/portfolio/portfolio-pagination"
 import type { RawSearchParams } from "@/lib/portfolio"
 import { getPortfolioPage } from "@/lib/portfolio-data"
 
@@ -33,7 +33,9 @@ async function PortfolioContent({ searchParams }: PortfolioPageProps) {
             ) : (
                 <PortfolioGrid cards={page.cards} />
             )}
-            {page.hasMore && <LoadMoreLink query={page.query} />}
+            {page.pageCount > 1 && (
+                <PortfolioPagination query={page.query} pageCount={page.pageCount} />
+            )}
         </>
     )
 }
