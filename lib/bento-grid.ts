@@ -15,6 +15,11 @@ export const BENTO_VIEW_GRIDS: Record<keyof BentoBoxLayout, GridSpec> = {
     mobile: MOBILE_GRID,
 }
 
+export const BENTO_VIEW_LABELS: Record<keyof BentoBoxLayout, string> = {
+    desktop: "Desktop",
+    mobile: "Mobile",
+}
+
 export const PUBLIC_GRID_GAP: Record<keyof BentoBoxLayout, number> = {
     desktop: 21,
     mobile: 12,

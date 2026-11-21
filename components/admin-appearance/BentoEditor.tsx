@@ -9,6 +9,7 @@ import { ArtworkPickerDialog } from "@/components/admin-appearance/ArtworkPicker
 import { BentoGridCanvas, desktopCanvasHeight } from "@/components/admin-appearance/BentoGridCanvas"
 import { SaveBar, useSectionSave } from "@/components/admin-appearance/SaveBar"
 import { TileList } from "@/components/admin-appearance/TileList"
+import { PHONE_MAX_WIDTH, PHONE_WIDTH_TO_HEIGHT, PhoneFrame } from "@/components/bento/phone-frame"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
@@ -20,13 +21,11 @@ import {
     type TileContent,
 } from "@/lib/appearance/bento-editor-state"
 import type { ArtworkMeta, PickerArtwork } from "@/lib/appearance/queries"
-import { TILE_PRESETS, type TilePreset } from "@/lib/bento-grid"
+import { BENTO_VIEW_LABELS, TILE_PRESETS, type TilePreset } from "@/lib/bento-grid"
 import { createTileId } from "@/lib/bento-layout"
 import type { BentoBoxLayout } from "@/types/bento"
 
 const VIEWS: BentoView[] = ["desktop", "mobile"]
-
-const VIEW_LABELS: Record<BentoView, string> = { desktop: "Desktop", mobile: "Mobile" }
 
 const DESKTOP_FRAME_MAX_WIDTH = 610
 
@@ -38,11 +37,7 @@ function desktopFrameHeight(availableWidth: number): number {
     return desktopCanvasHeight(frameWidth - inset) + inset
 }
 
-const PHONE_MAX_WIDTH = 367
-
 const PHONE_MIN_MATCHED_WIDTH = 240
-
-const PHONE_WIDTH_TO_HEIGHT = PHONE_MAX_WIDTH / 592
 
 type FrameSize = { width: number; height: number }
 
@@ -62,22 +57,6 @@ function previewFrameHeight(view: BentoView, availableWidth: number): number {
         : desktopFrameHeight(availableWidth)
 }
 
-function PhoneFrame({ size, children }: { size?: FrameSize; children: ReactNode }) {
-    return (
-        <div
-            className="mx-auto max-w-full rounded-[2rem] border-4 border-foreground p-3"
-            style={size}
-        >
-            <div
-                data-bento-scroll
-                className="h-full [scrollbar-gutter:stable] overflow-y-auto overscroll-contain rounded-[1.25rem] p-1"
-            >
-                {children}
-            </div>
-        </div>
-    )
-}
-
 function ViewFrame({
     view,
     phoneSize,
@@ -87,7 +66,7 @@ function ViewFrame({
     phoneSize?: FrameSize
     children: ReactNode
 }) {
-    if (view === "mobile") return <PhoneFrame size={phoneSize}>{children}</PhoneFrame>
+    if (view === "mobile") return <PhoneFrame style={phoneSize}>{children}</PhoneFrame>
 
     return (
         <div
@@ -208,7 +187,7 @@ export function BentoEditor({ saved, artworkMeta, artworks, onDirtyChange }: Ben
                         <TabsList>
                             {VIEWS.map((name) => (
                                 <TabsTrigger key={name} value={name}>
-                                    {VIEW_LABELS[name]}
+                                    {BENTO_VIEW_LABELS[name]}
                                 </TabsTrigger>
                             ))}
                         </TabsList>
