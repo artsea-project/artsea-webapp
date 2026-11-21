@@ -5,6 +5,7 @@ import { eq, inArray } from "drizzle-orm"
 
 import { db } from "../db"
 import { artPieces, artPieceTags, categories, media, tags } from "../db/schema"
+import type { Locale } from "../i18n/routing"
 import { loadPortfolioArtworks } from "../lib/portfolio-data"
 
 const categoryId = randomUUID()
@@ -17,7 +18,6 @@ const coverMediaId = randomUUID()
 const secondMediaId = randomUUID()
 const sharedTagId = randomUUID()
 const hiddenOnlyTagId = randomUUID()
-const englishTagId = randomUUID()
 const insertedArtworkIds: string[] = [visibleWithMediaId, hiddenId, withoutMediaId, englishOnlyId]
 
 function mediaRow(mediaId: string, artPieceId: string, orderIndex: number) {
@@ -32,9 +32,15 @@ function mediaRow(mediaId: string, artPieceId: string, orderIndex: number) {
     }
 }
 
+async function loadInserted(locale: Locale) {
+    return (await loadPortfolioArtworks(locale)).filter((artwork) =>
+        insertedArtworkIds.includes(artwork.artPieceId)
+    )
+}
+
 test.beforeAll(async () => {
     await db.insert(categories).values([
-        { categoryId, namePln: `Portfolio ${categoryId}`, nameEng: `Portfolio ${categoryId}` },
+        { categoryId, namePln: `Portfolio ${categoryId}`, nameEng: `Portfolio EN ${categoryId}` },
         {
             categoryId: hiddenCategoryId,
             namePln: `Ukryta ${hiddenCategoryId}`,
@@ -42,9 +48,12 @@ test.beforeAll(async () => {
         },
     ])
     await db.insert(tags).values([
-        { tagId: sharedTagId, namePln: `wspólny-${sharedTagId}`, nameEng: null },
-        { tagId: hiddenOnlyTagId, namePln: `ukryty-${hiddenOnlyTagId}`, nameEng: null },
-        { tagId: englishTagId, namePln: null, nameEng: `english-${englishTagId}` },
+        { tagId: sharedTagId, namePln: `wspólny-${sharedTagId}`, nameEng: `shared-${sharedTagId}` },
+        {
+            tagId: hiddenOnlyTagId,
+            namePln: `ukryty-${hiddenOnlyTagId}`,
+            nameEng: `hidden-${hiddenOnlyTagId}`,
+        },
     ])
     await db.insert(artPieces).values([
         {
@@ -76,21 +85,18 @@ test.beforeAll(async () => {
         { artPieceId: visibleWithMediaId, tagId: sharedTagId },
         { artPieceId: hiddenId, tagId: sharedTagId },
         { artPieceId: hiddenId, tagId: hiddenOnlyTagId },
-        { artPieceId: englishOnlyId, tagId: englishTagId },
     ])
 })
 
 test.afterAll(async () => {
     await db.delete(artPieces).where(inArray(artPieces.artPieceId, insertedArtworkIds))
-    await db.delete(tags).where(inArray(tags.tagId, [sharedTagId, hiddenOnlyTagId, englishTagId]))
+    await db.delete(tags).where(inArray(tags.tagId, [sharedTagId, hiddenOnlyTagId]))
     await db.delete(categories).where(eq(categories.categoryId, categoryId))
     await db.delete(categories).where(eq(categories.categoryId, hiddenCategoryId))
 })
 
 test("lists only visible works with media, using the first media as cover", async () => {
-    const artworks = (await loadPortfolioArtworks()).filter((artwork) =>
-        insertedArtworkIds.includes(artwork.artPieceId)
-    )
+    const artworks = await loadInserted("pl")
     const visible = artworks.find((artwork) => artwork.artPieceId === visibleWithMediaId)
 
     expect(artworks.map((artwork) => artwork.artPieceId).sort()).toEqual(
@@ -99,31 +105,37 @@ test("lists only visible works with media, using the first media as cover", asyn
     expect(visible).toMatchObject({
         title: "Widoczna",
         year: 2024,
-        category: `Portfolio ${categoryId}`,
-        tags: [`wspólny-${sharedTagId}`],
+        category: { id: categoryId, name: `Portfolio ${categoryId}` },
+        tags: [{ id: sharedTagId, name: `wspólny-${sharedTagId}` }],
         cover: { mediaId: coverMediaId, fileType: "jpg" },
     })
 })
 
-test("does not leak categories or tags used only by hidden works", async () => {
-    const artworks = await loadPortfolioArtworks()
+test("reads names in the current language with the same ids", async () => {
+    const visible = (await loadInserted("en")).find(
+        (artwork) => artwork.artPieceId === visibleWithMediaId
+    )
 
-    expect(artworks.some((artwork) => artwork.category === `Ukryta ${hiddenCategoryId}`)).toBe(
-        false
-    )
-    expect(artworks.some((artwork) => artwork.tags.includes(`ukryty-${hiddenOnlyTagId}`))).toBe(
-        false
-    )
+    expect(visible).toMatchObject({
+        title: "Visible",
+        category: { id: categoryId, name: `Portfolio EN ${categoryId}` },
+        tags: [{ id: sharedTagId, name: `shared-${sharedTagId}` }],
+    })
 })
 
-test("falls back to English titles and tags", async () => {
-    const englishOnly = (await loadPortfolioArtworks()).find(
-        (artwork) => artwork.artPieceId === englishOnlyId
-    )
+test("leaves the title empty when it is missing in the current language", async () => {
+    const titleOf = async (locale: Locale) =>
+        (await loadInserted(locale)).find((artwork) => artwork.artPieceId === englishOnlyId)?.title
 
-    expect(englishOnly).toMatchObject({
-        title: "English only",
-        year: null,
-        tags: [`english-${englishTagId}`],
-    })
+    expect(await titleOf("pl")).toBeNull()
+    expect(await titleOf("en")).toBe("English only")
+})
+
+test("does not leak categories or tags used only by hidden works", async () => {
+    const artworks = await loadPortfolioArtworks("pl")
+
+    expect(artworks.some((artwork) => artwork.category.id === hiddenCategoryId)).toBe(false)
+    expect(artworks.some((artwork) => artwork.tags.some((tag) => tag.id === hiddenOnlyTagId))).toBe(
+        false
+    )
 })

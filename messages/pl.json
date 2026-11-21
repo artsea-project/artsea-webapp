@@ -51,5 +51,27 @@
         "title": "Nie znaleziono strony",
         "description": "Strona, której szukasz, nie istnieje albo została przeniesiona.",
         "backHome": "Wróć na stronę główną"
+    },
+    "Pagination": {
+        "label": "Strony",
+        "previous": "Poprzednia",
+        "previousPage": "Poprzednia strona",
+        "next": "Następna",
+        "nextPage": "Następna strona",
+        "morePages": "Więcej stron"
+    },
+    "Portfolio": {
+        "title": "Moje prace",
+        "heading": "Moje prace.",
+        "empty": "Nie ma jeszcze żadnych prac do pokazania.",
+        "noMatches": "Żadna praca nie pasuje do wybranych filtrów.",
+        "categories": "Kategorie",
+        "allCategories": "Wszystkie",
+        "tags": "Tagi",
+        "tagsDescription": "Pokażemy prace, które mają wszystkie zaznaczone tagi.",
+        "applyFilters": "Zastosuj filtry",
+        "clearTags": "Wyczyść",
+        "showLess": "Mniej",
+        "showMore": "Więcej (+{count})"
     }
 }

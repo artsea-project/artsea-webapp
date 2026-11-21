@@ -1,18 +1,19 @@
 import { XIcon } from "lucide-react"
-import Link from "next/link"
 
 import { Badge } from "@/components/ui/badge"
+import { Link } from "@/i18n/navigation"
 import { cn } from "@/lib/utils"
 
 export const PILL_CLASS_NAME = "h-8 rounded-full font-secondary text-xs font-normal shadow-none"
 
 export type TagLink = {
-    tag: string
+    id: string
+    name: string
     href: string
     isSelected: boolean
 }
 
-export function TagPill({ tag, href, isSelected }: TagLink) {
+export function TagPill({ name, href, isSelected }: Omit<TagLink, "id">) {
     return (
         <Badge
             asChild
@@ -26,7 +27,7 @@ export function TagPill({ tag, href, isSelected }: TagLink) {
             )}
         >
             <Link href={href} scroll={false} aria-current={isSelected ? "true" : undefined}>
-                #{tag}
+                #{name}
                 {isSelected && <XIcon aria-hidden />}
             </Link>
         </Badge>
@@ -34,5 +35,5 @@ export function TagPill({ tag, href, isSelected }: TagLink) {
 }
 
 export function TagPills({ links }: { links: TagLink[] }) {
-    return links.map((link) => <TagPill key={link.tag} {...link} />)
+    return links.map(({ id, ...link }) => <TagPill key={id} {...link} />)
 }

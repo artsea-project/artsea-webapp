@@ -1,4 +1,4 @@
-import { orderBentoLabels } from "@/lib/localized-labels"
+import type { Locale } from "@/i18n/routing"
 import type { MediaType } from "@/lib/media"
 import type { MediaDimensions } from "@/lib/media-dimensions"
 
@@ -6,13 +6,15 @@ export const PORTFOLIO_PATH = "/portfolio"
 export const PORTFOLIO_PAGE_SIZE = 12
 export const PORTFOLIO_CARD_TEXT_HEIGHT = 0.18
 
+export type PortfolioLabel = { id: string; name: string }
+
 export type PortfolioArtwork = {
     artPieceId: string
-    title: string
+    title: string | null
     year: number | null
     uploadedAt: Date
-    category: string
-    tags: string[]
+    category: PortfolioLabel
+    tags: PortfolioLabel[]
     cover: { mediaId: string; fileType: MediaType; contentHash: string }
 }
 
@@ -23,8 +25,8 @@ export type RawSearchParams = Record<string, string | string[] | undefined>
 export type PortfolioQuery = { category: string | null; tags: string[]; page: number }
 
 export type PortfolioView = {
-    categories: string[]
-    tags: string[]
+    categories: PortfolioLabel[]
+    tags: PortfolioLabel[]
     query: PortfolioQuery
     items: PortfolioArtwork[]
     pageCount: number
@@ -32,8 +34,8 @@ export type PortfolioView = {
 
 export type TagsByCategory = Map<string, Set<string>>
 
-function keepOnlyKnown(values: string[], known: string[]) {
-    return known.filter((label) => values.includes(label))
+function keepOnlyKnown(ids: string[], known: PortfolioLabel[]) {
+    return known.filter((label) => ids.includes(label.id)).map((label) => label.id)
 }
 
 function readSingleParam(params: RawSearchParams, name: string): string | null {
@@ -89,21 +91,27 @@ export function sortArtworksNewestFirst(artworks: PortfolioArtwork[]) {
     )
 }
 
-export function removeDuplicatesAndSort(labels: string[]) {
-    return orderBentoLabels([...new Set(labels)])
+export function removeDuplicatesAndSort(labels: PortfolioLabel[], locale: Locale) {
+    const byId = new Map(labels.map((label) => [label.id, label]))
+    return [...byId.values()].sort(
+        (left, right) =>
+            left.name.localeCompare(right.name, locale) || left.id.localeCompare(right.id)
+    )
 }
 
-function keepIfKnown(value: string | null, known: string[]) {
-    return value !== null && known.includes(value) ? value : null
+function keepIfKnown(id: string | null, known: PortfolioLabel[]) {
+    return id !== null && known.some((label) => label.id === id) ? id : null
 }
 
-function filterByCategory(artworks: PortfolioArtwork[], category: string | null) {
-    if (category === null) return artworks
-    return artworks.filter((artwork) => artwork.category === category)
+function filterByCategory(artworks: PortfolioArtwork[], categoryId: string | null) {
+    if (categoryId === null) return artworks
+    return artworks.filter((artwork) => artwork.category.id === categoryId)
 }
 
-function keepArtworksWithAllTags(artworks: PortfolioArtwork[], tags: string[]) {
-    return artworks.filter((artwork) => tags.every((tag) => artwork.tags.includes(tag)))
+function keepArtworksWithAllTags(artworks: PortfolioArtwork[], tagIds: string[]) {
+    return artworks.filter((artwork) =>
+        tagIds.every((tagId) => artwork.tags.some((tag) => tag.id === tagId))
+    )
 }
 
 function takeArtworksOnPage(artworks: PortfolioArtwork[], requestedPage: number) {
@@ -116,13 +124,20 @@ function takeArtworksOnPage(artworks: PortfolioArtwork[], requestedPage: number)
 
 export function buildPortfolioView(
     artworks: PortfolioArtwork[],
-    requested: PortfolioQuery
+    requested: PortfolioQuery,
+    locale: Locale
 ): PortfolioView {
-    const categories = removeDuplicatesAndSort(artworks.map((artwork) => artwork.category))
+    const categories = removeDuplicatesAndSort(
+        artworks.map((artwork) => artwork.category),
+        locale
+    )
     const category = keepIfKnown(requested.category, categories)
 
     const inCategory = filterByCategory(artworks, category)
-    const tags = removeDuplicatesAndSort(inCategory.flatMap((artwork) => artwork.tags))
+    const tags = removeDuplicatesAndSort(
+        inCategory.flatMap((artwork) => artwork.tags),
+        locale
+    )
     const selectedTags = keepOnlyKnown(requested.tags, tags)
 
     const matching = sortArtworksNewestFirst(keepArtworksWithAllTags(inCategory, selectedTags))
@@ -159,39 +174,40 @@ export function listPageLinks(page: number, pageCount: number): PageLink[] {
 export function collectTagsByCategory(artworks: PortfolioArtwork[]): TagsByCategory {
     const tagsByCategory: TagsByCategory = new Map()
     for (const artwork of artworks) {
-        const tags = tagsByCategory.get(artwork.category) ?? new Set<string>()
-        artwork.tags.forEach((tag) => tags.add(tag))
-        tagsByCategory.set(artwork.category, tags)
+        const tagIds = tagsByCategory.get(artwork.category.id) ?? new Set<string>()
+        artwork.tags.forEach((tag) => tagIds.add(tag.id))
+        tagsByCategory.set(artwork.category.id, tagIds)
     }
     return tagsByCategory
 }
 
 export function keepTagsUsedInCategory(
-    category: string | null,
-    tags: string[],
+    categoryId: string | null,
+    tagIds: string[],
     tagsByCategory: TagsByCategory
 ) {
-    if (category === null) return tags
-    const tagsInCategory = tagsByCategory.get(category)
-    return tags.filter((tag) => tagsInCategory?.has(tag))
+    if (categoryId === null) return tagIds
+    const tagsInCategory = tagsByCategory.get(categoryId)
+    return tagIds.filter((tagId) => tagsInCategory?.has(tagId))
 }
 
-export function addOrRemoveTag(selectedTags: string[], tag: string) {
-    return selectedTags.includes(tag)
-        ? selectedTags.filter((selected) => selected !== tag)
-        : [...selectedTags, tag]
+export function addOrRemoveTag(selectedTagIds: string[], tagId: string) {
+    return selectedTagIds.includes(tagId)
+        ? selectedTagIds.filter((selected) => selected !== tagId)
+        : [...selectedTagIds, tagId]
 }
 
 // Selected tags go first and are never hidden, even when there are more of them than the limit
 export function splitIntoVisibleAndHiddenTags(
-    tags: string[],
-    selectedTags: string[],
+    tags: PortfolioLabel[],
+    selectedTagIds: string[],
     visibleCount: number
 ) {
-    const unselected = tags.filter((tag) => !selectedTags.includes(tag))
-    const unselectedVisibleCount = Math.max(0, visibleCount - selectedTags.length)
+    const selected = selectedTagIds.flatMap((id) => tags.filter((tag) => tag.id === id))
+    const unselected = tags.filter((tag) => !selectedTagIds.includes(tag.id))
+    const unselectedVisibleCount = Math.max(0, visibleCount - selected.length)
     return {
-        visible: [...selectedTags, ...unselected.slice(0, unselectedVisibleCount)],
+        visible: [...selected, ...unselected.slice(0, unselectedVisibleCount)],
         hidden: unselected.slice(unselectedVisibleCount),
     }
 }
