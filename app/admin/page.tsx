@@ -11,6 +11,11 @@ import { describeHiddenWorks } from "@/lib/overview/hidden-works"
 import { getOverviewCounts } from "@/lib/overview/queries"
 import { getOrderedLinks } from "@/lib/profile/queries"
 
+const FEATURED_WORKS_PANEL = {
+    id: "overview-featured-works",
+    title: "Prace wyróżnione na stronie głównej",
+}
+
 export default function AdminOverviewPage() {
     return (
         <div className="px-4 py-6 font-secondary sm:px-8 md:px-16 md:py-9">
@@ -23,14 +28,9 @@ export default function AdminOverviewPage() {
                     <OverviewCounts />
                 </Suspense>
                 <div className="grid gap-6 lg:grid-cols-2 lg:gap-11">
-                    <OverviewPanel
-                        id="overview-featured-works"
-                        title="Prace wyróżnione na stronie głównej"
-                    >
-                        <Suspense fallback={null}>
-                            <OverviewFeaturedWorks />
-                        </Suspense>
-                    </OverviewPanel>
+                    <Suspense fallback={<OverviewPanel {...FEATURED_WORKS_PANEL} />}>
+                        <OverviewFeaturedWorks />
+                    </Suspense>
                     <OverviewPanel id="overview-social-links" title="Linki społecznościowe">
                         <Suspense fallback={null}>
                             <OverviewSocialLinks />
@@ -73,7 +73,7 @@ async function OverviewCounts() {
 async function OverviewFeaturedWorks() {
     const bento = await getBentoData()
 
-    return <FeaturedWorks cards={bento.desktop} />
+    return <FeaturedWorks {...FEATURED_WORKS_PANEL} data={bento} />
 }
 
 async function OverviewSocialLinks() {
