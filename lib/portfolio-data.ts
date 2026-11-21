@@ -3,7 +3,8 @@ import { cacheLife } from "next/cache"
 
 import { db } from "@/db"
 import { artPieces, artPieceTags, categories, media, tags } from "@/db/schema"
-import { resolveLocalizedLabel } from "@/lib/localized-labels"
+import type { Locale } from "@/i18n/routing"
+import { localizedKey } from "@/lib/i18n/localized-key"
 import { isMediaType } from "@/lib/media"
 import { readMediaDimensions, type MediaDimensions } from "@/lib/media-dimensions"
 import {
@@ -13,6 +14,7 @@ import {
     removeDuplicatesAndSort,
     type PortfolioArtwork,
     type PortfolioCard,
+    type PortfolioLabel,
     type PortfolioView,
     type RawSearchParams,
     type TagsByCategory,
@@ -24,15 +26,15 @@ type ArtworkRow = Awaited<ReturnType<typeof selectVisibleArtworks>>[number]
 type CoverRow = Awaited<ReturnType<typeof selectFirstMediaOfVisibleArtworks>>[number]
 type TagRow = Awaited<ReturnType<typeof selectTagsOfVisibleArtworks>>[number]
 
-function selectVisibleArtworks() {
+function selectVisibleArtworks(locale: Locale) {
     return db
         .select({
             artPieceId: artPieces.artPieceId,
-            titlePln: artPieces.titlePln,
-            titleEng: artPieces.titleEng,
+            title: artPieces[localizedKey("title", locale)],
             year: artPieces.yearOfExecution,
             uploadedAt: artPieces.uploadedAt,
-            category: categories.namePln,
+            categoryId: categories.categoryId,
+            categoryName: categories[localizedKey("name", locale)],
         })
         .from(artPieces)
         .innerJoin(categories, eq(artPieces.categoryId, categories.categoryId))
@@ -54,12 +56,12 @@ function selectFirstMediaOfVisibleArtworks() {
         .orderBy(asc(media.artPieceId), asc(media.orderIndex), asc(media.mediaId))
 }
 
-function selectTagsOfVisibleArtworks() {
+function selectTagsOfVisibleArtworks(locale: Locale) {
     return db
         .select({
             artPieceId: artPieceTags.artPieceId,
-            namePln: tags.namePln,
-            nameEng: tags.nameEng,
+            id: tags.tagId,
+            name: tags[localizedKey("name", locale)],
         })
         .from(artPieceTags)
         .innerJoin(tags, eq(artPieceTags.tagId, tags.tagId))
@@ -67,16 +69,13 @@ function selectTagsOfVisibleArtworks() {
         .where(isVisible)
 }
 
-function groupTagNamesByArtwork(tagRows: TagRow[]) {
-    const tagsByArtwork = new Map<string, string[]>()
+function groupTagsByArtwork(tagRows: TagRow[]) {
+    const tagsByArtwork = new Map<string, PortfolioLabel[]>()
 
-    for (const tag of tagRows) {
-        const name = resolveLocalizedLabel(tag.namePln, tag.nameEng, "")
-        if (!name) continue
-
-        const names = tagsByArtwork.get(tag.artPieceId) ?? []
-        names.push(name)
-        tagsByArtwork.set(tag.artPieceId, names)
+    for (const { artPieceId, id, name } of tagRows) {
+        const labels = tagsByArtwork.get(artPieceId) ?? []
+        labels.push({ id, name })
+        tagsByArtwork.set(artPieceId, labels)
     }
 
     return tagsByArtwork
@@ -85,36 +84,38 @@ function groupTagNamesByArtwork(tagRows: TagRow[]) {
 function toPortfolioArtwork(
     artwork: ArtworkRow,
     cover: CoverRow,
-    tagNames: string[]
+    tagLabels: PortfolioLabel[],
+    locale: Locale
 ): PortfolioArtwork {
     return {
         artPieceId: artwork.artPieceId,
-        title: resolveLocalizedLabel(artwork.titlePln, artwork.titleEng, "Bez tytułu"),
+        title: artwork.title || null,
         year: artwork.year,
         uploadedAt: artwork.uploadedAt,
-        category: artwork.category,
-        tags: removeDuplicatesAndSort(tagNames),
+        category: { id: artwork.categoryId, name: artwork.categoryName },
+        tags: removeDuplicatesAndSort(tagLabels, locale),
         cover: { mediaId: cover.mediaId, fileType: cover.fileType, contentHash: cover.contentHash },
     }
 }
 
 // Not cached on purpose: when the artist adds or hides a work, visitors should see it right away
-export async function loadPortfolioArtworks(): Promise<PortfolioArtwork[]> {
+export async function loadPortfolioArtworks(locale: Locale): Promise<PortfolioArtwork[]> {
     const [artworkRows, coverRows, tagRows] = await Promise.all([
-        selectVisibleArtworks(),
+        selectVisibleArtworks(locale),
         selectFirstMediaOfVisibleArtworks(),
-        selectTagsOfVisibleArtworks(),
+        selectTagsOfVisibleArtworks(locale),
     ])
 
     const coverByArtwork = new Map(coverRows.map((cover) => [cover.artPieceId, cover]))
-    const tagsByArtwork = groupTagNamesByArtwork(tagRows)
+    const tagsByArtwork = groupTagsByArtwork(tagRows)
 
     return artworkRows.flatMap((artwork) => {
         const cover = coverByArtwork.get(artwork.artPieceId)
 
         if (!cover || !isMediaType(cover.fileType)) return []
 
-        return [toPortfolioArtwork(artwork, cover, tagsByArtwork.get(artwork.artPieceId) ?? [])]
+        const tagLabels = tagsByArtwork.get(artwork.artPieceId) ?? []
+        return [toPortfolioArtwork(artwork, cover, tagLabels, locale)]
     })
 }
 
@@ -144,9 +145,12 @@ export async function getMediaDimensions(
     return readMediaDimensions(record.content, record.fileType) ?? FALLBACK_DIMENSIONS
 }
 
-export async function getPortfolioPage(params: RawSearchParams): Promise<PortfolioPage> {
-    const artworks = await loadPortfolioArtworks()
-    const { items, ...view } = buildPortfolioView(artworks, parsePortfolioQuery(params))
+export async function getPortfolioPage(
+    params: RawSearchParams,
+    locale: Locale
+): Promise<PortfolioPage> {
+    const artworks = await loadPortfolioArtworks(locale)
+    const { items, ...view } = buildPortfolioView(artworks, parsePortfolioQuery(params), locale)
     const dimensions = await Promise.all(
         items.map((item) => getMediaDimensions(item.cover.mediaId, item.cover.contentHash))
     )

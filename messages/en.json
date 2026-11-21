@@ -51,5 +51,27 @@
         "title": "Page not found",
         "description": "The page you are looking for does not exist or has been moved.",
         "backHome": "Back to the homepage"
+    },
+    "Pagination": {
+        "label": "Pages",
+        "previous": "Previous",
+        "previousPage": "Previous page",
+        "next": "Next",
+        "nextPage": "Next page",
+        "morePages": "More pages"
+    },
+    "Portfolio": {
+        "title": "My works",
+        "heading": "My works.",
+        "empty": "There are no works to show yet.",
+        "noMatches": "No work matches the selected filters.",
+        "categories": "Categories",
+        "allCategories": "All",
+        "tags": "Tags",
+        "tagsDescription": "We'll show works that have all the selected tags.",
+        "applyFilters": "Apply filters",
+        "clearTags": "Clear",
+        "showLess": "Less",
+        "showMore": "More (+{count})"
     }
 }

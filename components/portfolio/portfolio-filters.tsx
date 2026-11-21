@@ -1,13 +1,15 @@
-import Link from "next/link"
+import { useTranslations } from "next-intl"
 
 import { CollapsibleTagList } from "@/components/portfolio/collapsible-tag-list"
 import { TagDrawer } from "@/components/portfolio/tag-drawer"
 import { TagPills, type TagLink } from "@/components/portfolio/tag-pill"
+import { Link } from "@/i18n/navigation"
 import {
     addOrRemoveTag,
     buildPortfolioUrl,
     keepTagsUsedInCategory,
     splitIntoVisibleAndHiddenTags,
+    type PortfolioLabel,
     type PortfolioQuery,
     type PortfolioView,
     type TagsByCategory,
@@ -20,8 +22,6 @@ type PortfolioFiltersProps = {
     view: FilterView
     tagsByCategory: TagsByCategory
 }
-
-const ALL_CATEGORIES_LABEL = "Wszystkie"
 
 const VISIBLE_TAG_COUNT = 10
 
@@ -37,11 +37,12 @@ function buildCategoryTabUrl(
     })
 }
 
-function buildTagLinks(tags: string[], query: PortfolioQuery): TagLink[] {
+function buildTagLinks(tags: PortfolioLabel[], query: PortfolioQuery): TagLink[] {
     return tags.map((tag) => ({
-        tag,
-        href: buildPortfolioUrl({ ...query, tags: addOrRemoveTag(query.tags, tag), page: 1 }),
-        isSelected: query.tags.includes(tag),
+        id: tag.id,
+        name: tag.name,
+        href: buildPortfolioUrl({ ...query, tags: addOrRemoveTag(query.tags, tag.id), page: 1 }),
+        isSelected: query.tags.includes(tag.id),
     }))
 }
 
@@ -70,13 +71,14 @@ function CategoryTab({ label, href, isActive }: CategoryTabProps) {
 }
 
 function CategoryTabs({ view, tagsByCategory }: PortfolioFiltersProps) {
+    const t = useTranslations("Portfolio")
     const tabs = [
-        { label: ALL_CATEGORIES_LABEL, category: null },
-        ...view.categories.map((category) => ({ label: category, category })),
+        { label: t("allCategories"), category: null },
+        ...view.categories.map(({ id, name }) => ({ label: name, category: id })),
     ]
 
     return (
-        <nav aria-label="Kategorie" className="flex flex-wrap gap-x-8 gap-y-3 lg:gap-x-10">
+        <nav aria-label={t("categories")} className="flex flex-wrap gap-x-8 gap-y-3 lg:gap-x-10">
             {tabs.map(({ label, category }) => (
                 <CategoryTab
                     key={category ?? ""}
@@ -89,11 +91,15 @@ function CategoryTabs({ view, tagsByCategory }: PortfolioFiltersProps) {
     )
 }
 
+function selectedTags(view: FilterView) {
+    return view.query.tags.flatMap((id) => view.tags.filter((tag) => tag.id === id))
+}
+
 function MobileTagFilters({ view }: { view: FilterView }) {
     return (
         <div className="flex flex-wrap items-center gap-2.5">
             <TagDrawer tags={view.tags} query={view.query} />
-            <TagPills links={buildTagLinks(view.query.tags, view.query)} />
+            <TagPills links={buildTagLinks(selectedTags(view), view.query)} />
         </div>
     )
 }

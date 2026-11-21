@@ -1,7 +1,7 @@
 "use client"
 
 import { SlidersHorizontalIcon } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import { useState } from "react"
 
 import { PILL_CLASS_NAME } from "@/components/portfolio/tag-pill"
@@ -17,31 +17,37 @@ import {
     DrawerTrigger,
 } from "@/components/ui/drawer"
 import { Label } from "@/components/ui/label"
-import { addOrRemoveTag, buildPortfolioUrl, type PortfolioQuery } from "@/lib/portfolio"
+import { useRouter } from "@/i18n/navigation"
+import {
+    addOrRemoveTag,
+    buildPortfolioUrl,
+    type PortfolioLabel,
+    type PortfolioQuery,
+} from "@/lib/portfolio"
 import { cn } from "@/lib/utils"
 
 type TagDrawerProps = {
-    tags: string[]
+    tags: PortfolioLabel[]
     query: PortfolioQuery
 }
 
 type TagCheckboxListProps = {
-    tags: string[]
+    tags: PortfolioLabel[]
     checkedTags: string[]
-    onToggle: (tag: string) => void
+    onToggle: (tagId: string) => void
 }
 
 function TagCheckboxList({ tags, checkedTags, onToggle }: TagCheckboxListProps) {
     return (
         <ul className="overflow-y-auto px-4">
             {tags.map((tag) => (
-                <li key={tag} className="border-b border-border last:border-b-0">
+                <li key={tag.id} className="border-b border-border last:border-b-0">
                     <Label className="flex min-h-12 items-center gap-3 font-secondary text-sm font-normal">
                         <Checkbox
-                            checked={checkedTags.includes(tag)}
-                            onCheckedChange={() => onToggle(tag)}
+                            checked={checkedTags.includes(tag.id)}
+                            onCheckedChange={() => onToggle(tag.id)}
                         />
-                        #{tag}
+                        #{tag.name}
                     </Label>
                 </li>
             ))}
@@ -50,6 +56,7 @@ function TagCheckboxList({ tags, checkedTags, onToggle }: TagCheckboxListProps) 
 }
 
 export function TagDrawer({ tags, query }: TagDrawerProps) {
+    const t = useTranslations("Portfolio")
     const router = useRouter()
     const [isOpen, setIsOpen] = useState(false)
     const [checkedTags, setCheckedTags] = useState(query.tags)
@@ -59,8 +66,8 @@ export function TagDrawer({ tags, query }: TagDrawerProps) {
         setIsOpen(open)
     }
 
-    function toggleCheckedTag(tag: string) {
-        setCheckedTags((prev) => addOrRemoveTag(prev, tag))
+    function toggleCheckedTag(tagId: string) {
+        setCheckedTags((prev) => addOrRemoveTag(prev, tagId))
     }
 
     function applyCheckedTags() {
@@ -76,16 +83,16 @@ export function TagDrawer({ tags, query }: TagDrawerProps) {
                     className={cn(PILL_CLASS_NAME, "border-border px-4 text-foreground")}
                 >
                     <SlidersHorizontalIcon aria-hidden />
-                    Tagi
+                    {t("tags")}
                     {query.tags.length > 0 && ` (${query.tags.length})`}
                 </Button>
             </DrawerTrigger>
             <DrawerContent>
                 <DrawerHeader>
-                    <DrawerTitle className="font-primary text-2xl font-normal">Tagi</DrawerTitle>
-                    <DrawerDescription>
-                        Pokażemy prace, które mają wszystkie zaznaczone tagi.
-                    </DrawerDescription>
+                    <DrawerTitle className="font-primary text-2xl font-normal">
+                        {t("tags")}
+                    </DrawerTitle>
+                    <DrawerDescription>{t("tagsDescription")}</DrawerDescription>
                 </DrawerHeader>
                 <TagCheckboxList
                     tags={tags}
@@ -93,13 +100,13 @@ export function TagDrawer({ tags, query }: TagDrawerProps) {
                     onToggle={toggleCheckedTag}
                 />
                 <DrawerFooter>
-                    <Button onClick={applyCheckedTags}>Zastosuj filtry</Button>
+                    <Button onClick={applyCheckedTags}>{t("applyFilters")}</Button>
                     <Button
                         variant="ghost"
                         disabled={checkedTags.length === 0}
                         onClick={() => setCheckedTags([])}
                     >
-                        Wyczyść
+                        {t("clearTags")}
                     </Button>
                 </DrawerFooter>
             </DrawerContent>
