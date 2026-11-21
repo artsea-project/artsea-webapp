@@ -2,6 +2,7 @@
 
 import { Fragment, useState } from "react"
 import { Menu, X } from "lucide-react"
+import { useSearchParams } from "next/navigation"
 import { useLocale, useTranslations } from "next-intl"
 
 import { Link, usePathname } from "@/i18n/navigation"
@@ -48,10 +49,19 @@ function NavItemLinks({ className, onNavigate }: { className?: string; onNavigat
     )
 }
 
+// Keeps the query string, so for example portfolio filters survive switching the language
+function useCurrentQuery() {
+    const searchParams = useSearchParams()
+    return Object.fromEntries(
+        [...new Set(searchParams.keys())].map((key) => [key, searchParams.getAll(key)])
+    )
+}
+
 function LangToggle({ onNavigate }: { onNavigate?: () => void }) {
     const t = useTranslations("Nav")
     const currentLocale = useLocale()
     const pathname = usePathname()
+    const query = useCurrentQuery()
 
     return (
         <>
@@ -59,7 +69,7 @@ function LangToggle({ onNavigate }: { onNavigate?: () => void }) {
                 <Fragment key={locale}>
                     {index > 0 && <span className="text-muted-foreground opacity-40">/</span>}
                     <Link
-                        href={pathname}
+                        href={{ pathname, query }}
                         locale={locale}
                         onClick={onNavigate}
                         className={`transition-colors duration-200 focus:outline-none ${
