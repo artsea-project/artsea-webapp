@@ -13,6 +13,7 @@ import OverviewPanel from "@/components/admin-overview/OverviewPanel"
 import { bentoImageProps } from "@/components/bento/bento-card"
 import { PHONE_WIDTH_TO_HEIGHT, PhoneFrame } from "@/components/bento/phone-frame"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { getBentoEditorHref } from "@/lib/admin-routes"
 import type { BentoCardData, BentoData } from "@/lib/bento"
 import { BENTO_VIEW_LABELS, bentoGridStyle, DESKTOP_GRID, tilePlacement } from "@/lib/bento-grid"
 import { cn } from "@/lib/utils"
@@ -98,14 +99,14 @@ function PreviewCard({
             <OverviewEmptyState
                 message="Na stronie głównej nie ma jeszcze prac."
                 actionLabel="Ułóż stronę główną"
-                href="/admin/appearance"
+                href={getBentoEditorHref(view)}
             />
         )
     }
 
     return (
         <Link
-            href="/admin/appearance"
+            href={getBentoEditorHref(view)}
             aria-label={`Prace wyróżnione na stronie głównej, widok ${BENTO_VIEW_LABELS[view]}. Przejdź do Układ i Personalizacja`}
             className={cn("block", OVERVIEW_CARD_CLASS, OVERVIEW_CARD_LINK_CLASS)}
         >

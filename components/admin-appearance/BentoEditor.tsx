@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useReducer, useState, type ReactNode } from "react"
 import { Plus } from "lucide-react"
+import { useSearchParams } from "next/navigation"
 import { useContainerWidth } from "react-grid-layout"
 
 import { saveBentoLayout } from "@/app/admin/appearance/actions"
@@ -21,7 +22,13 @@ import {
     type TileContent,
 } from "@/lib/appearance/bento-editor-state"
 import type { ArtworkMeta, PickerArtwork } from "@/lib/appearance/queries"
-import { BENTO_VIEW_LABELS, TILE_PRESETS, type TilePreset } from "@/lib/bento-grid"
+import {
+    BENTO_VIEW_LABELS,
+    BENTO_VIEW_PARAM,
+    parseBentoView,
+    TILE_PRESETS,
+    type TilePreset,
+} from "@/lib/bento-grid"
 import { createTileId } from "@/lib/bento-layout"
 import type { BentoBoxLayout } from "@/types/bento"
 
@@ -132,7 +139,8 @@ type BentoEditorProps = {
 
 export function BentoEditor({ saved, artworkMeta, artworks, onDirtyChange }: BentoEditorProps) {
     const [state, dispatch] = useReducer(bentoEditorReducer, { saved, draft: saved })
-    const [view, setView] = useState<BentoView>("desktop")
+    const searchParams = useSearchParams()
+    const view = parseBentoView(searchParams.get(BENTO_VIEW_PARAM))
     const {
         width: frameAreaWidth,
         containerRef: frameAreaRef,
@@ -174,6 +182,12 @@ export function BentoEditor({ saved, artworkMeta, artworks, onDirtyChange }: Ben
         )
     }
 
+    function handleViewChange(value: string) {
+        const params = new URLSearchParams(searchParams)
+        params.set(BENTO_VIEW_PARAM, value)
+        window.history.replaceState(null, "", `?${params}`)
+    }
+
     function handleRevert() {
         dispatch({ type: "revert" })
         reset()
@@ -183,7 +197,7 @@ export function BentoEditor({ saved, artworkMeta, artworks, onDirtyChange }: Ben
         <div className="flex flex-col gap-6">
             <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
                 <div className="flex min-w-0 flex-col gap-6">
-                    <Tabs value={view} onValueChange={(value) => setView(value as BentoView)}>
+                    <Tabs value={view} onValueChange={handleViewChange}>
                         <TabsList>
                             {VIEWS.map((name) => (
                                 <TabsTrigger key={name} value={name}>

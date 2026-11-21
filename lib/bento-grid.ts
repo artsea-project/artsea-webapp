@@ -20,6 +20,12 @@ export const BENTO_VIEW_LABELS: Record<keyof BentoBoxLayout, string> = {
     mobile: "Mobile",
 }
 
+export const BENTO_VIEW_PARAM = "view"
+
+export function parseBentoView(value: string | null): keyof BentoBoxLayout {
+    return value === "mobile" ? "mobile" : "desktop"
+}
+
 export const PUBLIC_GRID_GAP: Record<keyof BentoBoxLayout, number> = {
     desktop: 21,
     mobile: 12,

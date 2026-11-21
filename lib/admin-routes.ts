@@ -8,6 +8,9 @@ import {
     type LucideIcon,
 } from "lucide-react"
 
+import { BENTO_VIEW_PARAM } from "@/lib/bento-grid"
+import type { BentoBoxLayout } from "@/types/bento"
+
 export interface AdminRoute {
     label: string
     href: string
@@ -29,6 +32,10 @@ export const PORTFOLIO_PREVIEW_ROUTE: AdminRoute = {
     label: "Podgląd portfolio",
     href: "/",
     icon: Eye,
+}
+
+export function getBentoEditorHref(view: keyof BentoBoxLayout): string {
+    return `/admin/appearance?${BENTO_VIEW_PARAM}=${view}`
 }
 
 /** Exact match only for index routes, so "/admin" doesn't stay active on every child page. */
