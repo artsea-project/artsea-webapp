@@ -98,8 +98,6 @@ function partialContent(
     })
 }
 
-// With loadRange and a known size only the requested bytes are read,
-// otherwise the range is cut from the full record.
 export async function serveMedia(
     request: Request,
     mediaId: string,

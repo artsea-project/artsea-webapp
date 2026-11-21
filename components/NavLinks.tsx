@@ -49,7 +49,6 @@ function NavItemLinks({ className, onNavigate }: { className?: string; onNavigat
     )
 }
 
-// Keeps the query string, so for example portfolio filters survive switching the language
 function useCurrentQuery() {
     const searchParams = useSearchParams()
     return Object.fromEntries(

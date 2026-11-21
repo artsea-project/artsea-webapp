@@ -31,7 +31,6 @@ function PaginationItem({ ...props }: React.ComponentProps<"li">) {
     return <li data-slot="pagination-item" {...props} />
 }
 
-// Uses next/link instead of <a> so page changes stay client-side navigations
 type PaginationLinkProps = {
     isActive?: boolean
 } & Pick<React.ComponentProps<typeof Button>, "size"> &
