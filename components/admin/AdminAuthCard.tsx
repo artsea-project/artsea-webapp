@@ -149,8 +149,8 @@ export default function AdminAuthCard({
                         {isFirstLogin ? (
                             <Field
                                 id="full-name"
-                                label="Imię i nazwisko"
-                                placeholder="Wpisz imię i nazwisko"
+                                label="Imię i nazwisko lub pseudonim"
+                                placeholder="Wpisz imię i nazwisko lub pseudonim"
                                 defaultValue={state.fullName}
                                 autoComplete="name"
                             />

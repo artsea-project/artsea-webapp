@@ -26,7 +26,7 @@ test.describe("admin authentication", () => {
         await page.goto(setupPath)
 
         await expect(page.getByRole("heading", { name: "Pierwsze logowanie" })).toBeVisible()
-        await page.getByLabel("Imię i nazwisko").fill("Élise Roux")
+        await page.getByLabel("Imię i nazwisko lub pseudonim", { exact: true }).fill("Roux")
         await page.getByLabel("Hasło", { exact: true }).fill(password)
         await page.getByLabel("Powtórz hasło").fill("different-password")
         await page.getByRole("button", { name: "Utwórz konto" }).click()
@@ -38,7 +38,7 @@ test.describe("admin authentication", () => {
 
         await expect(page).toHaveURL(/\/admin$/)
         await expect(page.getByRole("heading", { name: "Przegląd", exact: true })).toBeVisible()
-        await expect(page.locator("aside").getByText("Élise Roux", { exact: true })).toBeVisible()
+        await expect(page.locator("aside").getByText("Roux", { exact: true })).toBeVisible()
 
         const replayPage = await browser.newPage()
         await replayPage.goto(new URL(setupPath, page.url()).href)
@@ -66,7 +66,9 @@ test.describe("admin authentication", () => {
 
         await page.goto("/admin/login")
         await expect(page.getByLabel("Logowanie do portfolio Élise Roux")).toBeVisible()
-        await expect(page.getByLabel("Imię i nazwisko")).toHaveCount(0)
+        await expect(page.getByLabel("Imię i nazwisko lub pseudonim", { exact: true })).toHaveCount(
+            0
+        )
         await expect(page.getByRole("navigation", { name: "Menu główne" })).toHaveCount(0)
 
         await page.getByLabel("Hasło").fill("incorrect-password")
