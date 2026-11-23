@@ -46,9 +46,10 @@ test.describe("bio paragraphs", () => {
 })
 
 test.describe("personal data", () => {
-    test("requires a full name", () => {
-        expect(checkFullName("  ")).toBe("Podaj imię lub pseudonim artystyczny.")
+    test("requires a full name or pseudonym", () => {
+        expect(checkFullName("  ")).toBe("Podaj imię i nazwisko lub pseudonim.")
         expect(checkFullName("Élise Roux")).toBeNull()
+        expect(checkFullName("Roux")).toBeNull()
     })
 
     test("treats an empty contact email as no email", () => {

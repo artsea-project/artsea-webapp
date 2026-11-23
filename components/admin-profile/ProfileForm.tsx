@@ -203,7 +203,7 @@ export default function ProfileForm({ saved }: ProfileFormProps) {
 
             <FieldGroup>
                 <Field data-invalid={Boolean(fieldError("fullName"))}>
-                    <FieldLabel htmlFor="fullName">Imię lub pseudonim artystyczny</FieldLabel>
+                    <FieldLabel htmlFor="fullName">Imię i nazwisko lub pseudonim</FieldLabel>
                     <Input
                         id="fullName"
                         name="fullName"
