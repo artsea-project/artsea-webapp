@@ -6,10 +6,13 @@ import OverviewPanel from "@/components/admin-overview/OverviewPanel"
 import SocialLinks from "@/components/admin-overview/SocialLinks"
 import StatCard from "@/components/admin-overview/StatCard"
 import AdminPageIntro from "@/components/AdminPageIntro"
+import { requireArtistSession } from "@/lib/auth/session"
 import { getBentoData } from "@/lib/bento"
 import { describeHiddenWorks } from "@/lib/overview/hidden-works"
 import { getOverviewCounts } from "@/lib/overview/queries"
 import { getOrderedLinks } from "@/lib/profile/queries"
+
+export const instant = false
 
 const FEATURED_WORKS_PANEL = {
     id: "overview-featured-works",
@@ -43,6 +46,7 @@ export default function AdminOverviewPage() {
 }
 
 async function OverviewCounts() {
+    await requireArtistSession()
     const counts = await getOverviewCounts()
 
     return (
@@ -71,12 +75,14 @@ async function OverviewCounts() {
 }
 
 async function OverviewFeaturedWorks() {
+    await requireArtistSession()
     const bento = await getBentoData("pl")
 
     return <FeaturedWorks {...FEATURED_WORKS_PANEL} data={bento} />
 }
 
 async function OverviewSocialLinks() {
+    await requireArtistSession()
     const links = await getOrderedLinks()
 
     return <SocialLinks links={links} />

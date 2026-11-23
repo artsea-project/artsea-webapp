@@ -110,6 +110,42 @@ test.describe("admin authentication", () => {
         }
     })
 
+    for (const [startPath, linkName] of [
+        ["/admin", "Profil"],
+        ["/admin", "Układ i Personalizacja"],
+        ["/admin/profile", "Przegląd"],
+    ] as const) {
+        test(`redirects a stale admin tab after logout when opening ${linkName}`, async ({
+            context,
+            page,
+        }) => {
+            await getOrCreateAuthInstallation()
+            const token = await getOrCreateSetupToken()
+            await page.goto(`/admin/first-login/${token}`)
+            await page.getByLabel("Imię i nazwisko lub pseudonim", { exact: true }).fill("Roux")
+            await page.getByLabel("Hasło", { exact: true }).fill(password)
+            await page.getByLabel("Powtórz hasło").fill(password)
+            await page.getByRole("button", { name: "Utwórz konto" }).click()
+            await expect(page).toHaveURL(/\/admin$/)
+
+            const otherTab = await context.newPage()
+            await otherTab.goto(startPath)
+            const link = otherTab
+                .locator("aside")
+                .getByRole("link", { name: linkName, exact: true })
+            await expect(link).toBeVisible()
+
+            await page.locator("aside").getByRole("button", { name: "Wyloguj się" }).click()
+            await expect(page).toHaveURL(/\/admin\/login$/)
+
+            await link.click()
+            await expect(otherTab).toHaveURL(/\/admin\/login$/)
+            await expect(
+                otherTab.getByRole("heading", { name: "Logowanie do panelu" })
+            ).toBeVisible()
+        })
+    }
+
     test("requires a valid session on client-side navigation between admin pages", async ({
         page,
     }) => {

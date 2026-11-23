@@ -5,6 +5,8 @@ import { readAuthInstallation } from "@/lib/auth/installation"
 import { verifySetupToken } from "@/lib/auth/setup-token"
 import { registerAction } from "./actions"
 
+export const instant = false
+
 export const metadata: Metadata = {
     title: "Pierwsze logowanie | Artsea",
     description: "Konfiguracja konta artysty Artsea.",

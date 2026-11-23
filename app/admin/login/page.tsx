@@ -5,6 +5,8 @@ import AdminAuthCard from "@/components/admin/AdminAuthCard"
 import { getArtistSession } from "@/lib/auth/session"
 import { loginAction } from "./actions"
 
+export const instant = false
+
 export const metadata: Metadata = {
     title: "Logowanie | Artsea",
     description: "Logowanie do panelu artysty Artsea.",

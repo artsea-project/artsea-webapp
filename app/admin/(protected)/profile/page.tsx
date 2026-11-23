@@ -7,6 +7,8 @@ import { Separator } from "@/components/ui/separator"
 import { requireArtistSession } from "@/lib/auth/session"
 import { getEditableProfile, getOrderedLinks } from "@/lib/profile/queries"
 
+export const instant = false
+
 export default function AdminProfilePage() {
     return (
         <Suspense fallback={null}>

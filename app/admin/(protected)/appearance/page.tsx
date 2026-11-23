@@ -1,7 +1,10 @@
 import { Suspense } from "react"
 
 import { AppearanceEditor } from "@/components/admin-appearance/AppearanceEditor"
+import { requireArtistSession } from "@/lib/auth/session"
 import { getAppearanceData } from "@/lib/appearance/queries"
+
+export const instant = false
 
 export default function AdminAppearancePage() {
     return (
@@ -12,6 +15,7 @@ export default function AdminAppearancePage() {
 }
 
 async function AppearanceContent() {
+    await requireArtistSession()
     const data = await getAppearanceData()
 
     return (
