@@ -5,6 +5,8 @@ import WorkForm from "@/components/admin-works/WorkForm"
 import { requireArtistSession } from "@/lib/auth/session"
 import { getWorkForEdit, getWorkFormOptions } from "@/lib/works/queries"
 
+export const instant = false
+
 interface AdminEditWorkPageProps {
     params: Promise<{ id: string }>
 }

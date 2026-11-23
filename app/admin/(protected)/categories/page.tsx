@@ -5,6 +5,8 @@ import TagsSection from "@/components/admin-categories/TagsSection"
 import { requireArtistSession } from "@/lib/auth/session"
 import { getCategoriesWithWorkCounts, getOrderedTags } from "@/lib/categories/queries"
 
+export const instant = false
+
 export default function AdminCategoriesPage() {
     return (
         <Suspense fallback={null}>

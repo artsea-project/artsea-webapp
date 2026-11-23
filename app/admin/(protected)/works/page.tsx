@@ -5,6 +5,8 @@ import { requireArtistSession } from "@/lib/auth/session"
 import { getAdminWorks } from "@/lib/works/queries"
 import { normalizeSearchQuery, parsePage, parseVisibilityFilter } from "@/lib/works/validation"
 
+export const instant = false
+
 interface AdminWorksPageProps {
     searchParams: Promise<{
         q?: string | string[]

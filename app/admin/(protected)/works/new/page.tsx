@@ -4,6 +4,8 @@ import WorkForm from "@/components/admin-works/WorkForm"
 import { requireArtistSession } from "@/lib/auth/session"
 import { getWorkFormOptions } from "@/lib/works/queries"
 
+export const instant = false
+
 export default function AdminNewWorkPage() {
     return (
         <Suspense fallback={null}>
