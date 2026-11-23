@@ -101,6 +101,21 @@ Scripts run with `npm run <script>`; type-check with `npx tsc --noEmit`.
 | `db:generate`, `db:migrate` | Generate or apply migrations in `drizzle/`                    |
 | `db:studio`, `db:logs`      | Browse the database in Drizzle Studio, follow its logs        |
 | `db:seed`                   | Insert sample data (`-- --reset` replaces existing data)      |
+| `db:reset`                  | Delete app data from the target database, keeping the schema  |
+| `auth:first-login`          | Generate a private link to create the artist account          |
+| `auth:reset-password`       | Change the artist password and invalidate active sessions     |
+
+### Repeat first login
+
+Stop the dev server, then run:
+
+```bash
+npm run db:reset
+npm run auth:first-login
+npm run dev
+```
+
+### Test data
 
 `test` runs against the database from `.env.local` and overwrites its data; run `npm run db:seed`
 afterwards to get the sample data back. `test:e2e` builds the app and serves it on port `3000`
