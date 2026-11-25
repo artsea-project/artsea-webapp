@@ -127,7 +127,7 @@ function BentoTiles({ view, cards }: { view: BentoView; cards: BentoCardData[] }
                     >
                         <Image
                             {...bentoImageProps(card.mediaId, TILE_IMAGE_SIZES[view])}
-                            alt={card.title}
+                            alt={card.title ?? "Bez tytułu"}
                             className="object-cover"
                         />
                     </div>

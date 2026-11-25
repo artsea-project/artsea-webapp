@@ -71,7 +71,7 @@ async function OverviewCounts() {
 }
 
 async function OverviewFeaturedWorks() {
-    const bento = await getBentoData()
+    const bento = await getBentoData("pl")
 
     return <FeaturedWorks {...FEATURED_WORKS_PANEL} data={bento} />
 }
