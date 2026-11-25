@@ -110,6 +110,16 @@ export function ArtworkPickerDialog({
         onOpenChange(next)
     }
 
+    function pickImage(chosen: PickerArtwork, mediaId: string) {
+        onPick({ artPieceId: chosen.artPieceId, mediaId })
+        changeOpen(false)
+    }
+
+    function chooseArtwork(chosen: PickerArtwork) {
+        if (chosen.mediaIds.length === 1) pickImage(chosen, chosen.mediaIds[0])
+        else setArtwork(chosen)
+    }
+
     return (
         <Dialog open={open} onOpenChange={changeOpen}>
             <DialogContent className="admin-theme max-h-[85vh] overflow-y-auto font-secondary text-foreground sm:max-w-2xl">
@@ -125,13 +135,10 @@ export function ArtworkPickerDialog({
                     <ImageChoices
                         artwork={artwork}
                         onBack={() => setArtwork(null)}
-                        onPick={(mediaId) => {
-                            onPick({ artPieceId: artwork.artPieceId, mediaId })
-                            changeOpen(false)
-                        }}
+                        onPick={(mediaId) => pickImage(artwork, mediaId)}
                     />
                 ) : (
-                    <ArtworkChoices artworks={artworks} onChoose={setArtwork} />
+                    <ArtworkChoices artworks={artworks} onChoose={chooseArtwork} />
                 )}
             </DialogContent>
         </Dialog>
