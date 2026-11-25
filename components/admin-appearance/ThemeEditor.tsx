@@ -160,7 +160,7 @@ function PresetPicker({ onPick }: { onPick: (preset: ThemePresetId) => void }) {
                         key={id}
                         type="button"
                         onClick={() => onPick(id)}
-                        className="rounded-lg text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                        className="cursor-pointer rounded-lg text-left ring-2 ring-transparent ring-offset-2 ring-offset-background transition hover:ring-foreground/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:ring-foreground motion-safe:active:scale-[0.98]"
                     >
                         <ThemeScope
                             theme={THEME_PRESETS[id]}
