@@ -19,7 +19,24 @@ const GUARD_ROOT_SELECTOR = "[data-leave-guard-root]"
 type PendingLeave =
     | { kind: "link"; href: string }
     | { kind: "form"; form: HTMLFormElement }
-    | { kind: "history" }
+    | { kind: "history"; entryKey: string }
+
+type NavigateEvent = Event & {
+    navigationType: string
+    destination: { key: string; sameDocument: boolean }
+}
+
+type Navigation = EventTarget & { traverseTo: (key: string) => unknown }
+
+function getNavigation(): Navigation | undefined {
+    return (window as Window & { navigation?: Navigation }).navigation
+}
+
+function readTraversalKey(event: NavigateEvent): string | null {
+    const isGuardable =
+        event.navigationType === "traverse" && event.cancelable && event.destination.sameDocument
+    return isGuardable ? event.destination.key : null
+}
 
 function isPlainLeftClick(event: MouseEvent) {
     return (
@@ -67,58 +84,50 @@ export function useLeaveGuard(enabled: boolean, description: string): ReactNode 
             if (!form.closest(GUARD_ROOT_SELECTOR)) stop(event, { kind: "form", form })
         }
 
+        function onNavigate(event: Event) {
+            const entryKey = isLeaving.current ? null : readTraversalKey(event as NavigateEvent)
+            if (entryKey) stop(event, { kind: "history", entryKey })
+        }
+
         function onBeforeUnload(event: BeforeUnloadEvent) {
             if (!isLeaving.current) event.preventDefault()
         }
 
-        function onPopState() {
-            if (isLeaving.current) return
-            setPending({ kind: "history" })
-        }
-
-        window.history.pushState(null, "", window.location.href)
-
+        const navigation = getNavigation()
         document.addEventListener("click", onClick, true)
         document.addEventListener("submit", onSubmit, true)
+        navigation?.addEventListener("navigate", onNavigate)
         window.addEventListener("beforeunload", onBeforeUnload)
-        window.addEventListener("popstate", onPopState)
 
         return () => {
             document.removeEventListener("click", onClick, true)
             document.removeEventListener("submit", onSubmit, true)
+            navigation?.removeEventListener("navigate", onNavigate)
             window.removeEventListener("beforeunload", onBeforeUnload)
-            window.removeEventListener("popstate", onPopState)
+            setPending(null)
         }
     }, [enabled])
-
-    function cancel() {
-        if (pending?.kind === "history") {
-            window.history.pushState(null, "", window.location.href)
-        }
-        setPending(null)
-    }
 
     function leave() {
         if (!pending) return
 
         isLeaving.current = true
-        const toLeave = pending
         setPending(null)
 
-        if (toLeave.kind === "link") router.push(toLeave.href)
-        else if (toLeave.kind === "form") toLeave.form.requestSubmit()
-        else router.back()
+        if (pending.kind === "link") router.push(pending.href)
+        else if (pending.kind === "form") pending.form.requestSubmit()
+        else getNavigation()?.traverseTo(pending.entryKey)
     }
 
     return (
-        <AlertDialog open={pending !== null} onOpenChange={(open) => !open && cancel()}>
+        <AlertDialog open={pending !== null} onOpenChange={(open) => !open && setPending(null)}>
             <AlertDialogContent className="admin-theme font-secondary text-foreground">
                 <AlertDialogHeader>
                     <AlertDialogTitle>Masz niezapisane zmiany</AlertDialogTitle>
                     <AlertDialogDescription>{description}</AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel onClick={cancel}>Zostań</AlertDialogCancel>
+                    <AlertDialogCancel>Zostań</AlertDialogCancel>
                     <AlertDialogAction onClick={leave}>Wyjdź bez zapisywania</AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
