@@ -10,6 +10,10 @@ const TOKEN_FILE_NAME = "first-login-token"
 const isWindows = process.platform === "win32"
 const noFollow = isWindows ? 0 : constants.O_NOFOLLOW
 
+export function isSetupTokenFormat(token: string): boolean {
+    return TOKEN_PATTERN.test(token)
+}
+
 function getAuthRuntimeDirectory() {
     const base = isWindows
         ? (process.env.LOCALAPPDATA ?? path.join(os.homedir(), "AppData", "Local"))
@@ -120,7 +124,7 @@ async function readSetupToken(tokenPath: string): Promise<string | null> {
         assertOwnedByCurrentUser(stats.uid, "token file")
 
         const token = (await file.readFile({ encoding: "utf8" })).trimEnd()
-        if (!TOKEN_PATTERN.test(token)) {
+        if (!isSetupTokenFormat(token)) {
             throw new Error("The first-login token file is invalid.")
         }
         return token
