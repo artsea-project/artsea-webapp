@@ -2,7 +2,7 @@ import { and, eq } from "drizzle-orm"
 import { db } from "@/db"
 import { accounts, profiles, users } from "@/db/schema"
 
-export type RegisteredArtistAccount = {
+type RegisteredArtistAccount = {
     userId: string
     artistName: string
 }

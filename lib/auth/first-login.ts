@@ -5,9 +5,7 @@ import { getOrCreateAuthInstallation, readAuthInstallation } from "@/lib/auth/in
 import { firstLoginSetupLock } from "@/lib/auth/setup-lock"
 import { getOrCreateSetupToken } from "@/lib/auth/setup-token"
 
-export type FirstLoginResult =
-    | { kind: "setup"; url: string }
-    | { kind: "registered"; artistName: string }
+type FirstLoginResult = { kind: "setup"; url: string } | { kind: "registered"; artistName: string }
 
 export async function prepareFirstLogin(options?: {
     publicUrl?: URL

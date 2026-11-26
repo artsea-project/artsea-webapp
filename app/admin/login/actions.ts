@@ -8,7 +8,7 @@ import { signInArtistWithRateLimit } from "@/lib/auth/server"
 
 const loginUnavailable = "Nie udało się zalogować. Spróbuj ponownie za chwilę."
 
-export type LoginFormState = {
+type LoginFormState = {
     error?: string
 }
 
