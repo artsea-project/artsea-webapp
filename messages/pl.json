@@ -15,7 +15,8 @@
         "missingTranslation": "Ta treść nie jest dostępna w języku polskim."
     },
     "Footer": {
-        "heading": "Porozmawiajmy o sztuce."
+        "heading": "Porozmawiajmy o sztuce.",
+        "dashboardLink": "Panel administracyjny"
     },
     "Gallery": {
         "morePhotos": "+{count, plural, one {# zdjęcie} few {# zdjęcia} many {# zdjęć} other {# zdjęcia}}",

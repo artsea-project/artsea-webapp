@@ -1,4 +1,6 @@
 import { useTranslations } from "next-intl"
+import { getTranslations } from "next-intl/server"
+import Link from "next/link"
 
 import { getContactEmail, getOrderedLinks, type ProfileLink } from "@/lib/profile/queries"
 
@@ -54,13 +56,26 @@ function SocialsSection({ socialLinks }: SocialsSectionProps) {
 }
 
 export default async function Footer() {
-    const [email, socialLinks] = await Promise.all([getContactEmail(), getOrderedLinks()])
+    const [email, socialLinks, t] = await Promise.all([
+        getContactEmail(),
+        getOrderedLinks(),
+        getTranslations("Footer"),
+    ])
 
     return (
         <footer className="font-body border-t border-primary bg-foreground px-6 py-16 text-background transition-colors duration-300 md:px-16 md:py-24">
             <div className="mx-auto flex max-w-7xl flex-col gap-12 items-start justify-between md:flex-row md:items-stretch md:gap-6">
                 <ContactSection email={email} />
                 <SocialsSection socialLinks={socialLinks} />
+            </div>
+            <div className="mx-auto mt-8 max-w-7xl">
+                <Link
+                    href="/admin"
+                    prefetch={false}
+                    className="text-xs text-background/75 hover:text-background hover:underline focus-visible:text-background focus-visible:underline"
+                >
+                    {t("dashboardLink")}
+                </Link>
             </div>
         </footer>
     )

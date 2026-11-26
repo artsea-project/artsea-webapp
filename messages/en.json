@@ -15,7 +15,8 @@
         "missingTranslation": "This content is not available in English."
     },
     "Footer": {
-        "heading": "Let's talk about art."
+        "heading": "Let's talk about art.",
+        "dashboardLink": "Admin dashboard"
     },
     "Gallery": {
         "morePhotos": "+{count, plural, one {# photo} other {# photos}}",
