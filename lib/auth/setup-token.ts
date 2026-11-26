@@ -7,9 +7,14 @@ import path from "node:path"
 const TOKEN_BYTES = 32
 const TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/
 const TOKEN_FILE_NAME = "first-login-token"
+const isWindows = process.platform === "win32"
+const noFollow = isWindows ? 0 : constants.O_NOFOLLOW
 
 function getAuthRuntimeDirectory() {
-    return process.env.ARTSEA_RUNTIME_DIR ?? path.join(os.tmpdir(), "artsea")
+    const base = isWindows
+        ? (process.env.LOCALAPPDATA ?? path.join(os.homedir(), "AppData", "Local"))
+        : os.tmpdir()
+    return process.env.ARTSEA_RUNTIME_DIR ?? path.join(base, "artsea")
 }
 
 export async function getOrCreateSetupToken(
@@ -28,7 +33,7 @@ export async function getOrCreateSetupToken(
     try {
         const file = await open(
             tokenPath,
-            constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | constants.O_NOFOLLOW,
+            constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | noFollow,
             0o600
         )
         try {
@@ -91,7 +96,7 @@ async function ensurePrivateRuntimeDirectory(runtimeDirectory: string, create = 
     if (!stats.isDirectory() || stats.isSymbolicLink()) {
         throw new Error("The authentication runtime path must be a regular directory.")
     }
-    if ((stats.mode & 0o022) !== 0) {
+    if (!isWindows && (stats.mode & 0o022) !== 0) {
         throw new Error("The authentication runtime directory must not be group/world writable.")
     }
     assertOwnedByCurrentUser(stats.uid, "runtime directory")
@@ -100,12 +105,16 @@ async function ensurePrivateRuntimeDirectory(runtimeDirectory: string, create = 
 async function readSetupToken(tokenPath: string): Promise<string | null> {
     let file: FileHandle | undefined
     try {
-        file = await open(tokenPath, constants.O_RDONLY | constants.O_NOFOLLOW)
+        // Windows uses inherited ACLs and does not support O_NOFOLLOW.
+        if (isWindows && !(await lstat(tokenPath)).isFile()) {
+            throw new Error("The first-login token path must be a regular file.")
+        }
+        file = await open(tokenPath, constants.O_RDONLY | noFollow)
         const stats = await file.stat()
         if (!stats.isFile() || stats.nlink !== 1) {
             throw new Error("The first-login token path must be a regular file with one link.")
         }
-        if ((stats.mode & 0o077) !== 0) {
+        if (!isWindows && (stats.mode & 0o077) !== 0) {
             throw new Error("The first-login token file permissions must be 0600.")
         }
         assertOwnedByCurrentUser(stats.uid, "token file")
