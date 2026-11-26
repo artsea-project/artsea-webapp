@@ -1,66 +1,41 @@
-import { createHash } from "node:crypto"
-import { and, like, lt, sql } from "drizzle-orm"
-import { db } from "@/db"
-import { rateLimits } from "@/db/schema"
+const MAX_FAILURES = 30
+const WINDOW_MS = 10 * 60_000
 
-const LOGIN_RATE_LIMIT_KEY_PREFIX = "artsea:admin-login:client:"
-const LOGIN_RATE_LIMIT_WINDOW_MS = 60_000
-const LOGIN_RATE_LIMIT_MAX = 10
-const CLEANUP_INTERVAL_MS = 60 * 60_000
-const BUCKET_RETENTION_MS = 60 * 60_000
+type LoginOutcome =
+    | { status: "limited" }
+    | { status: "invalid-password" }
+    | { status: "verified"; response: Response }
 
-let nextCleanupAt = 0
-
-export async function pruneLoginRateLimitBuckets(now = Date.now()): Promise<void> {
-    if (now < nextCleanupAt) return
-
-    // Reserve the interval before awaiting the query so concurrent attempts don't repeat it.
-    nextCleanupAt = now + CLEANUP_INTERVAL_MS
-    await db
-        .delete(rateLimits)
-        .where(
-            and(
-                like(rateLimits.key, `${LOGIN_RATE_LIMIT_KEY_PREFIX}%`),
-                lt(rateLimits.lastRequest, now - BUCKET_RETENTION_MS)
-            )
-        )
+async function isInvalidPassword(response: Response): Promise<boolean> {
+    if (response.status !== 401) return false
+    const body: { code?: string } | null = await response.clone().json()
+    return body?.code === "INVALID_EMAIL_OR_PASSWORD"
 }
 
-export async function consumeLoginAttempt(
-    requestHeaders: Pick<Headers, "get">,
-    now = Date.now()
-): Promise<boolean> {
-    const clientAddress =
-        requestHeaders.get("x-forwarded-for") ??
-        requestHeaders.get("x-real-ip") ??
-        "unavailable-client"
-    const clientKey = createHash("sha256").update(clientAddress).digest("base64url")
-    const key = `${LOGIN_RATE_LIMIT_KEY_PREFIX}${clientKey}`
-    const windowStart = now - LOGIN_RATE_LIMIT_WINDOW_MS
+export function createLoginRateLimiter(clock = () => performance.now()) {
+    let failures = 0
+    let windowEndsAt = 0
+    let pending = Promise.resolve()
 
-    const [bucket] = await db
-        .insert(rateLimits)
-        .values({ key, count: 1, lastRequest: now })
-        .onConflictDoUpdate({
-            target: rateLimits.key,
-            set: {
-                count: sql<number>`case
-                    when ${rateLimits.lastRequest} < ${windowStart} then 1
-                    else ${rateLimits.count} + 1
-                end`,
-                lastRequest: sql<number>`case
-                    when ${rateLimits.lastRequest} < ${windowStart} then ${now}
-                    else ${rateLimits.lastRequest}
-                end`,
-            },
+    return function limitLogin(verify: () => Promise<Response>): Promise<LoginOutcome> {
+        // Queue the check and verification together so concurrent requests share the budget.
+        const attempt = pending.then(async (): Promise<LoginOutcome> => {
+            if (clock() >= windowEndsAt) failures = 0
+            if (failures >= MAX_FAILURES) return { status: "limited" }
+
+            const response = await verify()
+            if (!(await isInvalidPassword(response))) return { status: "verified", response }
+
+            const now = clock()
+            if (now >= windowEndsAt) failures = 0
+            if (failures === 0) windowEndsAt = now + WINDOW_MS
+            failures += 1
+            return { status: "invalid-password" }
         })
-        .returning({ count: rateLimits.count })
-
-    return bucket.count <= LOGIN_RATE_LIMIT_MAX
+        pending = attempt.then(
+            () => undefined,
+            () => undefined
+        )
+        return attempt
+    }
 }
-
-export const loginRateLimit = {
-    keyPrefix: LOGIN_RATE_LIMIT_KEY_PREFIX,
-    max: LOGIN_RATE_LIMIT_MAX,
-    windowMs: LOGIN_RATE_LIMIT_WINDOW_MS,
-} as const
