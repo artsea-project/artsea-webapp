@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { notFound, redirect } from "next/navigation"
 import AdminAuthCard from "@/components/admin/AdminAuthCard"
 import { readAuthInstallation } from "@/lib/auth/installation"
-import { verifySetupToken } from "@/lib/auth/setup-token"
+import { isSetupTokenFormat, verifySetupToken } from "@/lib/auth/setup-token"
 import { registerAction } from "./actions"
 
 export const instant = false
@@ -20,7 +20,7 @@ export default async function AdminFirstLoginPage({
     params: Promise<{ token: string }>
 }) {
     const { token } = await params
-    if (!/^[A-Za-z0-9_-]{43}$/.test(token)) {
+    if (!isSetupTokenFormat(token)) {
         notFound()
     }
 
