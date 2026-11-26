@@ -10,6 +10,7 @@ import {
     validateThemeInput,
     type ThemeErrors,
 } from "@/lib/appearance/validation"
+import { requireArtistSession } from "@/lib/auth/session"
 import { BENTO_CACHE_TAG } from "@/lib/bento"
 import { DESKTOP_GRID } from "@/lib/bento-grid"
 import { normalizeBentoLayout } from "@/lib/bento-layout"
@@ -39,6 +40,7 @@ function readDesktopTiles(layout: unknown): BentoLayoutItem[] {
 }
 
 export async function saveBentoLayout(layout: BentoBoxLayout): Promise<SaveBentoResult> {
+    await requireArtistSession()
     const mediaIds = readDesktopTiles(layout).map((item) => item.mediaId)
     const [settings, catalog] = await Promise.all([
         getSavedSiteSettings(),
@@ -60,6 +62,7 @@ export async function saveSiteTheme(input: {
     fonts: SiteThemeFonts
     colors: SiteThemeColors
 }): Promise<SaveThemeResult> {
+    await requireArtistSession()
     const result = validateThemeInput(input)
     if (!result.ok) return { status: "error", errors: result.errors }
 
