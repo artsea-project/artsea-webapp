@@ -8,6 +8,8 @@ import { consumeLoginAttempt, pruneLoginRateLimitBuckets } from "@/lib/auth/logi
 import { isNonemptyPassword } from "@/lib/auth/password"
 import { signInArtist } from "@/lib/auth/server"
 
+const loginUnavailable = "Nie udało się zalogować. Spróbuj ponownie za chwilę."
+
 export type LoginFormState = {
     error?: string
 }
@@ -31,11 +33,17 @@ export async function loginAction(
 
         const response = await signInArtist(password, requestHeaders)
         if (!response.ok) {
-            return { error: "Nieprawidłowe hasło. Spróbuj ponownie." }
+            const body: { code?: string } | null = await response.json()
+            if (body?.code === "INVALID_EMAIL_OR_PASSWORD") {
+                return { error: "Nieprawidłowe hasło. Spróbuj ponownie." }
+            }
+            console.error("Admin sign-in failed with status", response.status)
+            return { error: loginUnavailable }
         }
         await applyAuthCookies(response)
     } catch {
-        return { error: "Nieprawidłowe hasło. Spróbuj ponownie." }
+        console.error("Admin sign-in could not be completed.")
+        return { error: loginUnavailable }
     }
 
     redirect("/admin")
