@@ -69,10 +69,11 @@ test.describe("English browser", () => {
         await expect(page.getByRole("heading", { name: "Page not found" })).toBeVisible()
     })
 
-    test("keeps the admin panel in Polish and out of search engines", async ({ page }) => {
+    test("redirects to the Polish, non-indexable admin login", async ({ page }) => {
         await page.goto("/admin")
 
-        await expect(page).toHaveURL("/admin")
+        await expect(page).toHaveURL("/admin/login")
+        await expect(page.getByRole("heading", { name: "Logowanie do panelu" })).toBeVisible()
         await expect(page.locator("html")).toHaveAttribute("lang", "pl")
         await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/)
     })

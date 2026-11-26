@@ -118,9 +118,8 @@ npm run dev
 ### Test data
 
 `test` runs against the database from `.env.local` and overwrites its data; run `npm run db:seed`
-afterwards to get the sample data back. `test:e2e` builds the app and serves it on port `3000`
-(reusing a server already running there, such as `npm run dev`); it only reads the database and
-expects the sample data from `npm run db:seed`. To start from an empty database, run
+afterwards to get the sample data back. `test:e2e` builds the app and serves it on port `3000`.
+It expects the sample data from `npm run db:seed`. To start from an empty database, run
 `docker compose -f docker-compose.dev.yml down --volumes` and repeat steps 3-5.
 
 > **Windows:** `format:check` needs a POSIX shell and fails on CRLF line endings, so run it as:

@@ -18,7 +18,9 @@ export default defineConfig({
     webServer: {
         command: "npm run build && npm run start",
         url: baseURL,
-        reuseExistingServer: !process.env.CI,
+        // Production auth requires an HTTPS public origin. These tests do not submit credentials.
+        env: { ARTSEA_PUBLIC_URL: "https://localhost:3000" },
+        reuseExistingServer: false,
         timeout: 300_000,
     },
 })
