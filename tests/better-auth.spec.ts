@@ -39,6 +39,20 @@ test.describe("Better Auth integration", () => {
         expect(storedSessions).toContainEqual({ token: result.token })
     })
 
+    test("does not extend the fixed seven-day session when it is read", async () => {
+        const auth = await getAuth()
+        const response = await auth.api.signInEmail({ body: { email, password }, asResponse: true })
+        expect(response.ok).toBe(true)
+        const { token } = await response.json()
+        const cookie = response.headers.get("set-cookie")!.split(";", 1)[0]
+        const expiresAt = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)
+        await db.update(sessions).set({ expiresAt }).where(eq(sessions.token, token))
+
+        const result = await auth.api.getSession({ headers: new Headers({ cookie }) })
+
+        expect(result?.session.expiresAt).toEqual(expiresAt)
+    })
+
     test("keeps the public email signup endpoint disabled", async () => {
         const auth = await getAuth()
 
