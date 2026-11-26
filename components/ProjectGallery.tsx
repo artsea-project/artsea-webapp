@@ -3,13 +3,16 @@
 import { useState } from "react"
 import Image from "next/image"
 import dynamic from "next/dynamic"
+import { Play } from "lucide-react"
 import { useTranslations } from "next-intl"
+import type { MediaType } from "@/lib/media"
 
 const Lightbox = dynamic(() => import("./ProjectGalleryLightbox"), { ssr: false })
 
 export interface GalleryPhoto {
     src: string
     alt: string
+    fileType: MediaType
 }
 
 export interface ProjectGalleryProps {
@@ -22,6 +25,59 @@ interface ThumbnailProps {
     children?: React.ReactNode
 }
 
+function GalleryMedia({ photo, variant }: { photo: GalleryPhoto; variant: "main" | "thumbnail" }) {
+    if (photo.fileType === "mp4") {
+        return (
+            <>
+                <video
+                    src={`${photo.src}#t=0.001`}
+                    preload="metadata"
+                    muted
+                    playsInline
+                    aria-label={photo.alt}
+                    className={
+                        variant === "main"
+                            ? "w-full h-auto pointer-events-none transition-transform duration-300 group-hover:scale-[1.01]"
+                            : "h-full w-full object-cover pointer-events-none transition-transform duration-300 group-hover:scale-[1.01]"
+                    }
+                />
+                <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 flex items-center justify-center"
+                >
+                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-stone-900/60 text-white backdrop-blur-[2px] transition-transform duration-300 group-hover:scale-105">
+                        <Play className="h-5 w-5 fill-current translate-x-0.5" />
+                    </span>
+                </span>
+            </>
+        )
+    }
+
+    if (variant === "main") {
+        return (
+            <Image
+                src={photo.src}
+                alt={photo.alt}
+                width={0}
+                height={0}
+                sizes="(max-width: 768px) 100vw, 60vw"
+                priority
+                className="w-full h-auto transition-transform duration-300 group-hover:scale-[1.01]"
+            />
+        )
+    }
+
+    return (
+        <Image
+            src={photo.src}
+            alt={photo.alt}
+            fill
+            sizes="(max-width: 768px) 50vw, 30vw"
+            className="object-cover transition-transform duration-300 group-hover:scale-[1.01]"
+        />
+    )
+}
+
 function GalleryThumbnail({ photo, onClick, children }: ThumbnailProps) {
     return (
         <button
@@ -29,13 +85,7 @@ function GalleryThumbnail({ photo, onClick, children }: ThumbnailProps) {
             onClick={onClick}
             className="group relative w-full aspect-[4/3] overflow-hidden bg-stone-100 dark:bg-zinc-900 cursor-pointer hover:opacity-95 transition-opacity text-left p-0 border-0"
         >
-            <Image
-                src={photo.src}
-                alt={photo.alt}
-                fill
-                sizes="(max-width: 768px) 50vw, 30vw"
-                className="object-cover transition-transform duration-300 group-hover:scale-[1.01]"
-            />
+            <GalleryMedia photo={photo} variant="thumbnail" />
             {children}
         </button>
     )
@@ -48,15 +98,7 @@ function GalleryMainPhoto({ photo, onClick }: { photo: GalleryPhoto; onClick: ()
             onClick={onClick}
             className="group relative w-full overflow-hidden bg-stone-100 dark:bg-zinc-900 cursor-pointer hover:opacity-95 transition-opacity text-left p-0 border-0"
         >
-            <Image
-                src={photo.src}
-                alt={photo.alt}
-                width={0}
-                height={0}
-                sizes="(max-width: 768px) 100vw, 60vw"
-                priority
-                className="w-full h-auto transition-transform duration-300 group-hover:scale-[1.01]"
-            />
+            <GalleryMedia photo={photo} variant="main" />
         </button>
     )
 }
