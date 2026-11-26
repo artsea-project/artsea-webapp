@@ -36,14 +36,6 @@ CREATE TABLE "auth_installation" (
 	CONSTRAINT "auth_installation_secret_length_chk" CHECK (char_length("auth_installation"."better_auth_secret") >= 32)
 );
 --> statement-breakpoint
-CREATE TABLE "rate_limit" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"key" text NOT NULL,
-	"count" integer NOT NULL,
-	"last_request" bigint NOT NULL,
-	CONSTRAINT "rate_limit_key_unique" UNIQUE("key")
-);
---> statement-breakpoint
 CREATE TABLE "sessions" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"expires_at" timestamp with time zone NOT NULL,

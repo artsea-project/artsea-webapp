@@ -4,7 +4,6 @@ import {
     jsonb,
     boolean,
     integer,
-    bigint,
     timestamp,
     uuid,
     primaryKey,
@@ -103,13 +102,6 @@ export const verifications = pgTable(
     },
     (table) => [index("verifications_identifier_idx").on(table.identifier)]
 )
-
-export const rateLimits = pgTable("rate_limit", {
-    id: uuid("id").primaryKey().defaultRandom(),
-    key: text("key").notNull().unique(),
-    count: integer("count").notNull(),
-    lastRequest: bigint("last_request", { mode: "number" }).notNull(),
-})
 
 export const authInstallation = pgTable(
     "auth_installation",
