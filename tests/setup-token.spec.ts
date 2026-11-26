@@ -25,9 +25,11 @@ test.describe("first-login runtime token", () => {
         expect(await readFile(path.join(runtimeDirectory, "first-login-token"), "utf8")).toBe(
             `${tokens[0]}\n`
         )
-        expect((await lstat(path.join(runtimeDirectory, "first-login-token"))).mode & 0o777).toBe(
-            0o600
-        )
+        if (process.platform !== "win32") {
+            expect(
+                (await lstat(path.join(runtimeDirectory, "first-login-token"))).mode & 0o777
+            ).toBe(0o600)
+        }
     })
 
     test("verifies exactly and stops accepting a deleted token", async () => {
@@ -42,6 +44,7 @@ test.describe("first-login runtime token", () => {
     })
 
     test("rejects a group/world writable runtime directory", async () => {
+        test.skip(process.platform === "win32", "Windows uses ACLs rather than POSIX mode bits.")
         await chmod(runtimeDirectory, 0o777)
 
         await expect(getOrCreateSetupToken(runtimeDirectory)).rejects.toThrow(
@@ -51,7 +54,12 @@ test.describe("first-login runtime token", () => {
 
     test("rejects a symbolic link token file", async () => {
         const target = path.join(runtimeDirectory, "target")
-        await symlink(target, path.join(runtimeDirectory, "first-login-token"))
+        const tokenPath = path.join(runtimeDirectory, "first-login-token")
+        if (process.platform === "win32") {
+            await symlink(runtimeDirectory, tokenPath, "junction")
+        } else {
+            await symlink(target, tokenPath)
+        }
 
         await expect(getOrCreateSetupToken(runtimeDirectory)).rejects.toThrow(/regular file/)
     })
