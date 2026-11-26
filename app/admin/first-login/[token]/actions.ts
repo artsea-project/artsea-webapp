@@ -15,7 +15,7 @@ const errorMessages: Record<Exclude<RegistrationResult, { ok: true }>["code"], s
     ACCOUNT_EXISTS: "Konto jest już skonfigurowane. Przejdź do logowania.",
     SETUP_COMPLETED:
         "Pierwsza konfiguracja została już zakończona. Przywróć konto z kopii zapasowej.",
-    INVALID_TOKEN: "Ten prywatny link jest nieprawidłowy lub wygasł.",
+    INVALID_TOKEN: "Ten prywatny link jest nieprawidłowy.",
     INVALID_NAME: "Wpisz imię i nazwisko lub pseudonim.",
     PASSWORD_MISMATCH: "Hasła nie są takie same.",
     INVALID_PASSWORD: "Wpisz hasło.",
