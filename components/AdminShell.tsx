@@ -5,7 +5,7 @@ import AdminSidebar, { AdminSidebarContent } from "@/components/AdminSidebar"
 
 export default function AdminShell({ children }: { children: ReactNode }) {
     return (
-        <div className="admin-theme flex h-screen overflow-hidden bg-background text-foreground">
+        <div className="flex h-screen overflow-hidden bg-background text-foreground">
             <Suspense fallback={null}>
                 <AdminSidebar />
             </Suspense>

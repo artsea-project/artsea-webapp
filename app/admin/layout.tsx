@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default function AdminLayout({ children }: Readonly<{ children: React.ReactNode }>) {
     return (
         <HtmlShell lang="pl">
-            <div className={adminFontClassName}>
+            <div className={`admin-theme ${adminFontClassName}`}>
                 <Suspense fallback={null}>{children}</Suspense>
             </div>
         </HtmlShell>
