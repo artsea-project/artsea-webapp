@@ -19,7 +19,10 @@ async function loadAuthSettings(): Promise<AuthSettings> {
 }
 
 function getAuthSettings() {
-    return (authSettingsPromise ??= loadAuthSettings())
+    return (authSettingsPromise ??= loadAuthSettings().catch((error) => {
+        authSettingsPromise = undefined
+        throw error
+    }))
 }
 
 function createAuth(database: typeof db | AuthTransaction, { publicUrl, secret }: AuthSettings) {
@@ -59,7 +62,16 @@ function createAuth(database: typeof db | AuthTransaction, { publicUrl, secret }
 }
 
 export function getAuth() {
-    return (authPromise ??= getAuthSettings().then((settings) => createAuth(db, settings)))
+    return (authPromise ??= getAuthSettings()
+        .then(async (settings) => {
+            const auth = createAuth(db, settings)
+            await auth.$context
+            return auth
+        })
+        .catch((error) => {
+            authPromise = undefined
+            throw error
+        }))
 }
 
 export async function signInArtist(password: string, headers: Headers) {
