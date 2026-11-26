@@ -19,7 +19,7 @@ type AdminAuthCardProps = {
 }
 
 const fieldClassName =
-    "h-11 w-full rounded-[10px] border border-[#cbd5e1] bg-white px-3.5 text-sm text-[#0f172a] shadow-[0_1px_2px_rgba(15,23,42,0.03)] outline-none transition placeholder:text-[#94a3b8] focus:border-[#0284c7] focus:ring-2 focus:ring-[#0284c7]/15"
+    "h-11 w-full rounded-[10px] border border-input bg-background px-3.5 text-sm text-foreground shadow-xs outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/15"
 
 function Field({
     id,
@@ -40,13 +40,13 @@ function Field({
 
     return (
         <div className="space-y-2">
-            <label htmlFor={id} className="block text-sm font-semibold text-[#0f172a]">
+            <label htmlFor={id} className="block text-sm font-semibold text-foreground">
                 {label}
             </label>
             <div className="relative">
                 <Icon
                     aria-hidden="true"
-                    className="pointer-events-none absolute top-1/2 left-3.5 size-[18px] -translate-y-1/2 text-[#94a3b8]"
+                    className="pointer-events-none absolute top-1/2 left-3.5 size-[18px] -translate-y-1/2 text-muted-foreground"
                     strokeWidth={1.75}
                 />
                 <input
@@ -71,7 +71,7 @@ function SubmitButton({ isFirstLogin }: { isFirstLogin: boolean }) {
         <button
             type="submit"
             disabled={pending}
-            className="group mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-[10px] bg-[#0369a1] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#075985] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0284c7] disabled:cursor-wait disabled:opacity-70"
+            className="group mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-[10px] bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-wait disabled:opacity-70"
         >
             {pending ? <>Proszę czekać&hellip;</> : isFirstLogin ? "Utwórz konto" : "Zaloguj się"}
             {!pending && (
@@ -95,30 +95,30 @@ export default function AdminAuthCard({
     const [state, formAction] = useActionState(action, {})
 
     return (
-        <div className="flex min-h-svh flex-col bg-[#f8fafc] text-[#0f172a]">
+        <div className="flex min-h-svh flex-col bg-surface text-foreground">
             <div
                 aria-hidden="true"
-                className="pointer-events-none fixed inset-x-0 top-0 h-px bg-[#e2e8f0]"
+                className="pointer-events-none fixed inset-x-0 top-0 h-px bg-border"
             />
 
             <div className="mx-auto flex w-full max-w-[1200px] flex-1 items-center justify-center px-5 py-12 sm:px-8 sm:py-16">
                 <section
-                    className="w-full max-w-[440px] rounded-[10px] border border-[#e2e8f0] bg-white px-6 py-7 shadow-[0_12px_35px_rgba(15,23,42,0.06)] sm:px-9 sm:py-9"
+                    className="w-full max-w-[440px] rounded-[10px] border border-border bg-card px-6 py-7 shadow-sm sm:px-9 sm:py-9"
                     aria-labelledby="admin-auth-title"
                 >
                     <div className="mb-8">
                         {isFirstLogin && (
-                            <p className="mb-3 text-xs font-semibold tracking-[0.08em] text-[#0369a1] uppercase">
+                            <p className="mb-3 text-xs font-semibold tracking-[0.08em] text-foreground uppercase">
                                 Konfiguracja konta
                             </p>
                         )}
                         <h1
                             id="admin-auth-title"
-                            className="text-2xl leading-tight font-bold tracking-[-0.02em] text-[#0f172a]"
+                            className="text-2xl leading-tight font-bold tracking-[-0.02em] text-foreground"
                         >
                             {isFirstLogin ? "Pierwsze logowanie" : "Logowanie do panelu"}
                         </h1>
-                        <p className="mt-2.5 text-sm leading-6 text-[#64748b]">
+                        <p className="mt-2.5 text-sm leading-6 text-muted-foreground">
                             {isFirstLogin
                                 ? "Uzupełnij dane i ustaw hasło, którego będziesz używać do logowania."
                                 : `Wprowadź hasło, aby otworzyć panel zarządzania portfolio ${artistName}.`}
@@ -128,7 +128,7 @@ export default function AdminAuthCard({
                     {successMessage && (
                         <p
                             role="status"
-                            className="mb-5 rounded-[10px] border border-emerald-200 bg-emerald-50 px-3.5 py-3 text-sm text-emerald-800"
+                            className="mb-5 rounded-[10px] border border-border bg-accent px-3.5 py-3 text-sm text-accent-foreground"
                         >
                             {successMessage}
                         </p>
@@ -136,7 +136,7 @@ export default function AdminAuthCard({
                     {state.error && (
                         <p
                             role="alert"
-                            className="mb-5 rounded-[10px] border border-red-200 bg-red-50 px-3.5 py-3 text-sm text-red-800"
+                            className="mb-5 rounded-[10px] border border-destructive/20 bg-destructive/5 px-3.5 py-3 text-sm text-destructive"
                         >
                             {state.error}
                         </p>
@@ -156,11 +156,11 @@ export default function AdminAuthCard({
                             />
                         ) : (
                             <div
-                                className="flex items-center gap-3 rounded-[10px] border border-[#e2e8f0] bg-[#f8fafc] px-3.5 py-3"
+                                className="flex items-center gap-3 rounded-[10px] border border-border bg-surface px-3.5 py-3"
                                 role="group"
                                 aria-label={`Logowanie do portfolio ${artistName}`}
                             >
-                                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#e0f2fe] text-[#0369a1]">
+                                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-accent text-foreground">
                                     <UserRound
                                         aria-hidden="true"
                                         className="size-[18px]"
@@ -168,10 +168,10 @@ export default function AdminAuthCard({
                                     />
                                 </span>
                                 <span>
-                                    <span className="block text-xs font-medium text-[#64748b]">
+                                    <span className="block text-xs font-medium text-muted-foreground">
                                         Konto portfolio
                                     </span>
-                                    <span className="mt-0.5 block text-sm font-semibold text-[#0f172a]">
+                                    <span className="mt-0.5 block text-sm font-semibold text-foreground">
                                         {artistName}
                                     </span>
                                 </span>
@@ -200,11 +200,11 @@ export default function AdminAuthCard({
                     </form>
 
                     {isFirstLogin && (
-                        <div className="mt-7 border-t border-[#e2e8f0] pt-6 text-center text-sm text-[#64748b]">
+                        <div className="mt-7 border-t border-border pt-6 text-center text-sm text-muted-foreground">
                             <span>Konto jest już skonfigurowane?</span>{" "}
                             <Link
                                 href="/admin/login"
-                                className="mt-1 block font-semibold text-[#0369a1] underline-offset-4 hover:underline sm:mt-0 sm:inline"
+                                className="mt-1 block font-semibold text-foreground underline underline-offset-4 hover:text-muted-foreground sm:mt-0 sm:inline"
                             >
                                 Przejdź do logowania
                             </Link>
@@ -213,7 +213,7 @@ export default function AdminAuthCard({
                 </section>
             </div>
 
-            <footer className="px-5 pb-8 text-center text-xs text-[#64748b]">
+            <footer className="px-5 pb-8 text-center text-xs text-muted-foreground">
                 Artsea &middot; Prywatny panel zarządzania portfolio
             </footer>
         </div>
