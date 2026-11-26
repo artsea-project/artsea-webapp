@@ -5,7 +5,7 @@ import { artPieces, artPieceTags, categories, media, tags } from "@/db/schema"
 import type { Locale } from "@/i18n/routing"
 import { localizedKey, otherLocale } from "@/lib/i18n/localized-key"
 import { localizedText, type LocalizedText } from "@/lib/i18n/localized-text"
-import { isBentoMediaType } from "@/lib/media"
+import { isMediaType, type MediaType } from "@/lib/media"
 
 type DescriptionSlot = "technique" | "description"
 
@@ -18,7 +18,7 @@ export type ArtworkDetails = {
     technique: LocalizedText
     description: LocalizedText
     tags: string[]
-    photos: { mediaId: string; orderIndex: number }[]
+    photos: { mediaId: string; orderIndex: number; fileType: MediaType }[]
 }
 
 export type ArtworkLink = {
@@ -95,9 +95,9 @@ export async function getArtworkDetails(
             "description"
         ),
         tags: tagRows.flatMap(({ name }) => (name ? [name] : [])),
-        photos: mediaRows
-            .filter(({ fileType }) => isBentoMediaType(fileType))
-            .map(({ mediaId, orderIndex }) => ({ mediaId, orderIndex })),
+        photos: mediaRows.flatMap(({ mediaId, orderIndex, fileType }) =>
+            isMediaType(fileType) ? [{ mediaId, orderIndex, fileType }] : []
+        ),
     }
 }
 
