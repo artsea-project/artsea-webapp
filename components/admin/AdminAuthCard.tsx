@@ -4,6 +4,9 @@ import Link from "next/link"
 import { useActionState } from "react"
 import { useFormStatus } from "react-dom"
 import { ArrowRight, LockKeyhole, UserRound } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 export type AdminAuthFormState = {
     error?: string
@@ -17,9 +20,6 @@ type AdminAuthCardProps = {
     successMessage?: string
     action: (previousState: AdminAuthFormState, formData: FormData) => Promise<AdminAuthFormState>
 }
-
-const fieldClassName =
-    "h-11 w-full rounded-[10px] border border-input bg-background px-3.5 text-sm text-foreground shadow-xs outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/15"
 
 function Field({
     id,
@@ -40,16 +40,14 @@ function Field({
 
     return (
         <div className="space-y-2">
-            <label htmlFor={id} className="block text-sm font-semibold text-foreground">
-                {label}
-            </label>
+            <Label htmlFor={id}>{label}</Label>
             <div className="relative">
                 <Icon
                     aria-hidden="true"
                     className="pointer-events-none absolute top-1/2 left-3.5 size-[18px] -translate-y-1/2 text-muted-foreground"
                     strokeWidth={1.75}
                 />
-                <input
+                <Input
                     id={id}
                     name={id}
                     type={type}
@@ -57,7 +55,7 @@ function Field({
                     defaultValue={defaultValue}
                     autoComplete={autoComplete}
                     required
-                    className={`${fieldClassName} pl-11`}
+                    className="h-11 pl-11"
                 />
             </div>
         </div>
@@ -68,11 +66,7 @@ function SubmitButton({ isFirstLogin }: { isFirstLogin: boolean }) {
     const { pending } = useFormStatus()
 
     return (
-        <button
-            type="submit"
-            disabled={pending}
-            className="group mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-[10px] bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-wait disabled:opacity-70"
-        >
+        <Button type="submit" disabled={pending} className="group mt-2 h-11 w-full">
             {pending ? <>Proszę czekać&hellip;</> : isFirstLogin ? "Utwórz konto" : "Zaloguj się"}
             {!pending && (
                 <ArrowRight
@@ -80,7 +74,7 @@ function SubmitButton({ isFirstLogin }: { isFirstLogin: boolean }) {
                     className="size-4 transition-transform group-hover:translate-x-0.5"
                 />
             )}
-        </button>
+        </Button>
     )
 }
 
