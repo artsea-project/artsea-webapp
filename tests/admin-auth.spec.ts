@@ -2,15 +2,7 @@ import { expect, test } from "@playwright/test"
 import { hashPassword } from "better-auth/crypto"
 import { eq } from "drizzle-orm"
 import { db } from "@/db"
-import {
-    accounts,
-    authInstallation,
-    profiles,
-    rateLimits,
-    sessions,
-    siteSettings,
-    users,
-} from "@/db/schema"
+import { accounts, authInstallation, profiles, sessions, siteSettings, users } from "@/db/schema"
 import { getOrCreateAuthInstallation } from "@/lib/auth/installation"
 import { artistLoginEmail } from "@/lib/auth/config"
 import { deleteSetupToken, getOrCreateSetupToken } from "@/lib/auth/setup-token"
@@ -23,7 +15,6 @@ test.describe("admin authentication", () => {
         await db.delete(users)
         await db.delete(profiles)
         await db.delete(authInstallation)
-        await db.delete(rateLimits)
         await deleteSetupToken()
     })
 
@@ -80,12 +71,6 @@ test.describe("admin authentication", () => {
             0
         )
         await expect(page.getByRole("navigation", { name: "Menu główne" })).toHaveCount(0)
-
-        await page.getByLabel("Hasło").fill("incorrect-password")
-        await page.getByRole("button", { name: "Zaloguj się" }).click()
-        await expect(
-            page.getByText("Nieprawidłowe hasło. Spróbuj ponownie.", { exact: true })
-        ).toBeVisible()
 
         await page.getByLabel("Hasło").fill(password)
         await page.getByRole("button", { name: "Zaloguj się" }).click()
@@ -224,7 +209,8 @@ test.describe("admin authentication", () => {
             await expect(page.getByRole("navigation", { name: "Menu główne" })).toHaveCount(0)
         })
     }
-    test("throttles repeated login-form failures in PostgreSQL", async ({ page }) => {
+    test("throttles repeated login-form failures", async ({ page }) => {
+        test.setTimeout(60_000)
         await db.insert(users).values({
             id: userId,
             name: "Élise Roux",
@@ -239,8 +225,8 @@ test.describe("admin authentication", () => {
         await db.insert(profiles).values({ fullName: "Élise Roux" })
         await page.goto("/admin/login")
 
-        for (let attempt = 0; attempt < 11; attempt += 1) {
-            await page.getByLabel("Hasło").fill("incorrect-password")
+        for (let attempt = 0; attempt <= 30; attempt += 1) {
+            await page.getByLabel("Hasło").fill(attempt === 30 ? password : "incorrect-password")
             await Promise.all([
                 page.waitForResponse(
                     (response) =>
@@ -249,7 +235,7 @@ test.describe("admin authentication", () => {
                 ),
                 page.getByRole("button", { name: "Zaloguj się" }).click(),
             ])
-            if (attempt < 10) {
+            if (attempt < 30) {
                 await expect(
                     page.getByText("Nieprawidłowe hasło. Spróbuj ponownie.", { exact: true })
                 ).toBeVisible()
@@ -257,7 +243,7 @@ test.describe("admin authentication", () => {
         }
 
         await expect(
-            page.getByText("Zbyt wiele prób logowania. Spróbuj ponownie za minutę.", {
+            page.getByText("Zbyt wiele prób logowania. Spróbuj ponownie za kilka minut.", {
                 exact: true,
             })
         ).toBeVisible()

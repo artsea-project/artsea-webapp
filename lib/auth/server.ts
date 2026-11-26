@@ -4,6 +4,7 @@ import { db } from "@/db"
 import * as databaseSchema from "@/db/schema"
 import { artistLoginEmail, getPublicUrl } from "@/lib/auth/config"
 import { getOrCreateAuthInstallation } from "@/lib/auth/installation"
+import { createLoginRateLimiter } from "@/lib/auth/login-rate-limit"
 import { artistSignInLock } from "@/lib/auth/password-lock"
 
 type AuthSettings = { publicUrl: URL; secret: string }
@@ -74,15 +75,20 @@ export function getAuth() {
         }))
 }
 
+const limitArtistLogin = createLoginRateLimiter()
+
 export async function signInArtist(password: string, headers: Headers) {
     const settings = await getAuthSettings()
     return db.transaction(async (tx) => {
         await tx.execute(artistSignInLock)
-        // Verify the password and persist the session on the same connection holding the lock.
         return createAuth(tx, settings).api.signInEmail({
             body: { email: artistLoginEmail, password },
             headers,
             asResponse: true,
         })
     })
+}
+
+export function signInArtistWithRateLimit(password: string, headers: Headers) {
+    return limitArtistLogin(() => signInArtist(password, headers))
 }
