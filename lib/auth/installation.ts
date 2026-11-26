@@ -4,7 +4,7 @@ import { db } from "@/db"
 
 const AUTH_SECRET_BYTES = 32
 
-export type AuthInstallation = {
+type AuthInstallation = {
     id: string
     betterAuthSecret: string
     setupCompletedAt: Date | null

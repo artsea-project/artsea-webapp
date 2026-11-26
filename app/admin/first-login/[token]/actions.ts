@@ -6,7 +6,7 @@ import { applyAuthCookies } from "@/lib/auth/next-cookies"
 import { registerArtist, type RegistrationResult } from "@/lib/auth/register"
 import { signInArtist } from "@/lib/auth/server"
 
-export type FirstLoginFormState = {
+type FirstLoginFormState = {
     error?: string
     fullName?: string
 }

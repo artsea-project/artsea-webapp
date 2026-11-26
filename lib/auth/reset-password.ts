@@ -6,7 +6,7 @@ import { findRegisteredArtistAccount } from "@/lib/auth/artist-account"
 import { isNonemptyPassword } from "@/lib/auth/password"
 import { artistPasswordResetLock } from "@/lib/auth/password-lock"
 
-export type PasswordResetTarget = {
+type PasswordResetTarget = {
     userId: string
     artistName: string
 }
