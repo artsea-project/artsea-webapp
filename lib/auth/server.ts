@@ -46,7 +46,7 @@ function createAuth(database: typeof db | AuthTransaction, { publicUrl, secret }
         },
         session: {
             expiresIn: 60 * 60 * 24 * 7,
-            updateAge: 60 * 60 * 24,
+            disableSessionRefresh: true,
             cookieCache: {
                 enabled: false,
             },
