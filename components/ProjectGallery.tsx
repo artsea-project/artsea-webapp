@@ -5,6 +5,7 @@ import Image from "next/image"
 import dynamic from "next/dynamic"
 import { Play } from "lucide-react"
 import { useTranslations } from "next-intl"
+import type { Slide } from "yet-another-react-lightbox"
 import type { MediaType } from "@/lib/media"
 
 const Lightbox = dynamic(() => import("./ProjectGalleryLightbox"), { ssr: false })
@@ -145,6 +146,18 @@ function GalleryPreview({ photos, onSelect }: LayoutProps) {
     )
 }
 
+function toLightboxSlide(photo: GalleryPhoto): Slide {
+    if (photo.fileType === "mp4") {
+        return {
+            type: "video",
+            sources: [{ src: photo.src, type: "video/mp4" }],
+            controls: true,
+            playsInline: true,
+        }
+    }
+    return { src: photo.src, alt: photo.alt }
+}
+
 export function ProjectGallery({ photos }: ProjectGalleryProps) {
     const [index, setIndex] = useState(-1)
     const t = useTranslations("Gallery")
@@ -161,7 +174,7 @@ export function ProjectGallery({ photos }: ProjectGalleryProps) {
                     open={index >= 0}
                     index={index}
                     close={() => setIndex(-1)}
-                    slides={photos}
+                    slides={photos.map(toLightboxSlide)}
                     labels={{
                         Previous: t("previous"),
                         Next: t("next"),
