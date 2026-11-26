@@ -2,7 +2,15 @@ import { expect, test } from "@playwright/test"
 import { hashPassword } from "better-auth/crypto"
 import { eq } from "drizzle-orm"
 import { db } from "@/db"
-import { accounts, authInstallation, profiles, rateLimits, sessions, users } from "@/db/schema"
+import {
+    accounts,
+    authInstallation,
+    profiles,
+    rateLimits,
+    sessions,
+    siteSettings,
+    users,
+} from "@/db/schema"
 import { getOrCreateAuthInstallation } from "@/lib/auth/installation"
 import { artistLoginEmail } from "@/lib/auth/config"
 import { deleteSetupToken, getOrCreateSetupToken } from "@/lib/auth/setup-token"
@@ -169,6 +177,35 @@ test.describe("admin authentication", () => {
         await db.delete(sessions).where(eq(sessions.userId, userId))
         await worksLink.click()
         await expect(page).toHaveURL(/\/admin\/login$/)
+    })
+
+    test("does not save a theme after the artist session is revoked", async ({ page }) => {
+        await db.insert(users).values({ id: userId, name: "Test Artist", email: artistLoginEmail })
+        await db.insert(accounts).values({
+            accountId: userId,
+            providerId: "credential",
+            userId,
+            password: await hashPassword(password),
+        })
+        const readTheme = () => db.select({ theme: siteSettings.theme }).from(siteSettings)
+        const savedTheme = await readTheme()
+
+        await page.goto("/admin/login")
+        await page.getByLabel("Hasło").fill(password)
+        await page.getByRole("button", { name: "Zaloguj się" }).click()
+        await expect(page).toHaveURL(/\/admin$/)
+        await page.goto("/admin/appearance")
+
+        const theme = page.getByRole("region", { name: "Czcionki i kolorystyka" })
+        const accent = theme.getByRole("textbox", { name: "Kolor akcentu", exact: true })
+        await accent.fill((await accent.inputValue()) === "#123456" ? "#654321" : "#123456")
+        const save = theme.getByRole("button", { name: "Zapisz zmiany" })
+        await expect(save).toBeEnabled()
+
+        await db.delete(sessions).where(eq(sessions.userId, userId))
+        await save.click()
+        await expect(page).toHaveURL(/\/admin\/login$/)
+        expect(await readTheme()).toEqual(savedTheme)
     })
 
     for (const route of [
