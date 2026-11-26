@@ -15,6 +15,9 @@ test.describe("Polish browser", () => {
         await expect(page.locator("html")).toHaveAttribute("lang", "pl")
         await expect(page.getByRole("link", { name: "O MNIE" })).toBeVisible()
         await expect(page.getByRole("link", { name: TITLE_PL, exact: true })).toBeVisible()
+        await expect(
+            page.getByRole("contentinfo").getByRole("link", { name: "Panel administracyjny" })
+        ).toHaveAttribute("href", "/admin")
     })
 
     test("switches to English and keeps the page", async ({ page }) => {
@@ -69,8 +72,15 @@ test.describe("English browser", () => {
         await expect(page.getByRole("heading", { name: "Page not found" })).toBeVisible()
     })
 
-    test("redirects to the Polish, non-indexable admin login", async ({ page }) => {
-        await page.goto("/admin")
+    test("links from the English footer to the Polish, non-indexable admin login", async ({
+        page,
+    }) => {
+        await page.goto("/en")
+        const dashboardLink = page.getByRole("contentinfo").getByRole("link", {
+            name: "Admin dashboard",
+        })
+        await expect(dashboardLink).toHaveAttribute("href", "/admin")
+        await dashboardLink.click()
 
         await expect(page).toHaveURL("/admin/login")
         await expect(page.getByRole("heading", { name: "Logowanie do panelu" })).toBeVisible()
