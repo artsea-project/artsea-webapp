@@ -37,7 +37,9 @@ test.describe("admin authentication", () => {
         await page.getByRole("button", { name: "Utwórz konto" }).click()
 
         await expect(page).toHaveURL(/\/admin$/)
-        await expect(page.getByRole("heading", { name: "Przegląd", exact: true })).toBeVisible()
+        await expect(
+            page.getByRole("heading", { name: "Przegląd zawartości", exact: true })
+        ).toBeVisible()
         await expect(page.locator("aside").getByText("Roux", { exact: true })).toBeVisible()
 
         const replayPage = await browser.newPage()
@@ -229,7 +231,7 @@ test.describe("admin authentication", () => {
         request,
     }) => {
         await page.goto("/admin/first-login")
-        await expect(page.getByText("404")).toBeVisible()
+        await expect(page.getByRole("heading", { name: "Nie znaleziono strony" })).toBeVisible()
 
         const response = await request.post("/api/auth/sign-up/email", {
             data: {
