@@ -13,7 +13,6 @@ import {
     links,
     media,
     profiles,
-    rateLimits,
     sessions,
     siteSettings,
     tags,
@@ -154,7 +153,6 @@ export async function cleanDatabase(tx: SeedTransaction) {
     await tx.delete(sessions)
     await tx.delete(accounts)
     await tx.delete(verifications)
-    await tx.delete(rateLimits)
     await tx.delete(users)
 }
 
