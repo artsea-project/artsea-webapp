@@ -160,7 +160,7 @@ async function WorkDetails({ params }: PageProps) {
 
     const galleryPhotos = artwork.photos.map((photo) => ({
         src: `/media/${photo.mediaId}`,
-        alt: t("photoAlt", { title, number: photo.orderIndex + 1 }),
+        alt: t("mediaAlt", { title, number: photo.orderIndex + 1 }),
         fileType: photo.fileType,
     }))
 

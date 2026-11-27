@@ -136,7 +136,7 @@ function GalleryPreview({ photos, onSelect }: LayoutProps) {
                 <div className={`grid ${gridColsClass} gap-4`}>
                     {thumbnails.map((photo, i) => {
                         const isLastWithRemaining = i === 2 && remaining > 0
-                        const remainingLabel = t("morePhotos", { count: remaining })
+                        const remainingLabel = t("moreItems", { count: remaining })
 
                         return (
                             <GalleryThumbnail
