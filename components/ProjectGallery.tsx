@@ -7,6 +7,7 @@ import { Play } from "lucide-react"
 import { useTranslations } from "next-intl"
 import type { Slide } from "yet-another-react-lightbox"
 import type { MediaType } from "@/lib/media"
+import { cn } from "@/lib/utils"
 
 const Lightbox = dynamic(() => import("./ProjectGalleryLightbox"), { ssr: false })
 
@@ -36,6 +37,12 @@ function GalleryMedia({
     variant: "main" | "thumbnail"
     hidePlayBadge?: boolean
 }) {
+    const mediaClassName = cn(
+        "transition-transform duration-300 group-hover:scale-[1.01]",
+        variant === "main" ? "w-full h-auto" : "h-full w-full object-cover",
+        photo.fileType === "mp4" && "pointer-events-none"
+    )
+
     if (photo.fileType === "mp4") {
         return (
             <>
@@ -45,11 +52,7 @@ function GalleryMedia({
                     muted
                     playsInline
                     aria-label={photo.alt}
-                    className={
-                        variant === "main"
-                            ? "w-full h-auto pointer-events-none transition-transform duration-300 group-hover:scale-[1.01]"
-                            : "h-full w-full object-cover pointer-events-none transition-transform duration-300 group-hover:scale-[1.01]"
-                    }
+                    className={mediaClassName}
                 />
                 {!hidePlayBadge && (
                     <span
@@ -74,7 +77,7 @@ function GalleryMedia({
                 height={0}
                 sizes="(max-width: 768px) 100vw, 60vw"
                 priority
-                className="w-full h-auto transition-transform duration-300 group-hover:scale-[1.01]"
+                className={mediaClassName}
             />
         )
     }
@@ -85,7 +88,7 @@ function GalleryMedia({
             alt={photo.alt}
             fill
             sizes="(max-width: 768px) 50vw, 30vw"
-            className="object-cover transition-transform duration-300 group-hover:scale-[1.01]"
+            className={mediaClassName}
         />
     )
 }
