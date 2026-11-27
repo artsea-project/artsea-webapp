@@ -19,6 +19,34 @@ export const fontCatalog = {
         category: "serif",
         family: 'var(--font-libre-baskerville, Georgia, "Times New Roman", serif)',
     },
+    Fraunces: {
+        category: "serif",
+        family: 'var(--font-fraunces, Georgia, "Times New Roman", serif)',
+    },
+    Spectral: {
+        category: "serif",
+        family: 'var(--font-spectral, Georgia, "Times New Roman", serif)',
+    },
+    "Bodoni Moda": {
+        category: "serif",
+        family: 'var(--font-bodoni-moda, Georgia, "Times New Roman", serif)',
+    },
+    Cinzel: {
+        category: "serif",
+        family: 'var(--font-cinzel, Georgia, "Times New Roman", serif)',
+    },
+    "EB Garamond": {
+        category: "serif",
+        family: 'var(--font-eb-garamond, Georgia, "Times New Roman", serif)',
+    },
+    Merriweather: {
+        category: "serif",
+        family: 'var(--font-merriweather, Georgia, "Times New Roman", serif)',
+    },
+    "Source Serif 4": {
+        category: "serif",
+        family: 'var(--font-source-serif-4, Georgia, "Times New Roman", serif)',
+    },
     Inter: {
         category: "sans-serif",
         family: "var(--font-inter, Arial, Helvetica, sans-serif)",
@@ -34,6 +62,46 @@ export const fontCatalog = {
     Montserrat: {
         category: "sans-serif",
         family: "var(--font-montserrat, Arial, Helvetica, sans-serif)",
+    },
+    Syne: {
+        category: "sans-serif",
+        family: "var(--font-syne, Arial, Helvetica, sans-serif)",
+    },
+    "Space Grotesk": {
+        category: "sans-serif",
+        family: "var(--font-space-grotesk, Arial, Helvetica, sans-serif)",
+    },
+    Unbounded: {
+        category: "sans-serif",
+        family: "var(--font-unbounded, Arial, Helvetica, sans-serif)",
+    },
+    "Bricolage Grotesque": {
+        category: "sans-serif",
+        family: "var(--font-bricolage-grotesque, Arial, Helvetica, sans-serif)",
+    },
+    Roboto: {
+        category: "sans-serif",
+        family: "var(--font-roboto, Arial, Helvetica, sans-serif)",
+    },
+    "Open Sans": {
+        category: "sans-serif",
+        family: "var(--font-open-sans, Arial, Helvetica, sans-serif)",
+    },
+    "DM Sans": {
+        category: "sans-serif",
+        family: "var(--font-dm-sans, Arial, Helvetica, sans-serif)",
+    },
+    "Work Sans": {
+        category: "sans-serif",
+        family: "var(--font-work-sans, Arial, Helvetica, sans-serif)",
+    },
+    Raleway: {
+        category: "sans-serif",
+        family: "var(--font-raleway, Arial, Helvetica, sans-serif)",
+    },
+    Nunito: {
+        category: "sans-serif",
+        family: "var(--font-nunito, Arial, Helvetica, sans-serif)",
     },
     "Geist Mono": {
         category: "monospace",
