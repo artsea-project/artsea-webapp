@@ -9,7 +9,7 @@
         "technique": "Technika i materiały",
         "description": "O projekcie",
         "next": "Zobacz kolejny",
-        "photoAlt": "{title} - zdjęcie {number}"
+        "mediaAlt": "{title} - element {number}"
     },
     "Common": {
         "missingTranslation": "Ta treść nie jest dostępna w języku polskim."
@@ -18,7 +18,7 @@
         "heading": "Porozmawiajmy o sztuce."
     },
     "Gallery": {
-        "morePhotos": "+{count, plural, one {# zdjęcie} few {# zdjęcia} many {# zdjęć} other {# zdjęcia}}",
+        "moreItems": "+{count, plural, one {# element} few {# elementy} many {# elementów} other {# elementu}}",
         "previous": "Poprzednie",
         "next": "Następne",
         "close": "Zamknij",

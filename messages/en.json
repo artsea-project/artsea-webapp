@@ -9,7 +9,7 @@
         "technique": "Technique and materials",
         "description": "About the project",
         "next": "See next",
-        "photoAlt": "{title} - photo {number}"
+        "mediaAlt": "{title} - item {number}"
     },
     "Common": {
         "missingTranslation": "This content is not available in English."
@@ -18,7 +18,7 @@
         "heading": "Let's talk about art."
     },
     "Gallery": {
-        "morePhotos": "+{count, plural, one {# photo} other {# photos}}",
+        "moreItems": "+{count, plural, one {# item} other {# items}}",
         "previous": "Previous",
         "next": "Next",
         "close": "Close",
