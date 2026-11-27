@@ -56,7 +56,7 @@ function GalleryMedia({
                         aria-hidden="true"
                         className="pointer-events-none absolute inset-0 flex items-center justify-center"
                     >
-                        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-stone-900/60 text-white backdrop-blur-[2px] transition-transform duration-300 group-hover:scale-105">
+                        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-foreground/60 text-background backdrop-blur-[2px] transition-transform duration-300 group-hover:scale-105">
                             <Play className="h-5 w-5 fill-current translate-x-0.5" />
                         </span>
                     </span>
@@ -143,8 +143,8 @@ function GalleryPreview({ photos, onSelect }: LayoutProps) {
                                 onClick={() => onSelect(i + 1)}
                             >
                                 {isLastWithRemaining && (
-                                    <div className="absolute inset-0 bg-stone-900/60 backdrop-blur-[2px] flex items-center justify-center transition-colors group-hover:bg-stone-900/70">
-                                        <span className="text-white font-secondary font-medium text-sm md:text-base tracking-wide">
+                                    <div className="absolute inset-0 bg-foreground/60 backdrop-blur-[2px] flex items-center justify-center transition-colors group-hover:bg-foreground/70">
+                                        <span className="text-background font-secondary font-medium text-sm md:text-base tracking-wide">
                                             {remainingLabel}
                                         </span>
                                     </div>
