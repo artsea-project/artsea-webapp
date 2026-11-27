@@ -150,6 +150,7 @@ function toLightboxSlide(photo: GalleryPhoto): Slide {
     if (photo.fileType === "mp4") {
         return {
             type: "video",
+            alt: photo.alt,
             sources: [{ src: photo.src, type: "video/mp4" }],
             controls: true,
             playsInline: true,
