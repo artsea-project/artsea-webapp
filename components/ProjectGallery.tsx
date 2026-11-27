@@ -23,10 +23,19 @@ export interface ProjectGalleryProps {
 interface ThumbnailProps {
     photo: GalleryPhoto
     onClick: () => void
+    hidePlayBadge?: boolean
     children?: React.ReactNode
 }
 
-function GalleryMedia({ photo, variant }: { photo: GalleryPhoto; variant: "main" | "thumbnail" }) {
+function GalleryMedia({
+    photo,
+    variant,
+    hidePlayBadge = false,
+}: {
+    photo: GalleryPhoto
+    variant: "main" | "thumbnail"
+    hidePlayBadge?: boolean
+}) {
     if (photo.fileType === "mp4") {
         return (
             <>
@@ -42,14 +51,16 @@ function GalleryMedia({ photo, variant }: { photo: GalleryPhoto; variant: "main"
                             : "h-full w-full object-cover pointer-events-none transition-transform duration-300 group-hover:scale-[1.01]"
                     }
                 />
-                <span
-                    aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 flex items-center justify-center"
-                >
-                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-stone-900/60 text-white backdrop-blur-[2px] transition-transform duration-300 group-hover:scale-105">
-                        <Play className="h-5 w-5 fill-current translate-x-0.5" />
+                {!hidePlayBadge && (
+                    <span
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-0 flex items-center justify-center"
+                    >
+                        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-stone-900/60 text-white backdrop-blur-[2px] transition-transform duration-300 group-hover:scale-105">
+                            <Play className="h-5 w-5 fill-current translate-x-0.5" />
+                        </span>
                     </span>
-                </span>
+                )}
             </>
         )
     }
@@ -79,14 +90,14 @@ function GalleryMedia({ photo, variant }: { photo: GalleryPhoto; variant: "main"
     )
 }
 
-function GalleryThumbnail({ photo, onClick, children }: ThumbnailProps) {
+function GalleryThumbnail({ photo, onClick, hidePlayBadge, children }: ThumbnailProps) {
     return (
         <button
             type="button"
             onClick={onClick}
             className="group relative w-full aspect-[4/3] overflow-hidden bg-stone-100 dark:bg-zinc-900 cursor-pointer hover:opacity-95 transition-opacity text-left p-0 border-0"
         >
-            <GalleryMedia photo={photo} variant="thumbnail" />
+            <GalleryMedia photo={photo} variant="thumbnail" hidePlayBadge={hidePlayBadge} />
             {children}
         </button>
     )
@@ -128,6 +139,7 @@ function GalleryPreview({ photos, onSelect }: LayoutProps) {
                             <GalleryThumbnail
                                 key={photo.src}
                                 photo={photo}
+                                hidePlayBadge={isLastWithRemaining}
                                 onClick={() => onSelect(i + 1)}
                             >
                                 {isLastWithRemaining && (
